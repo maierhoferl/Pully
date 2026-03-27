@@ -4,5 +4,6 @@ export default defineConfig({
     environment: 'node',
     include: ['tests/main/**/*.test.js'],
     globals: true,
+    passWithNoTests: true,
   }
 })
