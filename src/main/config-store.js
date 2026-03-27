@@ -3,7 +3,11 @@ import path from 'path'
 import { createRequire } from 'module'
 
 const _require = createRequire(import.meta.url)
-const DEFAULTS = { outputFolder: '', maxConcurrent: 3 }
+
+function getDefaults() {
+  const { app } = _require('electron')
+  return { outputFolder: app.getPath('downloads'), maxConcurrent: 3 }
+}
 
 function defaultPath() {
   // Lazy-load electron so this module can be imported in Vitest without Electron present.
@@ -15,9 +19,9 @@ function defaultPath() {
 export function readConfig(configPath) {
   const p = configPath || defaultPath()
   try {
-    return { ...DEFAULTS, ...JSON.parse(fs.readFileSync(p, 'utf8')) }
+    return { ...getDefaults(), ...JSON.parse(fs.readFileSync(p, 'utf8')) }
   } catch {
-    return { ...DEFAULTS }
+    return { ...getDefaults() }
   }
 }
 
