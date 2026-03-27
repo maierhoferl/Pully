@@ -1,6 +1,43 @@
 # Pully
 
-A macOS desktop app for downloading videos from YouTube and other sites. Built with Electron, React, and yt-dlp.
+A desktop app for downloading videos from YouTube and other sites. Built with Electron, React, and yt-dlp.
+
+## Download
+
+Go to the **[Releases page](../../releases/latest)** to download the latest version.
+
+| Platform | File | Requirements |
+|----------|------|--------------|
+| macOS (Apple Silicon + Intel) | `Pully-{version}-mac-universal.dmg` | macOS 11+ |
+| Windows | `Pully-{version}-win-x64-setup.exe` | Windows 10+ (64-bit) |
+| Linux | `Pully-{version}-linux-x64.AppImage` | x86_64 |
+
+### Verify your download (SHA-256)
+
+Each release includes `SHA256SUMS.txt`. To verify:
+
+**macOS / Linux:**
+```bash
+sha256sum -c SHA256SUMS.txt --ignore-missing
+```
+
+**Windows (PowerShell):**
+```powershell
+(Get-FileHash "Pully-*-win-x64-setup.exe" -Algorithm SHA256).Hash
+```
+Compare the output against the matching line in `SHA256SUMS.txt`.
+
+### Platform notes
+
+**macOS** — the app is signed and notarized. If macOS shows a security prompt on first launch, right-click the app → Open.
+
+**Linux** — make the AppImage executable before running:
+```bash
+chmod +x Pully-*.AppImage
+./Pully-*.AppImage
+```
+
+---
 
 ## Features
 
@@ -8,11 +45,11 @@ A macOS desktop app for downloading videos from YouTube and other sites. Built w
 - **Automatic video detection** — scans each page for downloadable media as it loads
 - **Format selection** — choose resolution and format (MP4, WebM, audio-only, etc.) per video
 - **Download queue** — concurrent downloads with live progress shown inline
-- **Library** — browse downloaded files and reveal them in Finder
+- **Library** — browse downloaded files and reveal them in Finder / Explorer / file manager
 
-## Getting Started
+## Getting Started (development)
 
-**Prerequisites:** Node.js 18+, macOS (Windows/Linux builds are possible but untested)
+**Prerequisites:** Node.js 18+
 
 ```bash
 npm install      # installs deps and downloads the yt-dlp binary automatically
@@ -22,12 +59,10 @@ npm run dev      # start in development mode with hot reload
 ## Building
 
 ```bash
-npm run build:mac     # produces dist/Pully-1.0.0-universal.dmg (arm64 + x86_64)
-npm run build:win     # Windows
-npm run build:linux   # Linux
+npm run build:mac     # macOS universal DMG (must run on macOS)
+npm run build:win     # Windows NSIS installer
+npm run build:linux   # Linux AppImage
 ```
-
-The DMG is signed with your local Apple Development certificate if one is available. Notarization is not configured.
 
 ## Development
 
@@ -60,8 +95,8 @@ State is managed with Zustand (`src/renderer/src/store/app-store.js`). IPC event
 
 ## Configuration
 
-On first launch the output folder defaults to `~/Downloads`. Settings (output folder, max concurrent downloads) are persisted to `~/Library/Application Support/Pully/config.json`.
+On first launch the output folder defaults to `~/Downloads`. Settings are persisted to the app's userData directory.
 
 ## yt-dlp
 
-The yt-dlp binary is downloaded automatically during `npm install` via `scripts/download-ytdlp.js` and stored in `resources/yt-dlp`. At runtime it is copied to the app's userData directory. To update yt-dlp, delete the binary and re-run `npm install`.
+The yt-dlp binary is downloaded automatically during `npm install` and stored in `resources/`. At runtime it is copied to the app's userData directory. To update yt-dlp, delete the binary and re-run `npm install`.
