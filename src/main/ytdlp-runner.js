@@ -6,14 +6,15 @@ const PROGRESS_RE = /\[download\]\s+([\d.]+)%\s+of\s+[\S]+\s+at\s+([\d.]+\S+\/s)
 
 export function getDefaultBinaryPath() {
   const base = process.resourcesPath || path.join(process.cwd(), 'resources')
-  return path.join(base, 'yt-dlp')
+  const name = process.platform === 'win32' ? 'yt-dlp.exe' : 'yt-dlp'
+  return path.join(base, name)
 }
 
 export function ensureBinary(src, dest) {
   if (fs.existsSync(dest)) return
   fs.mkdirSync(path.dirname(dest), { recursive: true })
   fs.copyFileSync(src, dest)
-  fs.chmodSync(dest, 0o755)
+  if (process.platform !== 'win32') fs.chmodSync(dest, 0o755)
 }
 
 export function extractInfo(url, binaryPath = getDefaultBinaryPath()) {

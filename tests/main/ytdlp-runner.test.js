@@ -4,7 +4,7 @@ import { EventEmitter } from 'events'
 vi.mock('child_process', () => ({ spawn: vi.fn() }))
 
 import { spawn } from 'child_process'
-import { extractInfo, startDownload } from '../../src/main/ytdlp-runner.js'
+import { extractInfo, startDownload, getDefaultBinaryPath } from '../../src/main/ytdlp-runner.js'
 
 function mockProc(stdout, exitCode = 0) {
   const p = new EventEmitter()
@@ -19,6 +19,33 @@ function mockProc(stdout, exitCode = 0) {
 }
 
 beforeEach(() => vi.clearAllMocks())
+
+describe('getDefaultBinaryPath', () => {
+  it('returns yt-dlp.exe on win32', () => {
+    const orig = Object.getOwnPropertyDescriptor(process, 'platform')
+    Object.defineProperty(process, 'platform', { value: 'win32', configurable: true })
+    expect(getDefaultBinaryPath()).toMatch(/yt-dlp\.exe$/)
+    Object.defineProperty(process, 'platform', orig)
+  })
+
+  it('returns yt-dlp (no .exe) on darwin', () => {
+    const orig = Object.getOwnPropertyDescriptor(process, 'platform')
+    Object.defineProperty(process, 'platform', { value: 'darwin', configurable: true })
+    const p = getDefaultBinaryPath()
+    expect(p).toMatch(/yt-dlp$/)
+    expect(p).not.toMatch(/\.exe$/)
+    Object.defineProperty(process, 'platform', orig)
+  })
+
+  it('returns yt-dlp (no .exe) on linux', () => {
+    const orig = Object.getOwnPropertyDescriptor(process, 'platform')
+    Object.defineProperty(process, 'platform', { value: 'linux', configurable: true })
+    const p = getDefaultBinaryPath()
+    expect(p).toMatch(/yt-dlp$/)
+    expect(p).not.toMatch(/\.exe$/)
+    Object.defineProperty(process, 'platform', orig)
+  })
+})
 
 describe('extractInfo', () => {
   it('parses JSON lines into entries', async () => {
