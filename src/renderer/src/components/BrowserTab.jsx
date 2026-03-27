@@ -9,18 +9,16 @@ export default function BrowserTab() {
   const [inputUrl, setInputUrl] = useState(HOME)
   const [canGoBack, setCanGoBack] = useState(false)
   const [canGoForward, setCanGoForward] = useState(false)
-  const { setMediaScanLoading, setMediaScanResults } = useAppStore()
+  const { startMediaScan, setMediaScanResults } = useAppStore()
 
   const scanPage = useCallback(async pageUrl => {
-    setMediaScanLoading(true)
-    setMediaScanResults([])
     try {
       const results = await window.api.extractInfo(pageUrl)
       setMediaScanResults(results)
     } catch {
       setMediaScanResults([])
     }
-  }, [setMediaScanLoading, setMediaScanResults])
+  }, [setMediaScanResults])
 
   useEffect(() => {
     const wv = webviewRef.current
@@ -30,6 +28,10 @@ export default function BrowserTab() {
       setInputUrl(wv.getURL())
       setCanGoBack(wv.canGoBack())
       setCanGoForward(wv.canGoForward())
+    }
+
+    const onStartLoading = () => {
+      startMediaScan()
     }
 
     const onFinishLoad = () => {
@@ -42,13 +44,15 @@ export default function BrowserTab() {
 
     wv.addEventListener('did-navigate', onNavigate)
     wv.addEventListener('did-navigate-in-page', onNavigate)
+    wv.addEventListener('did-start-loading', onStartLoading)
     wv.addEventListener('did-finish-load', onFinishLoad)
     return () => {
       wv.removeEventListener('did-navigate', onNavigate)
       wv.removeEventListener('did-navigate-in-page', onNavigate)
+      wv.removeEventListener('did-start-loading', onStartLoading)
       wv.removeEventListener('did-finish-load', onFinishLoad)
     }
-  }, [scanPage])
+  }, [scanPage, startMediaScan])
 
   function navigate(raw) {
     const wv = webviewRef.current

@@ -12,7 +12,10 @@ export function TabBar() {
   return (
     <div className="flex items-center h-10 bg-gray-900 border-b border-gray-700 px-2 select-none"
          style={{ WebkitAppRegion: 'drag' }}>
-      <div className="flex gap-1 ml-16" style={{ WebkitAppRegion: 'no-drag' }}>
+      <div className="flex items-center gap-1.5 ml-16 select-none" style={{ WebkitAppRegion: 'no-drag' }}>
+        <span className="text-sm font-bold text-white tracking-tight">Pully</span>
+      </div>
+      <div className="flex gap-1 ml-4" style={{ WebkitAppRegion: 'no-drag' }}>
         {TABS.map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-1 rounded text-sm font-medium transition-colors ${

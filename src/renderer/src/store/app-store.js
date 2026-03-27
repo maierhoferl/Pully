@@ -16,10 +16,10 @@ export const useAppStore = create((set) => ({
     downloads: state.downloads.map(d => d.id === id ? { ...d, percent, speed, eta } : d)
   })),
 
-  mediaScanResults: [],
+  mediaScanResults: null,
   mediaScanLoading: false,
+  startMediaScan: () => set({ mediaScanLoading: true, mediaScanResults: null }),
   setMediaScanResults: (results) => set({ mediaScanResults: results, mediaScanLoading: false }),
-  setMediaScanLoading: loading => set({ mediaScanLoading: loading }),
 
   libraryFiles: [],
   setLibraryFiles: files => set({ libraryFiles: files }),
