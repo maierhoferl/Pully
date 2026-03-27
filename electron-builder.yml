@@ -1,5 +1,5 @@
-appId: com.videodownloader.app
-productName: VideoDownloader
+appId: com.pully.app
+productName: Pully
 directories:
   output: dist
 files:
@@ -18,4 +18,4 @@ mac:
         - universal
   category: public.app-category.utilities
 dmg:
-  title: VideoDownloader
+  title: Pully

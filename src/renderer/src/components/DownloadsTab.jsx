@@ -1,13 +1,15 @@
 import React from 'react'
 import { useAppStore } from '../store/app-store.js'
 import { DownloadRow } from './DownloadRow.jsx'
+import pullyHero from '../assets/pully-hero.png'
 
 export default function DownloadsTab() {
   const downloads = useAppStore(s => s.downloads)
   if (downloads.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500">
-        No downloads yet. Browse to a page to find media.
+      <div className="flex flex-col items-center justify-center h-full gap-4 text-gray-500">
+        <img src={pullyHero} alt="Pully" className="w-48 h-48 object-contain opacity-90" />
+        <p className="text-sm">No downloads yet. Browse to a page to find media.</p>
       </div>
     )
   }
