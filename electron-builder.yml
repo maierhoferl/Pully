@@ -8,14 +8,38 @@ files:
   - "!tests/**"
   - "!docs/**"
   - "!scripts/**"
-extraResources:
-  - from: resources/yt-dlp
-    to: yt-dlp
+afterSign: scripts/notarize.js
 mac:
   target:
     - target: dmg
       arch:
         - universal
   category: public.app-category.utilities
+  extraResources:
+    - from: resources/yt-dlp
+      to: yt-dlp
+  artifactName: "${productName}-${version}-mac-${arch}.${ext}"
 dmg:
   title: Pully
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  extraResources:
+    - from: resources/yt-dlp.exe
+      to: yt-dlp.exe
+  artifactName: "${productName}-${version}-win-${arch}-setup.${ext}"
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+  category: Network
+  extraResources:
+    - from: resources/yt-dlp
+      to: yt-dlp
+  artifactName: "${productName}-${version}-linux-${arch}.${ext}"
