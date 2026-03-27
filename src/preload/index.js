@@ -12,19 +12,23 @@ contextBridge.exposeInMainWorld('api', {
   revealInFinder: filePath => ipcRenderer.invoke('library:reveal', filePath),
 
   onQueueUpdated: cb => {
-    ipcRenderer.on('download:queue-updated', (_, q) => cb(q))
-    return () => ipcRenderer.removeAllListeners('download:queue-updated')
+    const handler = (_, q) => cb(q)
+    ipcRenderer.on('download:queue-updated', handler)
+    return () => ipcRenderer.removeListener('download:queue-updated', handler)
   },
   onProgress: cb => {
-    ipcRenderer.on('download:progress', (_, d) => cb(d))
-    return () => ipcRenderer.removeAllListeners('download:progress')
+    const handler = (_, d) => cb(d)
+    ipcRenderer.on('download:progress', handler)
+    return () => ipcRenderer.removeListener('download:progress', handler)
   },
   onCompleted: cb => {
-    ipcRenderer.on('download:completed', (_, d) => cb(d))
-    return () => ipcRenderer.removeAllListeners('download:completed')
+    const handler = (_, d) => cb(d)
+    ipcRenderer.on('download:completed', handler)
+    return () => ipcRenderer.removeListener('download:completed', handler)
   },
   onFailed: cb => {
-    ipcRenderer.on('download:failed', (_, d) => cb(d))
-    return () => ipcRenderer.removeAllListeners('download:failed')
+    const handler = (_, d) => cb(d)
+    ipcRenderer.on('download:failed', handler)
+    return () => ipcRenderer.removeListener('download:failed', handler)
   },
 })

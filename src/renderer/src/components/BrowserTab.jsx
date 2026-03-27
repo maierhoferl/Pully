@@ -14,8 +14,12 @@ export default function BrowserTab() {
   const scanPage = useCallback(async pageUrl => {
     setMediaScanLoading(true)
     setMediaScanResults([])
-    const results = await window.api.extractInfo(pageUrl)
-    setMediaScanResults(results)
+    try {
+      const results = await window.api.extractInfo(pageUrl)
+      setMediaScanResults(results)
+    } catch {
+      setMediaScanResults([])
+    }
   }, [setMediaScanLoading, setMediaScanResults])
 
   useEffect(() => {

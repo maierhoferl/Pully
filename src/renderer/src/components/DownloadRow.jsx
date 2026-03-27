@@ -19,7 +19,7 @@ export function DownloadRow({ item }) {
                   style={{ width: `${item.percent || 0}%` }} />
               </div>
               <span className="text-xs text-gray-400 whitespace-nowrap">
-                {(item.percent || 0).toFixed(0)}% · {item.speed} · ETA {item.eta}
+                {(item.percent || 0).toFixed(0)}% · {item.speed ?? '—'} · ETA {item.eta ?? '—'}
               </span>
             </div>
           )}

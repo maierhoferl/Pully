@@ -74,7 +74,7 @@ export function MediaPanel() {
             ? '⏳ Scanning for media…'
             : `${mediaScanResults.length} video${mediaScanResults.length !== 1 ? 's' : ''} found`}
         </span>
-        <span className="ml-auto text-gray-600 text-xs">{collapsed ? '▲' : '▼'}</span>
+        <span className="ml-auto text-gray-600 text-xs">{collapsed ? '▼' : '▲'}</span>
       </div>
       {!collapsed && (
         <div className="py-1">
