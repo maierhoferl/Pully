@@ -3,6 +3,7 @@ import { useAppStore } from '../store/app-store.js'
 import { MediaPanel } from './MediaPanel.jsx'
 
 const HOME = 'https://www.youtube.com'
+const RESCAN_INTERVAL_MS = 30_000
 
 export default function BrowserTab() {
   const webviewRef = useRef(null)
@@ -10,6 +11,8 @@ export default function BrowserTab() {
   const [canGoBack, setCanGoBack] = useState(false)
   const [canGoForward, setCanGoForward] = useState(false)
   const { startMediaScan, setMediaScanResults } = useAppStore()
+  const scanDebounceRef = useRef(null)
+  const currentUrlRef = useRef(null)
 
   const scanPage = useCallback(async pageUrl => {
     try {
@@ -20,17 +23,39 @@ export default function BrowserTab() {
     }
   }, [setMediaScanResults])
 
+  const debouncedScan = useCallback((url) => {
+    clearTimeout(scanDebounceRef.current)
+    scanDebounceRef.current = setTimeout(() => {
+      currentUrlRef.current = url
+      startMediaScan()
+      scanPage(url)
+    }, 500)
+  }, [scanPage, startMediaScan])
+
   useEffect(() => {
     const wv = webviewRef.current
     if (!wv) return
 
-    const onNavigate = () => {
+    const updateNav = () => {
       setInputUrl(wv.getURL())
       setCanGoBack(wv.canGoBack())
       setCanGoForward(wv.canGoForward())
     }
 
+    const onNavigate = () => {
+      updateNav()
+    }
+
+    const onInPageNavigate = () => {
+      const url = wv.getURL()
+      updateNav()
+      if (url !== currentUrlRef.current) {
+        debouncedScan(url)
+      }
+    }
+
     const onStartLoading = () => {
+      clearTimeout(scanDebounceRef.current)
       startMediaScan()
     }
 
@@ -39,20 +64,31 @@ export default function BrowserTab() {
       setInputUrl(url)
       setCanGoBack(wv.canGoBack())
       setCanGoForward(wv.canGoForward())
+      currentUrlRef.current = url
       scanPage(url)
     }
 
     wv.addEventListener('did-navigate', onNavigate)
-    wv.addEventListener('did-navigate-in-page', onNavigate)
+    wv.addEventListener('did-navigate-in-page', onInPageNavigate)
     wv.addEventListener('did-start-loading', onStartLoading)
     wv.addEventListener('did-finish-load', onFinishLoad)
+
+    const intervalId = setInterval(() => {
+      const url = wv.getURL()
+      if (url && url !== 'about:blank') {
+        scanPage(url)
+      }
+    }, RESCAN_INTERVAL_MS)
+
     return () => {
       wv.removeEventListener('did-navigate', onNavigate)
-      wv.removeEventListener('did-navigate-in-page', onNavigate)
+      wv.removeEventListener('did-navigate-in-page', onInPageNavigate)
       wv.removeEventListener('did-start-loading', onStartLoading)
       wv.removeEventListener('did-finish-load', onFinishLoad)
+      clearTimeout(scanDebounceRef.current)
+      clearInterval(intervalId)
     }
-  }, [scanPage, startMediaScan])
+  }, [scanPage, startMediaScan, debouncedScan])
 
   function navigate(raw) {
     const wv = webviewRef.current
