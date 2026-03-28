@@ -2,12 +2,21 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAppStore } from '../store/app-store.js'
 
+function safeHostname(url) {
+  try { return new URL(url).hostname } catch { return url }
+}
+
 function ChapterCard({ chapter, onGenerateSummary, onUpdateBullets, onPlayInLibrary }) {
   const [editingBullets, setEditingBullets] = useState(false)
   const [bulletText, setBulletText] = useState(chapter.bullets.join('\n'))
   const [summarizing, setSummarizing] = useState(false)
   const [summaryError, setSummaryError] = useState(null)
   const [localSummary, setLocalSummary] = useState(chapter.summary)
+
+  useEffect(() => { setLocalSummary(chapter.summary) }, [chapter.summary])
+  useEffect(() => {
+    if (!editingBullets) setBulletText(chapter.bullets.join('\n'))
+  }, [chapter.bullets, editingBullets])
 
   const handleSaveBullets = () => {
     const bullets = bulletText.split('\n').map(b => b.replace(/^-\s*/, '').trim()).filter(Boolean)
@@ -42,7 +51,7 @@ function ChapterCard({ chapter, onGenerateSummary, onUpdateBullets, onPlayInLibr
       <div className="text-xs text-gray-500 mb-3 flex gap-3">
         <span>📁 {chapter.file}</span>
         {chapter.url && (
-          <span>🔗 <a href={chapter.url} target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">{new URL(chapter.url).hostname}</a></span>
+          <span>🔗 <a href={chapter.url} target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">{safeHostname(chapter.url)}</a></span>
         )}
         {chapter.downloadedAt && <span>📅 {chapter.downloadedAt}</span>}
       </div>
@@ -106,12 +115,15 @@ function ChapterCard({ chapter, onGenerateSummary, onUpdateBullets, onPlayInLibr
 export default function NotesChapterView({ folderName, activeChapter }) {
   const [chapters, setChapters] = useState([])
   const [loading, setLoading] = useState(false)
+  const [loadError, setLoadError] = useState(null)
   const chapterRefs = useRef({})
 
   useEffect(() => {
+    setLoadError(null)
     setLoading(true)
     window.api.readNotes(folderName)
       .then(data => setChapters(data.chapters))
+      .catch(e => setLoadError(e.message || 'Failed to load notes'))
       .finally(() => setLoading(false))
   }, [folderName])
 
@@ -148,6 +160,7 @@ export default function NotesChapterView({ folderName, activeChapter }) {
   }
 
   if (loading) return <div className="p-4 text-sm text-gray-400">Loading…</div>
+  if (loadError) return <div className="p-4 text-sm text-red-400">{loadError}</div>
   if (chapters.length === 0) return <div className="p-4 text-sm text-gray-500">No notes yet. Download a video to get started.</div>
 
   return (
