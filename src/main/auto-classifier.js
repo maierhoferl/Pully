@@ -27,10 +27,40 @@ function classifyByKeyword(videoEntry, folderNames) {
   return null
 }
 
-// --- Tier 2: Embedding similarity (stub — filled in Task 3) ---
+// --- Tier 2: Embedding similarity ---
+
+function cosineSimilarity(a, b) {
+  let dot = 0, magA = 0, magB = 0
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i]
+    magA += a[i] * a[i]
+    magB += b[i] * b[i]
+  }
+  const denom = Math.sqrt(magA) * Math.sqrt(magB)
+  return denom === 0 ? 0 : dot / denom
+}
+
+async function getEmbeddingPipeline() {
+  if (!embeddingPipeline) {
+    embeddingPipeline = await hfPipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', { device: 'cpu' })
+  }
+  return embeddingPipeline
+}
 
 async function classifyByEmbedding(videoEntry, folderNames) {
-  return null
+  const pipe = await getEmbeddingPipeline()
+  const videoText = `${videoEntry.title || ''} by ${videoEntry.uploader || ''}. ${(videoEntry.description || '').slice(0, 200)}`
+
+  let bestFolder = null
+  let bestSim = -1
+  for (const folder of folderNames) {
+    const combinedOut = await pipe(`${folder} ${videoText}`, { pooling: 'mean', normalize: true })
+    const folderOut = await pipe(folder, { pooling: 'mean', normalize: true })
+    const sim = cosineSimilarity(Array.from(combinedOut.data), Array.from(folderOut.data))
+    if (sim > bestSim) { bestSim = sim; bestFolder = folder }
+  }
+
+  return bestSim >= 0.45 ? bestFolder : null
 }
 
 // --- Tier 3: LLM (stub — filled in Task 4) ---
@@ -61,6 +91,9 @@ export async function classifyVideo(videoEntry, folderNames, config = {}) {
 
   return { folder: null, tier: 'none' }
 }
+
+// Allows tests to reset the cached pipeline between test suites
+export function _resetEmbeddingCache() { embeddingPipeline = null }
 
 export async function fetchProviderModels(provider, apiKey) {
   return []
