@@ -1,4 +1,5 @@
-import { app, BrowserWindow, session, protocol, net } from 'electron'
+import { app, BrowserWindow, session, protocol } from 'electron'
+import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { DownloadManager } from './download-manager.js'
@@ -57,7 +58,17 @@ function createWindow() {
 app.whenReady().then(() => {
   // Serve local thumbnail files via pully:// — replaces file:// which is blocked
   // from http://localhost origins in dev mode.
-  protocol.handle('pully', req => net.fetch(req.url.replace('pully:', 'file:')))
+  protocol.handle('pully', req => {
+    const filePath = fileURLToPath(req.url.replace(/^pully:/, 'file:'))
+    try {
+      const data = fs.readFileSync(filePath)
+      const ext = path.extname(filePath).toLowerCase().slice(1)
+      const mime = { jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', png: 'image/png' }
+      return new Response(data, { headers: { 'Content-Type': mime[ext] || 'application/octet-stream' } })
+    } catch {
+      return new Response(null, { status: 404 })
+    }
+  })
 
   // Relax CSP so webview can load external sites
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {

@@ -44,6 +44,7 @@ export default function LibraryDetailPanel({ file, onClose, onDelete }) {
       <div className="relative mx-4 mb-3 aspect-video bg-gray-700 rounded overflow-hidden flex-shrink-0">
         {file.thumbnailUrl && (
           <img
+            key={file.thumbnailUrl}
             src={file.thumbnailUrl}
             alt=""
             className="absolute inset-0 w-full h-full object-cover"

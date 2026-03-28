@@ -354,7 +354,7 @@ export default function LibraryTab() {
                         >
                           <div className="w-16 aspect-video bg-gray-700 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
                             {file.thumbnailUrl
-                              ? <img src={file.thumbnailUrl} alt="" className="w-full h-full object-cover"
+                              ? <img key={file.thumbnailUrl} src={file.thumbnailUrl} alt="" className="w-full h-full object-cover"
                                   onError={e => { e.target.style.display = 'none' }} />
                               : <span className="text-gray-500 text-lg">▶</span>
                             }
