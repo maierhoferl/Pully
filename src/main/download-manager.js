@@ -5,6 +5,8 @@ import { startDownload } from './ytdlp-runner.js'
 import { readConfig } from './config-store.js'
 import { writeMetadataEntry, downloadAndStoreThumbnail, moveMetadataEntry } from './metadata-store.js'
 import { classifyVideo } from './auto-classifier.js'
+import { initChapter, moveChapter, writeSummarySection } from './notes-store.js'
+import { generateSummary } from './ai-summarizer.js'
 
 export class DownloadManager extends EventEmitter {
   constructor() {
@@ -79,6 +81,15 @@ export class DownloadManager extends EventEmitter {
           }
         }
         const cfg = readConfig()
+
+        // Notes: init chapter stub
+        if (actualPath && item.metadata) {
+          try {
+            initChapter(actualPath, { ...item.metadata, downloadedAt: new Date().toISOString() }, cfg.outputFolder)
+          } catch { /* don't block on notes errors */ }
+        }
+
+        // Classify + summarize pipeline
         if (cfg.autoClassifyEnabled && actualPath && item.metadata) {
           try {
             const folderNames = fs.readdirSync(cfg.outputFolder)
@@ -89,6 +100,7 @@ export class DownloadManager extends EventEmitter {
                 folderNames,
                 cfg
               ).then(({ folder }) => {
+                let finalPath = actualPath
                 if (folder) {
                   const base = path.basename(actualPath)
                   const ext = path.extname(base)
@@ -99,12 +111,25 @@ export class DownloadManager extends EventEmitter {
                     newPath = path.join(cfg.outputFolder, folder, `${stem} (${counter})${ext}`)
                     counter++
                   }
-                  fs.renameSync(actualPath, newPath)
-                  moveMetadataEntry(actualPath, newPath)
+                  try {
+                    fs.renameSync(actualPath, newPath)
+                    moveMetadataEntry(actualPath, newPath)
+                    moveChapter(actualPath, newPath, cfg.outputFolder)
+                    finalPath = newPath
+                  } catch { /* skip if move fails */ }
+                }
+                if (cfg.autoSummarizeEnabled && item.metadata) {
+                  generateSummary(finalPath, { ...item.metadata, url: item.metadata.url }, cfg)
+                    .then(summary => writeSummarySection(finalPath, summary, cfg.outputFolder))
+                    .catch(() => {})
                 }
               }).catch(() => {})
             }
           } catch { /* don't block completion on classify errors */ }
+        } else if (cfg.autoSummarizeEnabled && actualPath && item.metadata) {
+          generateSummary(actualPath, { ...item.metadata, url: item.metadata.url }, cfg)
+            .then(summary => writeSummarySection(actualPath, summary, cfg.outputFolder))
+            .catch(() => {})
         }
         this.emit('completed', { id: item.id })
         this.emit('queue-updated', this.getAll())
