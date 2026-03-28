@@ -29,4 +29,10 @@ export const useAppStore = create((set) => ({
 
   libraryFiles: [],
   setLibraryFiles: files => set({ libraryFiles: files }),
+
+  librarySort: { field: 'date', direction: 'desc' },
+  setLibrarySort: (field, direction) => set({ librarySort: { field, direction } }),
+
+  librarySearch: '',
+  setLibrarySearch: query => set({ librarySearch: query }),
 }))
