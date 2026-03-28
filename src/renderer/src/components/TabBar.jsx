@@ -4,6 +4,7 @@ import { useAppStore } from '../store/app-store.js'
 const TABS = [
   { id: 'browser', label: 'Browser' },
   { id: 'library', label: 'Library' },
+  { id: 'notes', label: 'Notes' },
 ]
 
 function ShieldIcon({ enabled }) {

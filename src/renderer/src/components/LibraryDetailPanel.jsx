@@ -1,4 +1,5 @@
 import React from 'react'
+import { useAppStore } from '../store/app-store.js'
 
 function fmtDateTime(iso) {
   const d = new Date(iso)
@@ -10,6 +11,16 @@ function fmtDateTime(iso) {
 }
 
 export default function LibraryDetailPanel({ file, onClose, onDelete }) {
+  const setActiveTab = useAppStore(s => s.setActiveTab)
+  const setActiveNotesFolder = useAppStore(s => s.setActiveNotesFolder)
+  const setActiveNotesChapter = useAppStore(s => s.setActiveNotesChapter)
+
+  const handleViewNotes = () => {
+    setActiveNotesFolder(file.folder ?? null)
+    setActiveNotesChapter(file.name)
+    setActiveTab('notes')
+  }
+
   const title = file.title || file.name.replace(/\.[^/.]+$/, '')
   const uploader = file.uploader || '—'
   const description = file.description || '—'
@@ -24,6 +35,13 @@ export default function LibraryDetailPanel({ file, onClose, onDelete }) {
           <p className="text-xs text-gray-400 mt-0.5 truncate">{subtitle}</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            onClick={handleViewNotes}
+            className="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 rounded hover:bg-blue-950 transition-colors"
+            title="View in Notes tab"
+          >
+            📝 Notes
+          </button>
           <button
             onClick={() => onDelete(file)}
             className="text-red-500 hover:text-red-400 text-xs px-2 py-1 rounded hover:bg-red-950 transition-colors"
