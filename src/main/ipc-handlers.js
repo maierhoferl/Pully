@@ -1,6 +1,7 @@
 import { ipcMain, dialog, shell } from 'electron'
 import { readConfig, writeConfig } from './config-store.js'
 import { extractInfo } from './ytdlp-runner.js'
+import { readMetadataIndex } from './metadata-store.js'
 import fs from 'fs'
 import path from 'path'
 
@@ -15,24 +16,35 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
 
   ipcMain.handle('ytdlp:extractInfo', (_, url) => extractInfo(url))
 
-  ipcMain.handle('download:add', (_, { url, formatId, title }) => downloadManager.add(url, formatId, title))
+  ipcMain.handle('download:add', (_, { url, formatId, title, metadata }) => downloadManager.add(url, formatId, title, metadata))
   ipcMain.handle('download:retry', (_, id) => downloadManager.retry(id))
   ipcMain.handle('download:getAll', () => downloadManager.getAll())
 
   ipcMain.handle('library:list', () => {
     const { outputFolder } = readConfig()
     if (!outputFolder || !fs.existsSync(outputFolder)) return []
+    const index = readMetadataIndex()
     return fs.readdirSync(outputFolder)
       .filter(f => !f.startsWith('.'))
       .map(f => {
         const full = path.join(outputFolder, f)
         const stat = fs.statSync(full)
-        return { name: f, path: full, size: stat.size, mtime: stat.mtime.toISOString() }
+        const meta = index[full] || {}
+        return {
+          name: f, path: full, size: stat.size, mtime: stat.mtime.toISOString(),
+          title: meta.title || null,
+          uploader: meta.uploader || null,
+          description: meta.description || null,
+          thumbnailUrl: meta.thumbnailUrl || null,
+          downloadedAt: meta.downloadedAt || null,
+        }
       })
       .sort((a, b) => new Date(b.mtime) - new Date(a.mtime))
   })
 
   ipcMain.handle('library:reveal', (_, filePath) => shell.showItemInFolder(filePath))
+
+  ipcMain.handle('library:play', (_, filePath) => shell.openPath(filePath))
 
   // Forward download manager events to renderer
   downloadManager.on('queue-updated', q => mainWindow.webContents.send('download:queue-updated', q))

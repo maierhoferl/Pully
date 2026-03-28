@@ -4,9 +4,11 @@ vi.mock('../../src/main/ytdlp-runner.js', () => ({ startDownload: vi.fn() }))
 vi.mock('../../src/main/config-store.js', () => ({
   readConfig: vi.fn(() => ({ outputFolder: '/tmp/vids', maxConcurrent: 2 }))
 }))
+vi.mock('../../src/main/metadata-store.js', () => ({ writeMetadataEntry: vi.fn() }))
 
 import { startDownload } from '../../src/main/ytdlp-runner.js'
 import { DownloadManager } from '../../src/main/download-manager.js'
+import { writeMetadataEntry } from '../../src/main/metadata-store.js'
 
 beforeEach(() => vi.clearAllMocks())
 
@@ -87,5 +89,22 @@ describe('DownloadManager', () => {
     dm.retry(id)
     expect(startDownload).toHaveBeenCalledTimes(1)
     expect(dm.getAll()[0].status).toBe('downloading')
+  })
+
+  it('writes metadata entry on completion when path and metadata are provided', () => {
+    const actualPath = '/out/My Video.mp4'
+    let onDone
+    startDownload.mockImplementation((url, fmt, dir, onProg, done) => {
+      onDone = done
+      return { kill: vi.fn() }
+    })
+    const dm = new DownloadManager()
+    const metadata = { title: 'My Video', uploader: 'Author', description: 'Desc', thumbnailUrl: 'http://t' }
+    dm.add('https://a.com', 'mp4', 'My Video', metadata)
+    onDone(actualPath)
+    expect(writeMetadataEntry).toHaveBeenCalledWith(
+      actualPath,
+      expect.objectContaining({ title: 'My Video', uploader: 'Author', downloadedAt: expect.any(String) })
+    )
   })
 })

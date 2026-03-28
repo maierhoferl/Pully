@@ -5,11 +5,12 @@ contextBridge.exposeInMainWorld('api', {
   writeConfig: data => ipcRenderer.invoke('config:write', data),
   openFolder: () => ipcRenderer.invoke('dialog:openFolder'),
   extractInfo: url => ipcRenderer.invoke('ytdlp:extractInfo', url),
-  addDownload: (url, formatId, title) => ipcRenderer.invoke('download:add', { url, formatId, title }),
+  addDownload: (url, formatId, title, metadata) => ipcRenderer.invoke('download:add', { url, formatId, title, metadata }),
   retryDownload: id => ipcRenderer.invoke('download:retry', id),
   getAllDownloads: () => ipcRenderer.invoke('download:getAll'),
   listLibrary: () => ipcRenderer.invoke('library:list'),
   revealInFinder: filePath => ipcRenderer.invoke('library:reveal', filePath),
+  playFile: filePath => ipcRenderer.invoke('library:play', filePath),
 
   onQueueUpdated: cb => {
     const handler = (_, q) => cb(q)

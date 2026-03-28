@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events'
 import { startDownload } from './ytdlp-runner.js'
 import { readConfig } from './config-store.js'
+import { writeMetadataEntry } from './metadata-store.js'
 
 export class DownloadManager extends EventEmitter {
   constructor() {
@@ -9,9 +10,9 @@ export class DownloadManager extends EventEmitter {
     this.active = new Map()
   }
 
-  add(url, formatId, title) {
+  add(url, formatId, title, metadata = null) {
     const id = crypto.randomUUID()
-    this.queue.push({ id, url, formatId, title, status: 'queued', percent: 0, speed: '', eta: '', error: undefined })
+    this.queue.push({ id, url, formatId, title, metadata, status: 'queued', percent: 0, speed: '', eta: '', error: undefined })
     this.emit('queue-updated', this.getAll())
     this._tick()
     return id
@@ -48,9 +49,15 @@ export class DownloadManager extends EventEmitter {
         Object.assign(item, progress)
         this.emit('progress', { id: item.id, ...progress })
       },
-      () => {
+      (actualPath) => {
         item.status = 'done'
         this.active.delete(item.id)
+        if (actualPath && item.metadata) {
+          writeMetadataEntry(actualPath, {
+            ...item.metadata,
+            downloadedAt: new Date().toISOString()
+          })
+        }
         this.emit('completed', { id: item.id })
         this.emit('queue-updated', this.getAll())
         this._tick()
