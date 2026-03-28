@@ -64,10 +64,53 @@ async function classifyByEmbedding(videoEntry, folderNames) {
   return bestSim >= 0.45 ? bestFolder : null
 }
 
-// --- Tier 3: LLM (stub — filled in Task 4) ---
+// --- Tier 3: LLM classification ---
+
+const DEFAULT_MODELS = {
+  claude: 'claude-haiku-4-6',
+  gemini: 'gemini-3.1-flash-lite',
+  openai: 'gpt-5-nano',
+}
+
+function buildLLMPrompt(videoEntry, folderNames) {
+  const desc = videoEntry.description ? '. Description: ' + videoEntry.description.slice(0, 100) : ''
+  return `Folders: ${folderNames.join(', ')}\nVideo: "${videoEntry.title || ''}" by "${videoEntry.uploader || ''}"${desc}\nReply with exactly one folder name from the list, or "none".`
+}
 
 async function classifyByLLM(videoEntry, folderNames, config) {
-  return null
+  const { autoClassifyProvider, autoClassifyApiKey, autoClassifyModel } = config
+  const model = autoClassifyModel || DEFAULT_MODELS[autoClassifyProvider]
+  const prompt = buildLLMPrompt(videoEntry, folderNames)
+
+  let raw = null
+  if (autoClassifyProvider === 'claude') {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': autoClassifyApiKey, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model, max_tokens: 50, messages: [{ role: 'user', content: prompt }] })
+    })
+    const data = await resp.json()
+    raw = data.content?.[0]?.text?.trim() || null
+  } else if (autoClassifyProvider === 'gemini') {
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${autoClassifyApiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    })
+    const data = await resp.json()
+    raw = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null
+  } else if (autoClassifyProvider === 'openai') {
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${autoClassifyApiKey}` },
+      body: JSON.stringify({ model, max_tokens: 50, messages: [{ role: 'user', content: prompt }] })
+    })
+    const data = await resp.json()
+    raw = data.choices?.[0]?.message?.content?.trim() || null
+  }
+
+  if (!raw || raw.toLowerCase() === 'none') return null
+  return folderNames.find(f => f.toLowerCase() === raw.toLowerCase()) || null
 }
 
 // --- Public API ---
@@ -97,5 +140,26 @@ export async function classifyVideo(videoEntry, folderNames, config = {}) {
 export function _resetEmbeddingCache() { embeddingPipeline = null }
 
 export async function fetchProviderModels(provider, apiKey) {
+  try {
+    if (provider === 'claude') {
+      const resp = await fetch('https://api.anthropic.com/v1/models', {
+        headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' }
+      })
+      const data = await resp.json()
+      return (data.data || []).map(m => m.id)
+    }
+    if (provider === 'gemini') {
+      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`)
+      const data = await resp.json()
+      return (data.models || []).map(m => m.name.replace('models/', ''))
+    }
+    if (provider === 'openai') {
+      const resp = await fetch('https://api.openai.com/v1/models', {
+        headers: { 'Authorization': `Bearer ${apiKey}` }
+      })
+      const data = await resp.json()
+      return (data.data || []).map(m => m.id).sort()
+    }
+  } catch { /* network error */ }
   return []
 }
