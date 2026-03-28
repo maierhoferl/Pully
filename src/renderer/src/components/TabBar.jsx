@@ -25,6 +25,9 @@ function ShieldIcon({ enabled }) {
 export function TabBar() {
   const { activeTab, setActiveTab, setSettingsOpen, config, setConfig } = useAppStore()
   const adblockEnabled = config.adblockEnabled ?? true
+  const visibleTabs = config.debugMode
+    ? [...TABS, { id: 'debug', label: 'Debug' }]
+    : TABS
 
   const handleToggleAdblock = async () => {
     const next = !adblockEnabled
@@ -39,7 +42,7 @@ export function TabBar() {
         <span className="text-sm font-bold text-white tracking-tight">Pully</span>
       </div>
       <div className="flex gap-1 ml-4" style={{ WebkitAppRegion: 'no-drag' }}>
-        {TABS.map(tab => (
+        {visibleTabs.map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-1 rounded text-sm font-medium transition-colors ${
               activeTab === tab.id ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-700'
