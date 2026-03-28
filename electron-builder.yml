@@ -15,6 +15,7 @@ mac:
       arch:
         - universal
   category: public.app-category.utilities
+  x64ArchFiles: "Contents/Resources/ffmpeg"
   extraResources:
     - from: resources/yt-dlp
       to: yt-dlp
