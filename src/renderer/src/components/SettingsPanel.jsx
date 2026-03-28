@@ -245,6 +245,27 @@ export function SettingsPanel() {
           </div>
         </div>
 
+        {/* Debug Mode */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between">
+            <label htmlFor="debugMode" className="text-sm font-medium">
+              Debug Mode
+            </label>
+            <input
+              id="debugMode"
+              type="checkbox"
+              checked={local.debugMode || false}
+              onChange={(e) =>
+                setLocal({ ...local, debugMode: e.target.checked })
+              }
+              className="rounded"
+            />
+          </div>
+          <p className="text-xs text-gray-400 mt-1">
+            Show Debug tab and write logs to disk
+          </p>
+        </div>
+
         <div className="flex justify-end gap-2">
           <button onClick={() => setSettingsOpen(false)}
             className="text-sm text-gray-400 hover:text-white px-4 py-2 rounded hover:bg-gray-700">
