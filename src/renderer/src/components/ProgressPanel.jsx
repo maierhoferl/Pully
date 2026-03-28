@@ -1,12 +1,24 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAppStore } from '../store/app-store.js'
 import { DownloadRow } from './DownloadRow.jsx'
 
 export default function ProgressPanel() {
   const downloads = useAppStore(s => s.downloads)
+  const [, setRefresh] = useState(0)
+
   const active = downloads.filter(d => d.status === 'downloading' || d.status === 'queued' || d.status === 'cancelling')
   const done = downloads.filter(d => d.status === 'done' || d.status === 'failed')
   const ordered = [...active, ...done]
+
+  useEffect(() => {
+    if (active.length === 0) return
+
+    const intervalId = setInterval(() => {
+      setRefresh(prev => prev + 1)
+    }, 500)
+
+    return () => clearInterval(intervalId)
+  }, [active.length])
 
   return (
     <div className="h-full overflow-y-auto">
