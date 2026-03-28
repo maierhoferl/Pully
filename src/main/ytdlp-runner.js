@@ -7,15 +7,31 @@ const PROGRESS_RE = /\[download\]\s+([\d.]+)%\s+of\s+[\S]+\s+at\s+([\d.]+\S+\/s)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export function getDefaultBinaryPath() {
-  const base = process.resourcesPath || path.join(__dirname, '../../resources')
   const name = process.platform === 'win32' ? 'yt-dlp.exe' : 'yt-dlp'
-  return path.join(base, name)
+
+  // In dev mode, process.resourcesPath points to Electron's bundled resources, not our binaries
+  // Check process.resourcesPath first (production), fall back to project resources (dev)
+  if (process.resourcesPath) {
+    const bundledPath = path.join(process.resourcesPath, name)
+    if (fs.existsSync(bundledPath)) return bundledPath
+  }
+
+  // Fallback for dev mode and testing
+  return path.join(__dirname, '../../resources', name)
 }
 
 export function getDefaultFfmpegPath() {
-  const base = process.resourcesPath || path.join(__dirname, '../../resources')
   const name = process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg'
-  return path.join(base, name)
+
+  // In dev mode, process.resourcesPath points to Electron's bundled resources, not our binaries
+  // Check process.resourcesPath first (production), fall back to project resources (dev)
+  if (process.resourcesPath) {
+    const bundledPath = path.join(process.resourcesPath, name)
+    if (fs.existsSync(bundledPath)) return bundledPath
+  }
+
+  // Fallback for dev mode and testing
+  return path.join(__dirname, '../../resources', name)
 }
 
 export function ensureBinary(src, dest) {
