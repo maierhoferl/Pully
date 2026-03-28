@@ -2,6 +2,7 @@ import { spawn } from 'child_process'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
+import logger from './logger.js'
 
 const PROGRESS_RE = /\[download\]\s+([\d.]+)%\s+of\s+[\S]+\s+at\s+([\d.]+\S+\/s)\s+ETA\s+([\d:]+)/
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -35,10 +36,14 @@ export function getDefaultFfmpegPath() {
 }
 
 export function ensureBinary(src, dest) {
-  if (fs.existsSync(dest)) return
+  if (fs.existsSync(dest)) {
+    logger.info('app', 'yt-dlp binary confirmed', { binaryPath: dest })
+    return
+  }
   fs.mkdirSync(path.dirname(dest), { recursive: true })
   fs.copyFileSync(src, dest)
   if (process.platform !== 'win32') fs.chmodSync(dest, 0o755)
+  logger.info('app', 'yt-dlp binary confirmed', { binaryPath: dest })
 }
 
 export function extractInfo(url, binaryPath = getDefaultBinaryPath()) {
@@ -47,9 +52,11 @@ export function extractInfo(url, binaryPath = getDefaultBinaryPath()) {
       '--dump-json', '--flat-playlist', '--no-warnings',
       '--playlist-items', '1-20', url
     ])
+    logger.info('app', 'yt-dlp process spawned', { url, pid: proc.pid })
     let out = ''
     proc.stdout.on('data', d => { out += d.toString() })
     proc.on('close', code => {
+      logger.info('app', 'yt-dlp process exited', { url, exitCode: code })
       if (code !== 0) return resolve([])
       const entries = []
       for (const line of out.trim().split('\n')) {
@@ -57,6 +64,9 @@ export function extractInfo(url, binaryPath = getDefaultBinaryPath()) {
         try { entries.push(JSON.parse(line)) } catch { /* skip */ }
       }
       resolve(entries)
+    })
+    proc.on('error', err => {
+      logger.error('app', 'yt-dlp process error', { error: err.message })
     })
     // Timeout after 30s
     setTimeout(() => { proc.kill(); resolve([]) }, 30000)
@@ -72,6 +82,7 @@ export function startDownload(url, formatId, outputDir, onProgress, onDone, onEr
     '--ffmpeg-location', ffmpegPath,
     '--newline', '--no-warnings', url
   ])
+  logger.info('app', 'yt-dlp process spawned', { url, pid: proc.pid })
   let buf = ''
   let actualPath = null
   proc.stdout.on('data', data => {
@@ -87,6 +98,12 @@ export function startDownload(url, formatId, outputDir, onProgress, onDone, onEr
       }
     }
   })
-  proc.on('close', code => code === 0 ? onDone(actualPath) : onError(new Error(`yt-dlp exited ${code}`)))
+  proc.on('close', code => {
+    logger.info('app', 'yt-dlp process exited', { url, exitCode: code })
+    code === 0 ? onDone(actualPath) : onError(new Error(`yt-dlp exited ${code}`))
+  })
+  proc.on('error', err => {
+    logger.error('app', 'yt-dlp process error', { error: err.message })
+  })
   return proc
 }
