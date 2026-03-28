@@ -71,8 +71,16 @@ export default function BrowserTab() {
       if (url.includes('youtube.com')) {
         wv.executeJavaScript(
           `localStorage.setItem('yt-player-autoplay-preference', JSON.stringify({data:"false",creation:Date.now()}))`
-        )
+        ).catch(() => {})
       }
+      // Suppress native context menu on video elements — Pully's custom menu will show instead
+      wv.executeJavaScript(`
+        document.addEventListener('contextmenu', (e) => {
+          if (e.target.tagName === 'VIDEO' || e.target.closest('video')) {
+            e.preventDefault()
+          }
+        }, true)
+      `).catch(() => {})
     }
 
     const onContextMenu = (e) => {

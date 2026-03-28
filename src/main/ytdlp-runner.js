@@ -1,17 +1,19 @@
 import { spawn } from 'child_process'
 import path from 'path'
 import fs from 'fs'
+import { fileURLToPath } from 'url'
 
 const PROGRESS_RE = /\[download\]\s+([\d.]+)%\s+of\s+[\S]+\s+at\s+([\d.]+\S+\/s)\s+ETA\s+([\d:]+)/
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export function getDefaultBinaryPath() {
-  const base = process.resourcesPath || path.join(process.cwd(), 'resources')
+  const base = process.resourcesPath || path.join(__dirname, '../../resources')
   const name = process.platform === 'win32' ? 'yt-dlp.exe' : 'yt-dlp'
   return path.join(base, name)
 }
 
 export function getDefaultFfmpegPath() {
-  const base = process.resourcesPath || path.join(process.cwd(), 'resources')
+  const base = process.resourcesPath || path.join(__dirname, '../../resources')
   const name = process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg'
   return path.join(base, name)
 }
