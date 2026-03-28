@@ -20,7 +20,13 @@ describe('readConfig', () => {
   it('merges saved values with defaults', () => {
     const p = path.join(tmp, 'cfg.json')
     fs.writeFileSync(p, JSON.stringify({ outputFolder: '/tmp/vids' }))
-    expect(readConfig(p)).toEqual({ outputFolder: '/tmp/vids', maxConcurrent: 3 })
+    const cfg = readConfig(p)
+    expect(cfg.outputFolder).toBe('/tmp/vids')
+    expect(cfg.maxConcurrent).toBe(3)
+    expect(cfg.autoClassifyEnabled).toBe(false)
+    expect(cfg.autoClassifyProvider).toBe('local')
+    expect(cfg.autoClassifyApiKey).toBe('')
+    expect(cfg.autoClassifyModel).toBe('')
   })
 })
 
@@ -28,7 +34,13 @@ describe('writeConfig', () => {
   it('persists and re-reads values', () => {
     const p = path.join(tmp, 'cfg.json')
     writeConfig({ outputFolder: '/dl', maxConcurrent: 2 }, p)
-    expect(readConfig(p)).toEqual({ outputFolder: '/dl', maxConcurrent: 2 })
+    const cfg = readConfig(p)
+    expect(cfg.outputFolder).toBe('/dl')
+    expect(cfg.maxConcurrent).toBe(2)
+    expect(cfg.autoClassifyEnabled).toBe(false)
+    expect(cfg.autoClassifyProvider).toBe('local')
+    expect(cfg.autoClassifyApiKey).toBe('')
+    expect(cfg.autoClassifyModel).toBe('')
   })
   it('merges partial updates without losing existing values', () => {
     const p = path.join(tmp, 'cfg.json')
