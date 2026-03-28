@@ -29,9 +29,15 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
     const index = readMetadataIndex()
 
     // Prefer local thumbnail (pully:// URL) over remote URL; fall back to remote.
-    function thumbnailSrc(meta) {
+    function thumbnailSrc(meta, videoPath) {
       const local = meta.thumbnailLocalPath
       if (local && fs.existsSync(local)) return toPullyUrl(local)
+      // thumbnailLocalPath may not be in metadata yet (async download in flight);
+      // check the expected sidecar paths directly on disk.
+      for (const ext of ['jpg', 'webp', 'png']) {
+        const implied = videoPath.replace(/\.[^.]+$/, `.thumb.${ext}`)
+        if (fs.existsSync(implied)) return toPullyUrl(implied)
+      }
       return meta.thumbnailUrl || null
     }
 
@@ -42,16 +48,18 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
         title: meta.title || null,
         uploader: meta.uploader || null,
         description: meta.description || null,
-        thumbnailUrl: thumbnailSrc(meta),
+        thumbnailUrl: thumbnailSrc(meta, fullPath),
         url: meta.url || null,
         downloadedAt: meta.downloadedAt || null,
       }
     }
 
+    const isThumbnailSidecar = name => /\.thumb(\.[a-z]+)?$/i.test(name)
+
     const entries = []
     const rootItems = fs.readdirSync(outputFolder)
     for (const f of rootItems) {
-      if (f.startsWith('.')) continue
+      if (f.startsWith('.') || isThumbnailSidecar(f)) continue
       const full = path.join(outputFolder, f)
       const stat = fs.statSync(full)
       if (stat.isDirectory()) continue
@@ -62,7 +70,7 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
       const dirPath = path.join(outputFolder, dir)
       if (!fs.statSync(dirPath).isDirectory()) continue
       for (const f of fs.readdirSync(dirPath)) {
-        if (f.startsWith('.')) continue
+        if (f.startsWith('.') || isThumbnailSidecar(f)) continue
         const full = path.join(dirPath, f)
         const stat = fs.statSync(full)
         if (stat.isDirectory()) continue
