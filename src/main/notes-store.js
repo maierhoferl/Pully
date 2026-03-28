@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import logger from './logger.js'
 
 /** Returns absolute path to the notes.md for the folder containing filePath. */
 export function getNotesPath(filePath, outputFolder) {
@@ -55,6 +56,10 @@ export function initChapter(filePath, metadata, outputFolder) {
   content = content.trimEnd() + '\n\n---\n\n' + stub + '\n---\n'
   fs.mkdirSync(path.dirname(notesPath), { recursive: true })
   fs.writeFileSync(notesPath, content, 'utf8')
+  logger.info('notes', `Chapter initialized: ${fileBasename}`, {
+    filename: fileBasename,
+    videoTitle: metadata.title
+  })
 }
 
 /** Parse notes.md into structured chapters. folderName null = root. */
@@ -140,13 +145,22 @@ function updateSection(notesPath, fileBasename, sectionHeading, newBody) {
 
 export function writeSummarySection(filePath, summary, outputFolder) {
   const notesPath = getNotesPath(filePath, outputFolder)
-  updateSection(notesPath, path.basename(filePath), '### AI Summary', summary)
+  const fileBasename = path.basename(filePath)
+  updateSection(notesPath, fileBasename, '### AI Summary', summary)
+  logger.info('notes', `Summary written: ${fileBasename}`, {
+    filename: fileBasename
+  })
 }
 
 export function writeBulletsSection(filePath, bullets, outputFolder) {
   const notesPath = getNotesPath(filePath, outputFolder)
+  const fileBasename = path.basename(filePath)
   const body = bullets.map(b => `- ${b}`).join('\n')
-  updateSection(notesPath, path.basename(filePath), '### My Notes', body)
+  updateSection(notesPath, fileBasename, '### My Notes', body)
+  logger.info('notes', `Bullets updated: ${fileBasename}`, {
+    filename: fileBasename,
+    bulletCount: bullets.length
+  })
 }
 
 /** Extracts a chapter block from content. Returns { chapterContent, remaining }. */
@@ -206,4 +220,10 @@ export function moveChapter(oldFilePath, newFilePath, outputFolder) {
   newContent = newContent.trimEnd() + '\n\n---\n\n' + updatedChapter.trimEnd() + '\n---\n'
   fs.mkdirSync(path.dirname(newNotesPath), { recursive: true })
   fs.writeFileSync(newNotesPath, newContent, 'utf8')
+  logger.info('notes', `Chapter moved`, {
+    oldFile: oldBasename,
+    newFile: newBasename,
+    oldFolder: path.dirname(oldFilePath),
+    newFolder: path.dirname(newFilePath)
+  })
 }
