@@ -32,6 +32,11 @@ export default function LibraryTab() {
   const [creating, setCreating] = useState(false)
   const [newFolderInput, setNewFolderInput] = useState('')
   const inputRef = useRef(null)
+  const [contextMenu, setContextMenu] = useState(null) // { x, y, folder: string|null }
+  const [renamingFolder, setRenamingFolder] = useState(null) // folder name being renamed
+  const [renameInput, setRenameInput] = useState('')
+  const renameInputRef = useRef(null)
+  const [deletingFolder, setDeletingFolder] = useState(null) // { name, count }
 
   async function refresh() {
     const [files, folders] = await Promise.all([
@@ -51,6 +56,22 @@ export default function LibraryTab() {
   useEffect(() => {
     if (creating) inputRef.current?.focus()
   }, [creating])
+
+  useEffect(() => {
+    if (!contextMenu) return
+    function close() { setContextMenu(null) }
+    function onKey(e) { if (e.key === 'Escape') close() }
+    document.addEventListener('mousedown', close)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', close)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [contextMenu])
+
+  useEffect(() => {
+    if (renamingFolder) renameInputRef.current?.focus()
+  }, [renamingFolder])
 
   // Exclude files that are still being downloaded
   const activeUrls = useMemo(() => new Set(
@@ -170,6 +191,22 @@ export default function LibraryTab() {
     await refresh()
   }
 
+  async function handleRenameFolder() {
+    const name = renameInput.trim()
+    setRenamingFolder(null)
+    setRenameInput('')
+    if (!name || name === renamingFolder) return
+    await window.api.renameFolder(renamingFolder, name)
+    await refresh()
+  }
+
+  async function handleDeleteFolder(strategy) {
+    const name = deletingFolder.name
+    setDeletingFolder(null)
+    await window.api.deleteFolder(name, strategy)
+    await refresh()
+  }
+
   if (!config.outputFolder) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-2">
@@ -199,7 +236,14 @@ export default function LibraryTab() {
           onSearchChange={setLibrarySearch}
           resultCount={totalResults}
         />
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto"
+          onContextMenu={e => {
+            if (e.target === e.currentTarget) {
+              e.preventDefault()
+              setContextMenu({ x: e.clientX, y: e.clientY, folder: null })
+            }
+          }}
+        >
         {groupKeys.map(key => {
           const isRoot = key === '__root'
           const files = groups[key] || []
@@ -229,11 +273,30 @@ export default function LibraryTab() {
                     : `border-l-2 ${color.border} ${isDragOver ? color.dragBg : color.bg}`,
                 ].join(' ')}
                 onClick={() => toggleCollapse(key)}
+                onContextMenu={e => {
+                  e.preventDefault()
+                  setContextMenu({ x: e.clientX, y: e.clientY, folder: isRoot ? null : key })
+                }}
               >
                 {!isRoot && <div className={`w-2 h-2 rounded-full flex-shrink-0 ${color.dot}`} />}
-                <span className={`text-xs font-semibold uppercase tracking-wide ${isRoot ? 'text-gray-400' : color.text}`}>
-                  {isRoot ? 'Uncategorized' : key}
-                </span>
+                {!isRoot && renamingFolder === key ? (
+                  <input
+                    ref={renameInputRef}
+                    value={renameInput}
+                    onChange={e => setRenameInput(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') handleRenameFolder()
+                      if (e.key === 'Escape') { setRenamingFolder(null); setRenameInput('') }
+                    }}
+                    onBlur={handleRenameFolder}
+                    onClick={e => e.stopPropagation()}
+                    className={`flex-1 bg-transparent border-b border-indigo-500 text-xs font-semibold uppercase tracking-wide focus:outline-none ${color.text}`}
+                  />
+                ) : (
+                  <span className={`text-xs font-semibold uppercase tracking-wide ${isRoot ? 'text-gray-400' : color.text}`}>
+                    {isRoot ? 'Uncategorized' : key}
+                  </span>
+                )}
                 <span className="text-xs text-gray-500">({files.length})</span>
                 {isDragOver && <span className="text-xs text-gray-400 ml-1 italic">drop here</span>}
                 <span className="ml-auto text-gray-600 text-xs">{isCollapsed ? '▶' : '▼'}</span>
@@ -321,6 +384,87 @@ export default function LibraryTab() {
           </div>
         )}
       </div>  {/* end flex-col */}
+
+      {/* Context menu */}
+      {contextMenu && (
+        <div
+          style={{ position: 'fixed', top: contextMenu.y, left: contextMenu.x, zIndex: 1000 }}
+          className="bg-gray-800 border border-gray-700 rounded-lg shadow-xl py-1 min-w-[148px]"
+          onMouseDown={e => e.stopPropagation()}
+        >
+          <button
+            onClick={() => { setContextMenu(null); setCreating(true) }}
+            className="w-full text-left px-3 py-1.5 text-sm text-gray-200 hover:bg-gray-700 transition-colors"
+          >
+            New Folder
+          </button>
+          {contextMenu.folder && (
+            <>
+              <div className="border-t border-gray-700 my-1" />
+              <button
+                onClick={() => {
+                  setRenameInput(contextMenu.folder)
+                  setRenamingFolder(contextMenu.folder)
+                  setContextMenu(null)
+                }}
+                className="w-full text-left px-3 py-1.5 text-sm text-gray-200 hover:bg-gray-700 transition-colors"
+              >
+                Rename
+              </button>
+              <button
+                onClick={() => {
+                  setDeletingFolder({
+                    name: contextMenu.folder,
+                    count: groups[contextMenu.folder]?.length ?? 0,
+                  })
+                  setContextMenu(null)
+                }}
+                className="w-full text-left px-3 py-1.5 text-sm text-red-400 hover:bg-red-950/40 transition-colors"
+              >
+                Delete
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Delete folder dialog */}
+      {deletingFolder && (
+        <div
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+          onMouseDown={() => setDeletingFolder(null)}
+        >
+          <div
+            className="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl"
+            onMouseDown={e => e.stopPropagation()}
+          >
+            <h3 className="text-white font-semibold mb-2">Delete "{deletingFolder.name}"</h3>
+            <p className="text-gray-400 text-sm mb-5">
+              What should happen to the {deletingFolder.count} file{deletingFolder.count !== 1 ? 's' : ''} in this folder?
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => handleDeleteFolder('unassign')}
+                className="px-4 py-2 text-sm bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors text-left"
+              >
+                Move to Uncategorized
+              </button>
+              <button
+                onClick={() => handleDeleteFolder('delete')}
+                className="px-4 py-2 text-sm bg-red-950/60 hover:bg-red-900/60 text-red-300 border border-red-800 rounded-lg transition-colors text-left"
+              >
+                Delete files permanently
+              </button>
+              <button
+                onClick={() => setDeletingFolder(null)}
+                className="px-4 py-2 text-sm text-gray-500 hover:text-gray-400 transition-colors text-left"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {selected && (
         <LibraryDetailPanel
