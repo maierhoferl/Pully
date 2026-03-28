@@ -11,6 +11,7 @@ export default function BrowserTab() {
   const [canGoBack, setCanGoBack] = useState(false)
   const [canGoForward, setCanGoForward] = useState(false)
   const [sideWidth, setSideWidth] = useState(320)
+  const [contextMenu, setContextMenu] = useState(null)
   const { startMediaScan, setMediaScanResults } = useAppStore()
   const scanDebounceRef = useRef(null)
   const currentUrlRef = useRef(null)
@@ -72,10 +73,18 @@ export default function BrowserTab() {
       }
     }
 
+    const onContextMenu = (e) => {
+      const { mediaType, srcURL, x, y } = e.params
+      if (mediaType !== 'video' || !srcURL) return
+      const rect = wv.getBoundingClientRect()
+      setContextMenu({ x: rect.left + x, y: rect.top + y, srcURL })
+    }
+
     wv.addEventListener('did-navigate', onNavigate)
     wv.addEventListener('did-navigate-in-page', onInPageNavigate)
     wv.addEventListener('did-start-loading', onStartLoading)
     wv.addEventListener('did-finish-load', onFinishLoad)
+    wv.addEventListener('context-menu', onContextMenu)
 
     const intervalId = setInterval(() => {
       const url = wv.getURL()
@@ -89,10 +98,25 @@ export default function BrowserTab() {
       wv.removeEventListener('did-navigate-in-page', onInPageNavigate)
       wv.removeEventListener('did-start-loading', onStartLoading)
       wv.removeEventListener('did-finish-load', onFinishLoad)
+      wv.removeEventListener('context-menu', onContextMenu)
       clearTimeout(scanDebounceRef.current)
       clearInterval(intervalId)
     }
   }, [scanPage, startMediaScan, debouncedScan])
+
+  useEffect(() => {
+    if (!contextMenu) return
+    const dismiss = () => setContextMenu(null)
+    window.addEventListener('mousedown', dismiss)
+    return () => window.removeEventListener('mousedown', dismiss)
+  }, [contextMenu])
+
+  function handleContextDownload(srcURL) {
+    let title
+    try { title = new URL(srcURL).hostname } catch { title = 'video' }
+    window.api.addDownload(srcURL, 'best', title, { url: srcURL })
+    setContextMenu(null)
+  }
 
   function navigate(raw) {
     const wv = webviewRef.current
@@ -124,6 +148,27 @@ export default function BrowserTab() {
 
   return (
     <div className="flex flex-col h-full">
+      {contextMenu && (
+        <div
+          className="fixed z-50 bg-gray-800 border border-gray-600 rounded shadow-xl py-1 min-w-[160px] text-sm"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+          onMouseDown={e => e.stopPropagation()}
+        >
+          <button
+            className="w-full text-left px-3 py-1.5 font-bold text-white hover:bg-blue-600"
+            onClick={() => handleContextDownload(contextMenu.srcURL)}
+          >
+            Download Video
+          </button>
+          <hr className="border-gray-600 my-1" />
+          <button
+            className="w-full text-left px-3 py-1.5 text-gray-300 hover:bg-gray-700"
+            onClick={() => { navigator.clipboard.writeText(contextMenu.srcURL); setContextMenu(null) }}
+          >
+            Copy Video URL
+          </button>
+        </div>
+      )}
       <div className="flex items-center gap-1 px-2 py-1 bg-gray-900 border-b border-gray-700">
         <button onClick={() => webviewRef.current?.goBack()} disabled={!canGoBack}
           className="p-1 rounded text-gray-400 hover:text-white disabled:opacity-30 hover:bg-gray-700">←</button>
