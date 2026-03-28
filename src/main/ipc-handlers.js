@@ -19,6 +19,7 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
 
   ipcMain.handle('download:add', (_, { url, formatId, title, metadata }) => downloadManager.add(url, formatId, title, metadata))
   ipcMain.handle('download:retry', (_, id) => downloadManager.retry(id))
+  ipcMain.handle('download:cancel', (_, id) => downloadManager.cancel(id))
   ipcMain.handle('download:getAll', () => downloadManager.getAll())
 
   ipcMain.handle('library:list', () => {
@@ -122,7 +123,13 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
   ipcMain.handle('shell:openUrl', (_, url) => shell.openExternal(url))
 
   ipcMain.handle('library:delete', async (_, filePath) => {
+    // Also trash the local thumbnail if one exists
+    const index = readMetadataIndex()
+    const thumbPath = index[filePath]?.thumbnailLocalPath
     await shell.trashItem(filePath)
+    if (thumbPath && fs.existsSync(thumbPath)) {
+      await shell.trashItem(thumbPath)
+    }
     deleteMetadataEntry(filePath)
   })
 

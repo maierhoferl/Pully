@@ -15,6 +15,9 @@ export const useAppStore = create((set) => ({
   updateDownloadProgress: ({ id, percent, speed, eta }) => set(state => ({
     downloads: state.downloads.map(d => d.id === id ? { ...d, percent, speed, eta } : d)
   })),
+  removeDownloadByUrl: url => set(state => ({
+    downloads: state.downloads.filter(d => d.url !== url)
+  })),
 
   mediaScanResults: null,
   mediaScanLoading: false,

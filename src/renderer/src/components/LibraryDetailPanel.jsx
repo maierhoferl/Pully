@@ -1,5 +1,4 @@
 import React from 'react'
-import { useAppStore } from '../store/app-store.js'
 
 function fmtDateTime(iso) {
   const d = new Date(iso)
@@ -10,22 +9,12 @@ function fmtDateTime(iso) {
   )
 }
 
-export default function LibraryDetailPanel({ file, onClose, onDeleted }) {
-  const { config } = useAppStore()
+export default function LibraryDetailPanel({ file, onClose, onDelete }) {
   const title = file.title || file.name.replace(/\.[^/.]+$/, '')
   const uploader = file.uploader || '—'
   const description = file.description || '—'
   const dateStr = file.downloadedAt ? fmtDateTime(file.downloadedAt) : fmtDateTime(file.mtime)
   const subtitle = `${uploader} · ${dateStr}`
-
-  async function handleDelete() {
-    if (config.confirmDelete !== false) {
-      const ok = window.confirm(`Move "${title}" to Trash?`)
-      if (!ok) return
-    }
-    await window.api.deleteFile(file.path)
-    onDeleted(file.path)
-  }
 
   return (
     <div className="w-[640px] flex-shrink-0 bg-gray-900 border-l border-gray-700 flex flex-col h-full overflow-hidden">
@@ -36,7 +25,7 @@ export default function LibraryDetailPanel({ file, onClose, onDeleted }) {
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
-            onClick={handleDelete}
+            onClick={() => onDelete(file)}
             className="text-red-500 hover:text-red-400 text-xs px-2 py-1 rounded hover:bg-red-950 transition-colors"
             title="Move to Trash"
           >

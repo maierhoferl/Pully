@@ -28,6 +28,20 @@ export class DownloadManager extends EventEmitter {
     this._tick()
   }
 
+  cancel(id) {
+    const idx = this.queue.findIndex(d => d.id === id)
+    if (idx === -1) return
+    const item = this.queue[idx]
+    if (item.status !== 'queued' && item.status !== 'downloading') return
+    this.queue.splice(idx, 1)
+    if (item.status === 'downloading') {
+      const proc = this.active.get(id)
+      if (proc) proc.kill()
+      this.active.delete(id)
+    }
+    this.emit('queue-updated', this.getAll())
+  }
+
   getAll() {
     return this.queue.map(d => ({ ...d }))
   }

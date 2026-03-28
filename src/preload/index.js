@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('api', {
   extractInfo: url => ipcRenderer.invoke('ytdlp:extractInfo', url),
   addDownload: (url, formatId, title, metadata) => ipcRenderer.invoke('download:add', { url, formatId, title, metadata }),
   retryDownload: id => ipcRenderer.invoke('download:retry', id),
+  cancelDownload: id => ipcRenderer.invoke('download:cancel', id),
   getAllDownloads: () => ipcRenderer.invoke('download:getAll'),
   setAdblockEnabled: isEnabled => ipcRenderer.invoke('adblock:setEnabled', isEnabled),
   listLibrary: () => ipcRenderer.invoke('library:list'),

@@ -21,7 +21,7 @@ function folderColor(name) {
 }
 
 export default function LibraryTab() {
-  const { libraryFiles, setLibraryFiles, config } = useAppStore()
+  const { libraryFiles, setLibraryFiles, config, downloads, removeDownloadByUrl } = useAppStore()
   const [allFolders, setAllFolders] = useState([])
   const [selectedPath, setSelectedPath] = useState(null)
   const [collapsed, setCollapsed] = useState(new Set())
@@ -50,17 +50,30 @@ export default function LibraryTab() {
     if (creating) inputRef.current?.focus()
   }, [creating])
 
+  // Exclude files that are still being downloaded
+  const activeUrls = new Set(
+    downloads
+      .filter(d => d.status === 'queued' || d.status === 'downloading')
+      .map(d => d.url)
+      .filter(Boolean)
+  )
+  const visibleFiles = libraryFiles.filter(f => {
+    if (f.name.includes('.part')) return false
+    if (f.url && activeUrls.has(f.url)) return false
+    return true
+  })
+
   // Group files by folder; derive complete folder list
   const groups = {}
-  for (const file of libraryFiles) {
+  for (const file of visibleFiles) {
     const key = file.folder || '__root'
     if (!groups[key]) groups[key] = []
     groups[key].push(file)
   }
-  const namedFolders = [...new Set([...allFolders, ...libraryFiles.filter(f => f.folder).map(f => f.folder)])].sort()
+  const namedFolders = [...new Set([...allFolders, ...visibleFiles.filter(f => f.folder).map(f => f.folder)])].sort()
   const groupKeys = ['__root', ...namedFolders]
 
-  const selected = selectedPath ? libraryFiles.find(f => f.path === selectedPath) : null
+  const selected = selectedPath ? visibleFiles.find(f => f.path === selectedPath) : null
 
   function toggleCollapse(key) {
     setCollapsed(prev => {
@@ -70,9 +83,16 @@ export default function LibraryTab() {
     })
   }
 
-  function handleDeleted(filePath) {
-    setLibraryFiles(libraryFiles.filter(f => f.path !== filePath))
-    if (selectedPath === filePath) setSelectedPath(null)
+  async function handleDelete(file, { confirm: askConfirm = true } = {}) {
+    if (askConfirm && config.confirmDelete !== false) {
+      const title = file.title || file.name.replace(/\.[^/.]+$/, '')
+      const ok = window.confirm(`Move "${title}" to Trash?`)
+      if (!ok) return
+    }
+    await window.api.deleteFile(file.path)
+    setLibraryFiles(libraryFiles.filter(f => f.path !== file.path))
+    if (selectedPath === file.path) setSelectedPath(null)
+    if (file.url) removeDownloadByUrl(file.url)
   }
 
   async function handleDrop(targetFolderKey) {
@@ -103,7 +123,7 @@ export default function LibraryTab() {
     )
   }
 
-  const isEmpty = libraryFiles.length === 0 && namedFolders.length === 0
+  const isEmpty = visibleFiles.length === 0 && namedFolders.length === 0
   if (isEmpty) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
@@ -162,32 +182,45 @@ export default function LibraryTab() {
                     const title = file.title || file.name.replace(/\.[^/.]+$/, '')
                     const isSelected = file.path === selectedPath
                     return (
-                      <button
+                      <div
                         key={file.path}
                         draggable
                         onDragStart={e => { e.dataTransfer.effectAllowed = 'move'; setDragFilePath(file.path) }}
                         onDragEnd={() => { setDragFilePath(null); setDragOverFolder(null) }}
-                        onClick={() => setSelectedPath(prev => prev === file.path ? null : file.path)}
                         className={[
-                          'flex items-center gap-3 px-3 py-2 rounded-lg text-left w-full cursor-grab active:cursor-grabbing transition-colors',
+                          'group flex items-center gap-3 px-3 py-2 rounded-lg w-full cursor-grab active:cursor-grabbing transition-colors',
                           dragFilePath === file.path ? 'opacity-40' : '',
                           isSelected
                             ? 'bg-indigo-900/50 border border-indigo-700'
                             : 'bg-gray-800 hover:bg-gray-700 border border-transparent',
                         ].join(' ')}
                       >
-                        <div className="w-16 aspect-video bg-gray-700 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
-                          {file.thumbnailUrl
-                            ? <img src={file.thumbnailUrl} alt="" className="w-full h-full object-cover"
-                                onError={e => { e.target.style.display = 'none' }} />
-                            : <span className="text-gray-500 text-lg">▶</span>
-                          }
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-white truncate">{title}</p>
-                          <p className="text-xs text-gray-400 truncate">{file.uploader || '—'}</p>
-                        </div>
-                      </button>
+                        <button
+                          className="flex items-center gap-3 text-left flex-1 min-w-0"
+                          onClick={() => setSelectedPath(prev => prev === file.path ? null : file.path)}
+                        >
+                          <div className="w-16 aspect-video bg-gray-700 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
+                            {file.thumbnailUrl
+                              ? <img src={file.thumbnailUrl} alt="" className="w-full h-full object-cover"
+                                  onError={e => { e.target.style.display = 'none' }} />
+                              : <span className="text-gray-500 text-lg">▶</span>
+                            }
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-white truncate">{title}</p>
+                            <p className="text-xs text-gray-400 truncate">{file.uploader || '—'}</p>
+                          </div>
+                        </button>
+                        <button
+                          onClick={e => { e.stopPropagation(); handleDelete(file, { confirm: false }) }}
+                          className="opacity-0 group-hover:opacity-100 flex-shrink-0 p-1.5 rounded text-gray-600 hover:text-red-400 hover:bg-red-950/60 transition-all"
+                          title="Move to Trash"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                          </svg>
+                        </button>
+                      </div>
                     )
                   })}
                   {files.length === 0 && (
@@ -233,7 +266,7 @@ export default function LibraryTab() {
         <LibraryDetailPanel
           file={selected}
           onClose={() => setSelectedPath(null)}
-          onDeleted={handleDeleted}
+          onDelete={handleDelete}
         />
       )}
     </div>
