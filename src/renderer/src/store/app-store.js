@@ -44,4 +44,22 @@ export const useAppStore = create((set) => ({
 
   librarySelectedFile: null,
   setLibrarySelectedFile: (filePath) => set({ librarySelectedFile: filePath }),
+
+  logEntries: [],
+
+  appendLogEntry(entry) {
+    // Push new entry and cap at 1000
+    const updated = [
+      ...this.logEntries,
+      entry
+    ]
+    if (updated.length > 1000) {
+      updated.shift()  // Remove oldest entry
+    }
+    this.setLogEntries(updated)
+  },
+
+  setLogEntries(entries) {
+    this.logEntries = entries
+  },
 }))
