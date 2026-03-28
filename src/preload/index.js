@@ -50,4 +50,5 @@ contextBridge.exposeInMainWorld('api', {
     ipcRenderer.on('download:failed', handler)
     return () => ipcRenderer.removeListener('download:failed', handler)
   },
+  onLogEntry: (callback) => ipcRenderer.on('log:entry', (event, entry) => callback(entry)),
 })

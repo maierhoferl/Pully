@@ -323,4 +323,7 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
   downloadManager.on('progress', d => mainWindow.webContents.send('download:progress', d))
   downloadManager.on('completed', d => mainWindow.webContents.send('download:completed', d))
   downloadManager.on('failed', d => mainWindow.webContents.send('download:failed', d))
+
+  // Log entries are pushed to renderer via mainWindow.webContents.send('log:entry', entry)
+  // No handler needed — logger.js handles sending when debugMode is enabled
 }
