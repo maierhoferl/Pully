@@ -1,3 +1,4 @@
+import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
@@ -27,7 +28,7 @@ const mockApi = {
   generateSummary: vi.fn(async () => ({ summary: 'New summary' })),
   updateBullets: vi.fn(),
 }
-global.window = { ...global.window, api: mockApi }
+window.api = mockApi
 
 import NotesTab from '../../src/renderer/src/components/NotesTab.jsx'
 
