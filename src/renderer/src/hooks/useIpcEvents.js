@@ -11,10 +11,15 @@ export function useIpcEvents() {
       window.api.listLibrary().then(setLibraryFiles)
     })
     const unsubFailed = window.api.onFailed(() => {})
+    const unsubLogEntry = window.api.onLogEntry((entry) => {
+      useAppStore.setState((state) => ({
+        logEntries: [...state.logEntries, entry].slice(-1000)
+      }))
+    })
 
     window.api.getAllDownloads().then(setDownloads)
     window.api.readConfig().then(setConfig)
 
-    return () => { unsubQueue(); unsubProgress(); unsubCompleted(); unsubFailed() }
+    return () => { unsubQueue(); unsubProgress(); unsubCompleted(); unsubFailed(); unsubLogEntry() }
   }, [])
 }
