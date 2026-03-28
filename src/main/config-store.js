@@ -15,6 +15,13 @@ function getDefaults() {
     autoClassifyProvider: 'local',
     autoClassifyApiKey: '',
     autoClassifyModel: '',
+    // AI shared config
+    aiProvider: 'gemini',
+    aiApiKey: '',
+    aiModel: '',
+    // Notes & summary
+    autoSummarizeEnabled: false,
+    defaultSummaryPrompt: 'Summarize this video in 3-5 sentences. Highlight the main topic, key points covered, and anything particularly useful or actionable for the viewer.',
   }
 }
 

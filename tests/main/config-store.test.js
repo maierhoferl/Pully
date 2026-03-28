@@ -51,3 +51,15 @@ describe('writeConfig', () => {
     expect(cfg.maxConcurrent).toBe(1)
   })
 })
+
+describe('config-store AI and notes defaults', () => {
+  it('includes AI and notes config defaults', () => {
+    const p = path.join(tmp, 'cfg.json')
+    const cfg = readConfig(p)
+    expect(cfg.aiProvider).toBe('gemini')
+    expect(cfg.aiApiKey).toBe('')
+    expect(cfg.aiModel).toBe('')
+    expect(cfg.autoSummarizeEnabled).toBe(false)
+    expect(cfg.defaultSummaryPrompt).toContain('Summarize this video')
+  })
+})
