@@ -10,6 +10,12 @@ export function getDefaultBinaryPath() {
   return path.join(base, name)
 }
 
+export function getDefaultFfmpegPath() {
+  const base = process.resourcesPath || path.join(process.cwd(), 'resources')
+  const name = process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg'
+  return path.join(base, name)
+}
+
 export function ensureBinary(src, dest) {
   if (fs.existsSync(dest)) return
   fs.mkdirSync(path.dirname(dest), { recursive: true })
@@ -39,16 +45,30 @@ export function extractInfo(url, binaryPath = getDefaultBinaryPath()) {
   })
 }
 
-export function startDownload(url, formatId, outputDir, onProgress, onDone, onError, binaryPath = getDefaultBinaryPath()) {
+export function startDownload(url, formatId, outputDir, onProgress, onDone, onError, binaryPath = getDefaultBinaryPath(), ffmpegPath = getDefaultFfmpegPath()) {
   const proc = spawn(binaryPath, [
     '--format', formatId,
     '--output', path.join(outputDir, '%(title)s.%(ext)s'),
+    '--print', 'after_move:%(filepath)s',
+    '--embed-thumbnail', '--embed-metadata',
+    '--ffmpeg-location', ffmpegPath,
     '--newline', '--no-warnings', url
   ])
+  let buf = ''
+  let actualPath = null
   proc.stdout.on('data', data => {
-    const m = data.toString().match(PROGRESS_RE)
-    if (m) onProgress({ percent: parseFloat(m[1]), speed: m[2], eta: m[3] })
+    buf += data.toString()
+    const lines = buf.split('\n')
+    buf = lines.pop()
+    for (const line of lines) {
+      const m = line.match(PROGRESS_RE)
+      if (m) {
+        onProgress({ percent: parseFloat(m[1]), speed: m[2], eta: m[3] })
+      } else if (line.trim() && !line.startsWith('[')) {
+        actualPath = line.trim()
+      }
+    }
   })
-  proc.on('close', code => code === 0 ? onDone() : onError(new Error(`yt-dlp exited ${code}`)))
+  proc.on('close', code => code === 0 ? onDone(actualPath) : onError(new Error(`yt-dlp exited ${code}`)))
   return proc
 }

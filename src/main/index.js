@@ -3,7 +3,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { DownloadManager } from './download-manager.js'
 import { registerIpcHandlers } from './ipc-handlers.js'
-import { ensureBinary, getDefaultBinaryPath } from './ytdlp-runner.js'
+import { ensureBinary, getDefaultBinaryPath, getDefaultFfmpegPath } from './ytdlp-runner.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -21,14 +21,14 @@ function createWindow() {
     }
   })
 
-  // Copy bundled yt-dlp binary to writable userData location
+  // Copy bundled binaries to writable userData location
   try {
-    const src = getDefaultBinaryPath()
     const binaryName = process.platform === 'win32' ? 'yt-dlp.exe' : 'yt-dlp'
-    const dest = path.join(app.getPath('userData'), binaryName)
-    ensureBinary(src, dest)
+    ensureBinary(getDefaultBinaryPath(), path.join(app.getPath('userData'), binaryName))
+    const ffmpegName = process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg'
+    ensureBinary(getDefaultFfmpegPath(), path.join(app.getPath('userData'), ffmpegName))
   } catch (err) {
-    console.error('Failed to initialize yt-dlp binary:', err)
+    console.error('Failed to initialize binaries:', err)
   }
 
   const downloadManager = new DownloadManager()
