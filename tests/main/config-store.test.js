@@ -10,7 +10,12 @@ afterEach(() => { fs.rmSync(tmp, { recursive: true }) })
 
 describe('readConfig', () => {
   it('returns defaults when no file exists', () => {
-    expect(readConfig(path.join(tmp, 'cfg.json'))).toEqual({ outputFolder: '', maxConcurrent: 3 })
+    const cfg = readConfig(path.join(tmp, 'cfg.json'))
+    expect(cfg.maxConcurrent).toBe(3)
+    expect(cfg.autoClassifyEnabled).toBe(false)
+    expect(cfg.autoClassifyProvider).toBe('local')
+    expect(cfg.autoClassifyApiKey).toBe('')
+    expect(cfg.autoClassifyModel).toBe('')
   })
   it('merges saved values with defaults', () => {
     const p = path.join(tmp, 'cfg.json')
