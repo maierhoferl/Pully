@@ -18,7 +18,7 @@ mac:
       arch:
         - universal
   category: public.app-category.utilities
-  x64ArchFiles: "Contents/Resources/ffmpeg"
+  x64ArchFiles: "Contents/Resources/{ffmpeg,app.asar.unpacked/node_modules/{@img/sharp-darwin-*,@img/sharp-libvips-darwin-*,onnxruntime-node/bin}/**}"
   extraResources:
     - from: resources/yt-dlp
       to: yt-dlp
