@@ -42,10 +42,11 @@ chmod +x Pully-*.AppImage
 ## Features
 
 - **Built-in browser** — navigate to any site without leaving the app
+- **Adblock** — network-level ad blocking powered by EasyList/EasyPrivacy + YouTube-specific cosmetic filters; toggle on/off with the shield icon in the tab bar; state persists across restarts; filter lists update automatically in the background every 24 hours
 - **Automatic video detection** — scans each page for downloadable media as it loads
 - **Format selection** — choose resolution and format (MP4, WebM, audio-only, etc.) per video
 - **Download queue** — concurrent downloads with live progress shown inline
-- **Library** — browse downloaded files and reveal them in Finder / Explorer / file manager
+- **Library** — browse downloaded files with thumbnails and metadata; reveal in Finder / Explorer / file manager
 
 ## Getting Started (development)
 

@@ -4,6 +4,8 @@ import { fileURLToPath } from 'url'
 import { DownloadManager } from './download-manager.js'
 import { registerIpcHandlers } from './ipc-handlers.js'
 import { ensureBinary, getDefaultBinaryPath, getDefaultFfmpegPath } from './ytdlp-runner.js'
+import { readConfig } from './config-store.js'
+import { initAdblock, enableAdblock, startBackgroundUpdates } from './adblock-manager.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -54,7 +56,19 @@ app.whenReady().then(() => {
     })
   })
 
+  const config = readConfig()
   createWindow()
+
+  // Init adblock after window is created; enables once filter lists are ready
+  initAdblock()
+    .then(() => {
+      if (config.adblockEnabled !== false) {
+        enableAdblock(session.defaultSession)
+      }
+      startBackgroundUpdates(session.defaultSession)
+    })
+    .catch(err => console.error('Adblock init failed:', err))
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })

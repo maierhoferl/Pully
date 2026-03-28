@@ -6,7 +6,7 @@ const _require = createRequire(import.meta.url)
 
 function getDefaults() {
   const { app } = _require('electron')
-  return { outputFolder: app.getPath('downloads'), maxConcurrent: 3 }
+  return { outputFolder: app.getPath('downloads'), maxConcurrent: 3, adblockEnabled: true }
 }
 
 function defaultPath() {

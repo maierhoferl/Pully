@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('api', {
   addDownload: (url, formatId, title, metadata) => ipcRenderer.invoke('download:add', { url, formatId, title, metadata }),
   retryDownload: id => ipcRenderer.invoke('download:retry', id),
   getAllDownloads: () => ipcRenderer.invoke('download:getAll'),
+  setAdblockEnabled: isEnabled => ipcRenderer.invoke('adblock:setEnabled', isEnabled),
   listLibrary: () => ipcRenderer.invoke('library:list'),
   revealInFinder: filePath => ipcRenderer.invoke('library:reveal', filePath),
   playFile: filePath => ipcRenderer.invoke('library:play', filePath),

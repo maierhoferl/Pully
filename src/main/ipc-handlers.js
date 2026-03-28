@@ -1,5 +1,6 @@
-import { ipcMain, dialog, shell } from 'electron'
+import { ipcMain, dialog, shell, session } from 'electron'
 import { readConfig, writeConfig } from './config-store.js'
+import { enableAdblock, disableAdblock } from './adblock-manager.js'
 import { extractInfo } from './ytdlp-runner.js'
 import { readMetadataIndex } from './metadata-store.js'
 import fs from 'fs'
@@ -40,6 +41,16 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
         }
       })
       .sort((a, b) => new Date(b.mtime) - new Date(a.mtime))
+  })
+
+  ipcMain.handle('adblock:setEnabled', (_, isEnabled) => {
+    if (isEnabled) {
+      enableAdblock(session.defaultSession)
+    } else {
+      disableAdblock(session.defaultSession)
+    }
+    writeConfig({ adblockEnabled: isEnabled })
+    return isEnabled
   })
 
   ipcMain.handle('library:reveal', (_, filePath) => shell.showItemInFolder(filePath))
