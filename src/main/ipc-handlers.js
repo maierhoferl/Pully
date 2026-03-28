@@ -4,6 +4,8 @@ import { enableAdblock, disableAdblock } from './adblock-manager.js'
 import { extractInfo } from './ytdlp-runner.js'
 import { readMetadataIndex, deleteMetadataEntry, moveMetadataEntry, toPullyUrl, downloadAndStoreThumbnail, renameFolderInIndex, deleteFolderFromIndex } from './metadata-store.js'
 import { classifyVideo, fetchProviderModels } from './auto-classifier.js'
+import { initChapter, readFolderNotes, writeSummarySection, writeBulletsSection } from './notes-store.js'
+import { generateSummary } from './ai-summarizer.js'
 import fs from 'fs'
 import path from 'path'
 
@@ -197,9 +199,38 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
     return { moved, skipped }
   })
 
-  ipcMain.handle('classify:fetchModels', (_, { provider, apiKey }) =>
-    fetchProviderModels(provider, apiKey)
-  )
+  ipcMain.handle('classify:fetchModels', async (_e, provider, apiKey) => {
+    const { fetchProviderModels } = await import('./ai-client.js')
+    return fetchProviderModels(provider, apiKey)
+  })
+
+  // Notes handlers
+  ipcMain.handle('notes:read', (_e, folderName) => {
+    const cfg = readConfig()
+    return readFolderNotes(folderName, cfg.outputFolder)
+  })
+
+  ipcMain.handle('notes:init-chapter', (_e, filePath) => {
+    const cfg = readConfig()
+    const index = readMetadataIndex()
+    const metadata = index[filePath] || {}
+    initChapter(filePath, metadata, cfg.outputFolder)
+  })
+
+  ipcMain.handle('notes:update-bullets', (_e, filePath, bullets) => {
+    const cfg = readConfig()
+    writeBulletsSection(filePath, bullets, cfg.outputFolder)
+  })
+
+  ipcMain.handle('notes:generate-summary', async (_e, filePath) => {
+    const cfg = readConfig()
+    if (!cfg.aiApiKey) throw new Error('No AI API key configured. Please add one in Settings.')
+    const index = readMetadataIndex()
+    const metadata = index[filePath] || {}
+    const summary = await generateSummary(filePath, metadata, cfg)
+    writeSummarySection(filePath, summary, cfg.outputFolder)
+    return { summary }
+  })
 
   ipcMain.handle('adblock:setEnabled', (_, isEnabled) => {
     if (isEnabled) {
