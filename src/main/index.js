@@ -16,6 +16,8 @@ protocol.registerSchemesAsPrivileged([
   { scheme: 'pully', privileges: { standard: true, secure: true, corsEnabled: true, bypassCSP: true } }
 ])
 
+app.setName('Pully')
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1280,
