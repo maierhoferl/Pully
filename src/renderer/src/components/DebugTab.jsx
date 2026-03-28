@@ -8,10 +8,10 @@ const LEVELS = ['Info', 'Warn', 'Error']
 export function DebugTab() {
   const logEntries = useAppStore((state) => state.logEntries)
   const [selectedCategories, setSelectedCategories] = useState(
-    new Set(['Download', 'Classify', 'Summarize', 'Notes']) // All except 'App'
+    new Set(['download', 'classify', 'summarize', 'notes']) // All except 'app'
   )
   const [selectedLevels, setSelectedLevels] = useState(
-    new Set(['Warn', 'Error']) // Warn and Error by default
+    new Set(['warn', 'error']) // Warn and Error by default
   )
   const [pauseScroll, setPauseScroll] = useState(false)
   const listEndRef = useRef(null)
@@ -23,22 +23,24 @@ export function DebugTab() {
     }
   }, [logEntries, pauseScroll])
 
-  const toggleCategory = (category) => {
+  const toggleCategory = (categoryLabel) => {
+    const categoryValue = categoryLabel.toLowerCase()
     const newSelected = new Set(selectedCategories)
-    if (newSelected.has(category)) {
-      newSelected.delete(category)
+    if (newSelected.has(categoryValue)) {
+      newSelected.delete(categoryValue)
     } else {
-      newSelected.add(category)
+      newSelected.add(categoryValue)
     }
     setSelectedCategories(newSelected)
   }
 
-  const toggleLevel = (level) => {
+  const toggleLevel = (levelLabel) => {
+    const levelValue = levelLabel.toLowerCase()
     const newSelected = new Set(selectedLevels)
-    if (newSelected.has(level)) {
-      newSelected.delete(level)
+    if (newSelected.has(levelValue)) {
+      newSelected.delete(levelValue)
     } else {
-      newSelected.add(level)
+      newSelected.add(levelValue)
     }
     setSelectedLevels(newSelected)
   }
@@ -93,7 +95,7 @@ export function DebugTab() {
               <label key={cat} className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={selectedCategories.has(cat)}
+                  checked={selectedCategories.has(cat.toLowerCase())}
                   onChange={() => toggleCategory(cat)}
                   className="rounded"
                 />
@@ -111,7 +113,7 @@ export function DebugTab() {
               <label key={level} className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={selectedLevels.has(level)}
+                  checked={selectedLevels.has(level.toLowerCase())}
                   onChange={() => toggleLevel(level)}
                   className="rounded"
                 />
