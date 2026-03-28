@@ -113,7 +113,15 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
     const filePaths = fileNames.map(f => path.join(dirPath, f))
     if (strategy === 'unassign') {
       for (const fp of filePaths) {
-        const dest = path.join(outputFolder, path.basename(fp))
+        const base = path.basename(fp)
+        const ext = path.extname(base)
+        const stem = path.basename(base, ext)
+        let dest = path.join(outputFolder, base)
+        let counter = 1
+        while (fs.existsSync(dest)) {
+          dest = path.join(outputFolder, `${stem} (${counter})${ext}`)
+          counter++
+        }
         fs.renameSync(fp, dest)
         moveMetadataEntry(fp, dest)
       }
@@ -126,7 +134,6 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
         if (thumbPath && fs.existsSync(thumbPath)) await shell.trashItem(thumbPath)
         deleteMetadataEntry(fp)
       }
-      deleteFolderFromIndex(dirPath)
       if (fs.existsSync(dirPath)) fs.rmdirSync(dirPath)
     }
     return null
