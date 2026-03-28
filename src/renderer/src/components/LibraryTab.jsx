@@ -38,6 +38,7 @@ export default function LibraryTab() {
   const renameInputRef = useRef(null)
   const skipRenameBlurRef = useRef(false)
   const [deletingFolder, setDeletingFolder] = useState(null) // { name, count }
+  const [classifyStatus, setClassifyStatus] = useState(null) // null | 'running' | result string
 
   async function refresh() {
     const [files, folders] = await Promise.all([
@@ -46,6 +47,18 @@ export default function LibraryTab() {
     ])
     setLibraryFiles(files)
     setAllFolders(folders)
+  }
+
+  async function handleAutoClassify() {
+    setClassifyStatus('running')
+    try {
+      const result = await window.api.autoClassify()
+      await refresh()
+      setClassifyStatus(`Moved ${result.moved.length} · ${result.skipped} skipped`)
+      setTimeout(() => setClassifyStatus(null), 3000)
+    } catch {
+      setClassifyStatus(null)
+    }
   }
 
   useEffect(() => {
@@ -89,6 +102,11 @@ export default function LibraryTab() {
       return true
     }),
   [libraryFiles, activeUrls])
+
+  const hasUncategorized = useMemo(
+    () => visibleFiles.some(f => !f.folder),
+    [visibleFiles]
+  )
 
   const { groups, groupKeys, totalResults } = useMemo(() => {
     const query = librarySearch.toLowerCase().trim()
@@ -240,6 +258,9 @@ export default function LibraryTab() {
           onSortChange={setLibrarySort}
           onSearchChange={setLibrarySearch}
           resultCount={totalResults}
+          onAutoClassify={handleAutoClassify}
+          classifyStatus={classifyStatus}
+          hasUncategorized={hasUncategorized}
         />
         <div className="flex-1 overflow-y-auto"
           onContextMenu={e => {

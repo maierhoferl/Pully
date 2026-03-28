@@ -1,6 +1,6 @@
 import React from 'react'
 
-const SORT_CYCLE = [
+export const SORT_CYCLE = [
   { field: 'date',   direction: 'desc', label: 'Date ↓' },
   { field: 'date',   direction: 'asc',  label: 'Date ↑' },
   { field: 'name',   direction: 'asc',  label: 'Name ↑' },
@@ -9,7 +9,10 @@ const SORT_CYCLE = [
   { field: 'folder', direction: 'desc', label: 'Folder Z–A' },
 ]
 
-export default function LibraryToolbar({ sort, search, onSortChange, onSearchChange, resultCount }) {
+export default function LibraryToolbar({
+  sort, search, onSortChange, onSearchChange, resultCount,
+  onAutoClassify, classifyStatus, hasUncategorized,
+}) {
   const idx = SORT_CYCLE.findIndex(s => s.field === sort.field && s.direction === sort.direction)
   const isDefault = sort.field === 'date' && sort.direction === 'desc'
   const label = idx >= 0 ? SORT_CYCLE[idx].label : 'Date ↓'
@@ -18,6 +21,9 @@ export default function LibraryToolbar({ sort, search, onSortChange, onSearchCha
     const next = SORT_CYCLE[(idx + 1) % SORT_CYCLE.length]
     onSortChange(next.field, next.direction)
   }
+
+  const classifyRunning = classifyStatus === 'running'
+  const classifyDisabled = !hasUncategorized || classifyRunning
 
   return (
     <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-800 flex-shrink-0">
@@ -49,6 +55,20 @@ export default function LibraryToolbar({ sort, search, onSortChange, onSearchCha
       >
         {label}
       </button>
+      {onAutoClassify && (
+        <button
+          onClick={onAutoClassify}
+          disabled={classifyDisabled}
+          title="Auto-classify uncategorized videos into folders"
+          className={`flex-shrink-0 text-xs px-2.5 py-1.5 rounded-md border transition-colors whitespace-nowrap ${
+            classifyDisabled
+              ? 'border-gray-700 text-gray-600 bg-gray-900 cursor-not-allowed'
+              : 'border-gray-700 text-gray-400 bg-gray-900 hover:border-gray-600 hover:text-white'
+          }`}
+        >
+          {classifyRunning ? 'Classifying…' : (classifyStatus || 'Auto-classify')}
+        </button>
+      )}
     </div>
   )
 }
