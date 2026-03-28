@@ -7,3 +7,4 @@ out
 resources/yt-dlp
 resources/ffmpeg
 .superpowers/
+.worktrees/
