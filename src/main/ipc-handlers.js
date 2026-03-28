@@ -2,7 +2,7 @@ import { ipcMain, dialog, shell, session } from 'electron'
 import { readConfig, writeConfig } from './config-store.js'
 import { enableAdblock, disableAdblock } from './adblock-manager.js'
 import { extractInfo } from './ytdlp-runner.js'
-import { readMetadataIndex, deleteMetadataEntry, moveMetadataEntry, toPullyUrl, downloadAndStoreThumbnail } from './metadata-store.js'
+import { readMetadataIndex, deleteMetadataEntry, moveMetadataEntry, toPullyUrl, downloadAndStoreThumbnail, renameFolderInIndex, deleteFolderFromIndex } from './metadata-store.js'
 import fs from 'fs'
 import path from 'path'
 
@@ -93,6 +93,43 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
     const folderPath = path.join(outputFolder, name)
     if (!fs.existsSync(folderPath)) fs.mkdirSync(folderPath)
     return name
+  })
+
+  ipcMain.handle('library:renameFolder', (_, { from, to }) => {
+    const { outputFolder } = readConfig()
+    const oldDir = path.join(outputFolder, from)
+    const newDir = path.join(outputFolder, to)
+    if (!fs.existsSync(oldDir)) return null
+    fs.renameSync(oldDir, newDir)
+    renameFolderInIndex(oldDir, newDir)
+    return to
+  })
+
+  ipcMain.handle('library:deleteFolder', async (_, { folder, strategy }) => {
+    const { outputFolder } = readConfig()
+    const dirPath = path.join(outputFolder, folder)
+    if (!fs.existsSync(dirPath)) return null
+    const fileNames = fs.readdirSync(dirPath).filter(f => !f.startsWith('.'))
+    const filePaths = fileNames.map(f => path.join(dirPath, f))
+    if (strategy === 'unassign') {
+      for (const fp of filePaths) {
+        const dest = path.join(outputFolder, path.basename(fp))
+        fs.renameSync(fp, dest)
+        moveMetadataEntry(fp, dest)
+      }
+      fs.rmdirSync(dirPath)
+    } else {
+      const index = readMetadataIndex()
+      for (const fp of filePaths) {
+        const thumbPath = index[fp]?.thumbnailLocalPath
+        await shell.trashItem(fp)
+        if (thumbPath && fs.existsSync(thumbPath)) await shell.trashItem(thumbPath)
+        deleteMetadataEntry(fp)
+      }
+      deleteFolderFromIndex(dirPath)
+      if (fs.existsSync(dirPath)) fs.rmdirSync(dirPath)
+    }
+    return null
   })
 
   ipcMain.handle('library:moveFile', (_, { filePath, targetFolder }) => {
