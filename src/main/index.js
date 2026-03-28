@@ -68,7 +68,7 @@ function createWindow() {
   }
 
   downloadManager = new DownloadManager()
-  registerIpcHandlers(downloadManager, win)
+  registerIpcHandlers(downloadManager, win, logger)
 
   if (process.env.NODE_ENV === 'development') {
     win.loadURL(process.env['ELECTRON_RENDERER_URL'])

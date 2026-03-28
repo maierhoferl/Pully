@@ -9,9 +9,14 @@ import { generateSummary } from './ai-summarizer.js'
 import fs from 'fs'
 import path from 'path'
 
-export function registerIpcHandlers(downloadManager, mainWindow) {
+export function registerIpcHandlers(downloadManager, mainWindow, logger) {
   ipcMain.handle('config:read', () => readConfig())
-  ipcMain.handle('config:write', (_, data) => { writeConfig(data); return readConfig() })
+  ipcMain.handle('config:write', (_, data) => {
+    writeConfig(data)
+    const updated = readConfig()
+    logger.setDebugMode(updated.debugMode)
+    return updated
+  })
 
   ipcMain.handle('dialog:openFolder', async () => {
     const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, { properties: ['openDirectory'] })
