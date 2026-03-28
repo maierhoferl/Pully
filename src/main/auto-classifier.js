@@ -1,6 +1,13 @@
-import { pipeline as hfPipeline } from '@huggingface/transformers'
-
 let embeddingPipeline = null
+let _hfPipeline = null
+
+async function getHfPipelineFn() {
+  if (!_hfPipeline) {
+    const mod = await import('@huggingface/transformers')
+    _hfPipeline = mod.pipeline
+  }
+  return _hfPipeline
+}
 
 // --- Tier 1: Keyword matching ---
 
@@ -42,7 +49,8 @@ function cosineSimilarity(a, b) {
 
 async function getEmbeddingPipeline() {
   if (!embeddingPipeline) {
-    embeddingPipeline = await hfPipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', { device: 'cpu' })
+    const pipelineFn = await getHfPipelineFn()
+    embeddingPipeline = await pipelineFn('feature-extraction', 'Xenova/all-MiniLM-L6-v2', { device: 'cpu' })
   }
   return embeddingPipeline
 }
