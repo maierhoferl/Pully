@@ -79,7 +79,7 @@ export class DownloadManager extends EventEmitter {
           }
         }
         const cfg = readConfig()
-        if (cfg.autoClassifyEnabled && actualPath) {
+        if (cfg.autoClassifyEnabled && actualPath && item.metadata) {
           try {
             const folderNames = fs.readdirSync(cfg.outputFolder)
               .filter(f => !f.startsWith('.') && fs.statSync(path.join(cfg.outputFolder, f)).isDirectory())
@@ -90,7 +90,15 @@ export class DownloadManager extends EventEmitter {
                 cfg
               ).then(({ folder }) => {
                 if (folder) {
-                  const newPath = path.join(cfg.outputFolder, folder, path.basename(actualPath))
+                  const base = path.basename(actualPath)
+                  const ext = path.extname(base)
+                  const stem = path.basename(base, ext)
+                  let newPath = path.join(cfg.outputFolder, folder, base)
+                  let counter = 1
+                  while (fs.existsSync(newPath)) {
+                    newPath = path.join(cfg.outputFolder, folder, `${stem} (${counter})${ext}`)
+                    counter++
+                  }
                   fs.renameSync(actualPath, newPath)
                   moveMetadataEntry(actualPath, newPath)
                 }

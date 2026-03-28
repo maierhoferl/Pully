@@ -179,7 +179,14 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
         config
       )
       if (folder) {
-        const newPath = path.join(outputFolder, folder, file)
+        const ext = path.extname(file)
+        const stem = path.basename(file, ext)
+        let newPath = path.join(outputFolder, folder, file)
+        let counter = 1
+        while (fs.existsSync(newPath)) {
+          newPath = path.join(outputFolder, folder, `${stem} (${counter})${ext}`)
+          counter++
+        }
         fs.renameSync(filePath, newPath)
         moveMetadataEntry(filePath, newPath)
         moved.push({ file, toFolder: folder })
