@@ -19,6 +19,9 @@ export const useAppStore = create((set) => ({
     downloads: state.downloads.filter(d => d.url !== url)
   })),
 
+  currentBrowserUrl: null,
+  setCurrentBrowserUrl: url => set({ currentBrowserUrl: url }),
+
   mediaScanResults: null,
   mediaScanLoading: false,
   startMediaScan: () => set({ mediaScanLoading: true, mediaScanResults: null }),

@@ -12,7 +12,7 @@ export default function BrowserTab() {
   const [canGoForward, setCanGoForward] = useState(false)
   const [sideWidth, setSideWidth] = useState(320)
   const [contextMenu, setContextMenu] = useState(null)
-  const { startMediaScan, setMediaScanResults } = useAppStore()
+  const { startMediaScan, setMediaScanResults, setCurrentBrowserUrl } = useAppStore()
   const scanDebounceRef = useRef(null)
   const currentUrlRef = useRef(null)
 
@@ -29,10 +29,11 @@ export default function BrowserTab() {
     clearTimeout(scanDebounceRef.current)
     scanDebounceRef.current = setTimeout(() => {
       currentUrlRef.current = url
+      setCurrentBrowserUrl(url)
       startMediaScan()
       scanPage(url)
     }, 500)
-  }, [scanPage, startMediaScan])
+  }, [scanPage, startMediaScan, setCurrentBrowserUrl])
 
   useEffect(() => {
     const wv = webviewRef.current
@@ -65,6 +66,7 @@ export default function BrowserTab() {
       setCanGoBack(wv.canGoBack())
       setCanGoForward(wv.canGoForward())
       currentUrlRef.current = url
+      setCurrentBrowserUrl(url)
       scanPage(url)
       if (url.includes('youtube.com')) {
         wv.executeJavaScript(

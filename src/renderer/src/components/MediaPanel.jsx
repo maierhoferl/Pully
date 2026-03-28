@@ -110,8 +110,19 @@ function MediaEntry({ entry }) {
 }
 
 export function MediaPanel() {
-  const { mediaScanResults, mediaScanLoading } = useAppStore()
+  const { mediaScanResults, mediaScanLoading, currentBrowserUrl, startMediaScan, setMediaScanResults } = useAppStore()
   const [collapsed, setCollapsed] = useState(false)
+
+  async function handleRefresh() {
+    if (!currentBrowserUrl || mediaScanLoading) return
+    startMediaScan()
+    try {
+      const results = await window.api.extractInfo(currentBrowserUrl)
+      setMediaScanResults(results)
+    } catch {
+      setMediaScanResults([])
+    }
+  }
 
   // Don't show before the first navigation
   if (!mediaScanLoading && mediaScanResults === null) return null
@@ -131,8 +142,16 @@ export function MediaPanel() {
         <span className={`text-sm font-bold tracking-wide ${mediaScanLoading ? 'text-blue-400' : hasResults ? 'text-white' : 'text-gray-500'}`}>
           {headingText()}
         </span>
+        <button
+          onClick={e => { e.stopPropagation(); handleRefresh() }}
+          disabled={!currentBrowserUrl || mediaScanLoading}
+          className="ml-auto p-1 rounded text-gray-500 hover:text-white hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          title="Refresh"
+        >
+          ↻
+        </button>
         {hasResults && (
-          <span className="ml-auto text-gray-500 text-xs">{collapsed ? '▼' : '▲'}</span>
+          <span className="text-gray-500 text-xs">{collapsed ? '▼' : '▲'}</span>
         )}
       </div>
       {!collapsed && hasResults && (
