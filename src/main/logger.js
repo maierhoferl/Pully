@@ -115,3 +115,19 @@ export function createLogger(logDir) {
     setDebugMode,
   }
 }
+
+// Singleton instance — initialized in index.js after app.getPath is available
+let loggerInstance = null
+
+export function initializeLogger(logDir) {
+  loggerInstance = createLogger(logDir)
+  return loggerInstance
+}
+
+export default {
+  info: (category, message, meta) => loggerInstance?.info(category, message, meta),
+  warn: (category, message, meta) => loggerInstance?.warn(category, message, meta),
+  error: (category, message, meta) => loggerInstance?.error(category, message, meta),
+  setWindow: (window) => loggerInstance?.setWindow(window),
+  setDebugMode: (enabled) => loggerInstance?.setDebugMode(enabled),
+}

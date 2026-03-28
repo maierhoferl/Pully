@@ -7,14 +7,14 @@ import { registerIpcHandlers } from './ipc-handlers.js'
 import { ensureBinary, getDefaultBinaryPath, getDefaultFfmpegPath } from './ytdlp-runner.js'
 import { readConfig } from './config-store.js'
 import { initAdblock, enableAdblock, startBackgroundUpdates } from './adblock-manager.js'
-import { createLogger } from './logger.js'
+import { initializeLogger } from './logger.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const isDev = process.env.NODE_ENV === 'development'
 
 // Create logger instance (in userData/.log/)
 const logDir = path.join(app.getPath('userData'), '.log')
-const logger = createLogger(logDir)
+const logger = initializeLogger(logDir)
 
 // Set initial debug mode from config
 const config = readConfig()

@@ -7,6 +7,7 @@ import { writeMetadataEntry, downloadAndStoreThumbnail, moveMetadataEntry, moveT
 import { classifyVideo } from './auto-classifier.js'
 import { initChapter, moveChapter, writeSummarySection } from './notes-store.js'
 import { generateSummary } from './ai-summarizer.js'
+import logger from './logger.js'
 
 export class DownloadManager extends EventEmitter {
   constructor() {
@@ -62,15 +63,54 @@ export class DownloadManager extends EventEmitter {
 
   _start(item, outputFolder) {
     item.status = 'downloading'
+    const startTime = Date.now()
+    const lastProgressLogTime = {}
+
+    // Log download start
+    logger.info('download', `Started: ${path.basename(item.filePath || item.title)}`, {
+      url: item.url,
+      outputPath: outputFolder
+    })
+
     const proc = startDownload(
       item.url, item.formatId, outputFolder,
       progress => {
         Object.assign(item, progress)
         this.emit('progress', { id: item.id, ...progress })
+
+        // Log progress milestones at 25%, 50%, 75%, 100%
+        const percent = progress.percent
+        const milestones = [25, 50, 75, 100]
+        for (const milestone of milestones) {
+          if (Math.abs(percent - milestone) < 1 && !lastProgressLogTime[milestone]) {
+            lastProgressLogTime[milestone] = true
+            logger.info('download', `Progress: ${item.title} ${Math.round(percent)}%`, {
+              url: item.url,
+              percent: Math.round(percent)
+            })
+          }
+        }
       },
       (actualPath) => {
         item.status = 'done'
         this.active.delete(item.id)
+
+        // Log download completion with duration and file size
+        if (actualPath) {
+          try {
+            const duration = (Date.now() - startTime) / 1000
+            const fileSize = fs.statSync(actualPath).size
+            logger.info('download', `Completed: ${path.basename(actualPath)}`, {
+              url: item.url,
+              duration: `${duration.toFixed(2)}s`,
+              fileSize: `${(fileSize / 1024 / 1024).toFixed(2)}MB`
+            })
+          } catch (err) {
+            // If we can't get file stats, log without them
+            logger.info('download', `Completed: ${actualPath}`, { url: item.url })
+          }
+        }
+
         if (actualPath && item.metadata) {
           writeMetadataEntry(actualPath, {
             ...item.metadata,
@@ -140,6 +180,13 @@ export class DownloadManager extends EventEmitter {
         item.status = 'failed'
         item.error = err.message
         this.active.delete(item.id)
+
+        // Log download failure
+        logger.error('download', `Failed: ${path.basename(item.filePath || item.title)}`, {
+          url: item.url,
+          error: err.message
+        })
+
         this.emit('failed', { id: item.id, error: err.message })
         this.emit('queue-updated', this.getAll())
         this._tick()
