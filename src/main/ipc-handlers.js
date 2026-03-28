@@ -3,6 +3,7 @@ import { readConfig, writeConfig } from './config-store.js'
 import { enableAdblock, disableAdblock } from './adblock-manager.js'
 import { extractInfo } from './ytdlp-runner.js'
 import { readMetadataIndex, deleteMetadataEntry, moveMetadataEntry, toPullyUrl, downloadAndStoreThumbnail, renameFolderInIndex, deleteFolderFromIndex } from './metadata-store.js'
+import { classifyVideo, fetchProviderModels } from './auto-classifier.js'
 import fs from 'fs'
 import path from 'path'
 
@@ -153,6 +154,45 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
     }
     return newPath
   })
+
+  ipcMain.handle('library:autoClassify', async () => {
+    const config = readConfig()
+    const { outputFolder } = config
+    if (!outputFolder || !fs.existsSync(outputFolder)) return { moved: [], skipped: 0 }
+
+    const folderNames = fs.readdirSync(outputFolder)
+      .filter(f => !f.startsWith('.') && fs.statSync(path.join(outputFolder, f)).isDirectory())
+    if (folderNames.length === 0) return { moved: [], skipped: 0 }
+
+    const index = readMetadataIndex()
+    const rootFiles = fs.readdirSync(outputFolder)
+      .filter(f => !f.startsWith('.') && !fs.statSync(path.join(outputFolder, f)).isDirectory())
+
+    const moved = []
+    let skipped = 0
+    for (const file of rootFiles) {
+      const filePath = path.join(outputFolder, file)
+      const meta = index[filePath] || {}
+      const { folder } = await classifyVideo(
+        { title: meta.title, uploader: meta.uploader, description: meta.description, url: meta.url },
+        folderNames,
+        config
+      )
+      if (folder) {
+        const newPath = path.join(outputFolder, folder, file)
+        fs.renameSync(filePath, newPath)
+        moveMetadataEntry(filePath, newPath)
+        moved.push({ file, toFolder: folder })
+      } else {
+        skipped++
+      }
+    }
+    return { moved, skipped }
+  })
+
+  ipcMain.handle('classify:fetchModels', (_, { provider, apiKey }) =>
+    fetchProviderModels(provider, apiKey)
+  )
 
   ipcMain.handle('adblock:setEnabled', (_, isEnabled) => {
     if (isEnabled) {
