@@ -198,14 +198,23 @@ export function SettingsPanel() {
               type="password"
               value={local.aiApiKey || ''}
               onChange={e => setLocal(c => ({ ...c, aiApiKey: e.target.value }))}
-              onBlur={handleFetchAiModels}
               placeholder="Enter API key…"
               className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-blue-500"
             />
           </div>
 
           <div className="mb-3">
-            <label className="block text-xs text-gray-500 mb-1">Model</label>
+            <label className="block text-xs text-gray-400 mb-1">
+              Model{' '}
+              {local.aiApiKey && (
+                <button
+                  onClick={handleFetchAiModels}
+                  className="text-blue-400 hover:text-blue-300 text-xs ml-1"
+                >
+                  (load models)
+                </button>
+              )}
+            </label>
             {aiModels.length > 0 ? (
               <select
                 value={local.aiModel || ''}
