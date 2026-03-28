@@ -53,17 +53,20 @@ export default function LibraryTab() {
   }, [creating])
 
   // Exclude files that are still being downloaded
-  const activeUrls = new Set(
+  const activeUrls = useMemo(() => new Set(
     downloads
       .filter(d => d.status === 'queued' || d.status === 'downloading')
       .map(d => d.url)
       .filter(Boolean)
-  )
-  const visibleFiles = libraryFiles.filter(f => {
-    if (f.name.includes('.part')) return false
-    if (f.url && activeUrls.has(f.url)) return false
-    return true
-  })
+  ), [downloads])
+
+  const visibleFiles = useMemo(() =>
+    libraryFiles.filter(f => {
+      if (f.name.includes('.part')) return false
+      if (f.url && activeUrls.has(f.url)) return false
+      return true
+    }),
+  [libraryFiles, activeUrls])
 
   const { groups, groupKeys, totalResults } = useMemo(() => {
     const query = librarySearch.toLowerCase().trim()
