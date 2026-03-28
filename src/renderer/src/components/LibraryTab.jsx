@@ -23,9 +23,8 @@ function folderColor(name) {
 
 export default function LibraryTab() {
   const { libraryFiles, setLibraryFiles, config, downloads, removeDownloadByUrl,
-          librarySort, librarySearch, setLibrarySort, setLibrarySearch } = useAppStore()
-  const librarySelectedFile = useAppStore(s => s.librarySelectedFile)
-  const setLibrarySelectedFile = useAppStore(s => s.setLibrarySelectedFile)
+          librarySort, librarySearch, setLibrarySort, setLibrarySearch,
+          librarySelectedFile, setLibrarySelectedFile } = useAppStore()
   const [allFolders, setAllFolders] = useState([])
   const [selectedPath, setSelectedPath] = useState(null)
   const [collapsed, setCollapsed] = useState(new Set())

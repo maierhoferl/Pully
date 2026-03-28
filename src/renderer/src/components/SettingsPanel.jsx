@@ -14,7 +14,6 @@ export function SettingsPanel() {
   const [availableModels, setAvailableModels] = useState([])
   const [modelsFetching, setModelsFetching] = useState(false)
   const [aiModels, setAiModels] = useState([])
-  const [aiModelsFetching, setAiModelsFetching] = useState(false)
 
   async function handleBrowse() {
     const folder = await window.api.openFolder()
@@ -51,14 +50,11 @@ export function SettingsPanel() {
     const provider = local.aiProvider || 'gemini'
     const apiKey = local.aiApiKey
     if (!apiKey) return
-    setAiModelsFetching(true)
     try {
       const models = await window.api.fetchAiModels(provider, apiKey)
       setAiModels(models)
     } catch {
       setAiModels([])
-    } finally {
-      setAiModelsFetching(false)
     }
   }
 
@@ -229,7 +225,7 @@ export function SettingsPanel() {
                 type="text"
                 value={local.aiModel || ''}
                 onChange={e => setLocal(c => ({ ...c, aiModel: e.target.value }))}
-                placeholder={aiModelsFetching ? 'Loading models…' : 'Leave blank for default'}
+                placeholder="Leave blank for default"
                 className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-blue-500"
               />
             )}
