@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../store/app-store.js'
 import LibraryDetailPanel from './LibraryDetailPanel.jsx'
+import LibraryToolbar from './LibraryToolbar.jsx'
 
 // Stable color per folder name (derived from name hash so colors don't shift when folders are added)
 const PALETTE = [
@@ -21,7 +22,8 @@ function folderColor(name) {
 }
 
 export default function LibraryTab() {
-  const { libraryFiles, setLibraryFiles, config, downloads, removeDownloadByUrl } = useAppStore()
+  const { libraryFiles, setLibraryFiles, config, downloads, removeDownloadByUrl,
+          librarySort, librarySearch, setLibrarySort, setLibrarySearch } = useAppStore()
   const [allFolders, setAllFolders] = useState([])
   const [selectedPath, setSelectedPath] = useState(null)
   const [collapsed, setCollapsed] = useState(new Set())
@@ -63,15 +65,66 @@ export default function LibraryTab() {
     return true
   })
 
-  // Group files by folder; derive complete folder list
-  const groups = {}
-  for (const file of visibleFiles) {
-    const key = file.folder || '__root'
-    if (!groups[key]) groups[key] = []
-    groups[key].push(file)
-  }
-  const namedFolders = [...new Set([...allFolders, ...visibleFiles.filter(f => f.folder).map(f => f.folder)])].sort()
-  const groupKeys = ['__root', ...namedFolders]
+  const { groups, groupKeys, totalResults } = useMemo(() => {
+    const query = librarySearch.toLowerCase().trim()
+    const filtered = query
+      ? visibleFiles.filter(f =>
+          [f.title, f.uploader, f.description, f.url, f.name, f.folder]
+            .some(v => v && v.toLowerCase().includes(query))
+        )
+      : visibleFiles
+
+    const groups = {}
+    for (const file of filtered) {
+      const key = file.folder || '__root'
+      if (!groups[key]) groups[key] = []
+      groups[key].push(file)
+    }
+
+    const { field, direction } = librarySort
+    for (const files of Object.values(groups)) {
+      files.sort((a, b) => {
+        if (field === 'date') {
+          return direction === 'desc'
+            ? new Date(b.mtime) - new Date(a.mtime)
+            : new Date(a.mtime) - new Date(b.mtime)
+        }
+        const ta = (a.title || a.name).toLowerCase()
+        const tb = (b.title || b.name).toLowerCase()
+        return direction === 'asc' ? ta.localeCompare(tb) : tb.localeCompare(ta)
+      })
+    }
+
+    const namedFolders = [...new Set([
+      ...allFolders,
+      ...visibleFiles.filter(f => f.folder).map(f => f.folder),
+    ])]
+
+    let namedKeys = query
+      ? namedFolders.filter(k => groups[k]?.length > 0)
+      : namedFolders
+
+    namedKeys.sort((a, b) => {
+      if (field === 'date') {
+        const aT = groups[a]?.length ? Math.max(...groups[a].map(f => new Date(f.mtime).getTime())) : 0
+        const bT = groups[b]?.length ? Math.max(...groups[b].map(f => new Date(f.mtime).getTime())) : 0
+        return direction === 'desc' ? bT - aT : aT - bT
+      }
+      if (field === 'name') {
+        const aLabel = groups[a]?.[0] ? (groups[a][0].title || groups[a][0].name).toLowerCase() : a.toLowerCase()
+        const bLabel = groups[b]?.[0] ? (groups[b][0].title || groups[b][0].name).toLowerCase() : b.toLowerCase()
+        return direction === 'asc' ? aLabel.localeCompare(bLabel) : bLabel.localeCompare(aLabel)
+      }
+      return direction === 'asc'
+        ? a.toLowerCase().localeCompare(b.toLowerCase())
+        : b.toLowerCase().localeCompare(a.toLowerCase())
+    })
+
+    const showRoot = !query || (groups['__root']?.length > 0)
+    const groupKeys = [...(showRoot ? ['__root'] : []), ...namedKeys]
+
+    return { groups, groupKeys, totalResults: filtered.length }
+  }, [visibleFiles, librarySort, librarySearch, allFolders])
 
   const selected = selectedPath ? visibleFiles.find(f => f.path === selectedPath) : null
 
@@ -123,7 +176,7 @@ export default function LibraryTab() {
     )
   }
 
-  const isEmpty = visibleFiles.length === 0 && namedFolders.length === 0
+  const isEmpty = visibleFiles.length === 0 && allFolders.length === 0
   if (isEmpty) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
@@ -135,7 +188,15 @@ export default function LibraryTab() {
   return (
     <div className="flex h-full overflow-hidden">
       {/* File list with folder groups */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <LibraryToolbar
+          sort={librarySort}
+          search={librarySearch}
+          onSortChange={setLibrarySort}
+          onSearchChange={setLibrarySearch}
+          resultCount={totalResults}
+        />
+        <div className="flex-1 overflow-y-auto">
         {groupKeys.map(key => {
           const isRoot = key === '__root'
           const files = groups[key] || []
@@ -232,35 +293,31 @@ export default function LibraryTab() {
           )
         })}
 
-        {/* New folder control */}
-        <div className="px-3 py-3 border-t border-gray-800 mt-1">
-          {creating ? (
-            <div className="flex gap-2">
-              <input
-                ref={inputRef}
-                value={newFolderInput}
-                onChange={e => setNewFolderInput(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') handleCreateFolder()
-                  if (e.key === 'Escape') { setCreating(false); setNewFolderInput('') }
-                }}
-                placeholder="Folder name…"
-                className="flex-1 bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500"
-              />
-              <button onClick={handleCreateFolder} className="text-sm text-indigo-400 hover:text-indigo-300 px-2 py-1">
-                Create
-              </button>
-              <button onClick={() => { setCreating(false); setNewFolderInput('') }} className="text-sm text-gray-500 hover:text-gray-400 px-2 py-1">
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <button onClick={() => setCreating(true)} className="text-xs text-gray-500 hover:text-gray-400 flex items-center gap-1.5 transition-colors">
-              <span className="text-base leading-none">＋</span> New Folder
+        </div>  {/* end scroll area */}
+
+        {/* Inline new folder input (triggered from context menu) */}
+        {creating && (
+          <div className="px-3 py-3 border-t border-gray-800 mt-1 flex gap-2">
+            <input
+              ref={inputRef}
+              value={newFolderInput}
+              onChange={e => setNewFolderInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') handleCreateFolder()
+                if (e.key === 'Escape') { setCreating(false); setNewFolderInput('') }
+              }}
+              placeholder="Folder name…"
+              className="flex-1 bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500"
+            />
+            <button onClick={handleCreateFolder} className="text-sm text-indigo-400 hover:text-indigo-300 px-2 py-1">
+              Create
             </button>
-          )}
-        </div>
-      </div>
+            <button onClick={() => { setCreating(false); setNewFolderInput('') }} className="text-sm text-gray-500 hover:text-gray-400 px-2 py-1">
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>  {/* end flex-col */}
 
       {selected && (
         <LibraryDetailPanel
