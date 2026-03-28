@@ -1,6 +1,6 @@
 import React from 'react'
 
-export const SORT_CYCLE = [
+const SORT_CYCLE = [
   { field: 'date',   direction: 'desc', label: 'Date ↓' },
   { field: 'date',   direction: 'asc',  label: 'Date ↑' },
   { field: 'name',   direction: 'asc',  label: 'Name ↑' },

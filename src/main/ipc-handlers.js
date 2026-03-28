@@ -100,6 +100,7 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
     const oldDir = path.join(outputFolder, from)
     const newDir = path.join(outputFolder, to)
     if (!fs.existsSync(oldDir)) return null
+    if (fs.existsSync(newDir)) return null
     fs.renameSync(oldDir, newDir)
     renameFolderInIndex(oldDir, newDir)
     return to
@@ -125,7 +126,7 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
         fs.renameSync(fp, dest)
         moveMetadataEntry(fp, dest)
       }
-      fs.rmdirSync(dirPath)
+      fs.rmSync(dirPath, { recursive: true })
     } else {
       const index = readMetadataIndex()
       for (const fp of filePaths) {
@@ -134,7 +135,8 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
         if (thumbPath && fs.existsSync(thumbPath)) await shell.trashItem(thumbPath)
         deleteMetadataEntry(fp)
       }
-      if (fs.existsSync(dirPath)) fs.rmdirSync(dirPath)
+      deleteFolderFromIndex(dirPath)
+      if (fs.existsSync(dirPath)) fs.rmSync(dirPath, { recursive: true })
     }
     return null
   })
