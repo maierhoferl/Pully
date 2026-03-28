@@ -14,6 +14,9 @@ contextBridge.exposeInMainWorld('api', {
   playFile: filePath => ipcRenderer.invoke('library:play', filePath),
   openUrl: url => ipcRenderer.invoke('shell:openUrl', url),
   deleteFile: filePath => ipcRenderer.invoke('library:delete', filePath),
+  listFolders: () => ipcRenderer.invoke('library:listFolders'),
+  createFolder: name => ipcRenderer.invoke('library:createFolder', name),
+  moveFile: args => ipcRenderer.invoke('library:moveFile', args),
 
   onQueueUpdated: cb => {
     const handler = (_, q) => cb(q)

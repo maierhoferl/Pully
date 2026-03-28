@@ -31,3 +31,13 @@ export function deleteMetadataEntry(filePath, indexPath) {
   delete index[filePath]
   fs.writeFileSync(p, JSON.stringify(index, null, 2))
 }
+
+export function moveMetadataEntry(oldPath, newPath, indexPath) {
+  const p = indexPath || defaultPath()
+  const index = readMetadataIndex(p)
+  if (index[oldPath]) {
+    index[newPath] = index[oldPath]
+    delete index[oldPath]
+    fs.writeFileSync(p, JSON.stringify(index, null, 2))
+  }
+}

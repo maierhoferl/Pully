@@ -2,7 +2,7 @@ import { ipcMain, dialog, shell, session } from 'electron'
 import { readConfig, writeConfig } from './config-store.js'
 import { enableAdblock, disableAdblock } from './adblock-manager.js'
 import { extractInfo } from './ytdlp-runner.js'
-import { readMetadataIndex, deleteMetadataEntry } from './metadata-store.js'
+import { readMetadataIndex, deleteMetadataEntry, moveMetadataEntry } from './metadata-store.js'
 import fs from 'fs'
 import path from 'path'
 
@@ -25,23 +25,70 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
     const { outputFolder } = readConfig()
     if (!outputFolder || !fs.existsSync(outputFolder)) return []
     const index = readMetadataIndex()
-    return fs.readdirSync(outputFolder)
-      .filter(f => !f.startsWith('.'))
-      .map(f => {
-        const full = path.join(outputFolder, f)
+
+    function makeEntry(fileName, fullPath, stat, meta, folder) {
+      return {
+        name: fileName, path: fullPath, folder,
+        size: stat.size, mtime: stat.mtime.toISOString(),
+        title: meta.title || null,
+        uploader: meta.uploader || null,
+        description: meta.description || null,
+        thumbnailUrl: meta.thumbnailUrl || null,
+        url: meta.url || null,
+        downloadedAt: meta.downloadedAt || null,
+      }
+    }
+
+    const entries = []
+    const rootItems = fs.readdirSync(outputFolder)
+    for (const f of rootItems) {
+      if (f.startsWith('.')) continue
+      const full = path.join(outputFolder, f)
+      const stat = fs.statSync(full)
+      if (stat.isDirectory()) continue
+      entries.push(makeEntry(f, full, stat, index[full] || {}, null))
+    }
+    for (const dir of rootItems) {
+      if (dir.startsWith('.')) continue
+      const dirPath = path.join(outputFolder, dir)
+      if (!fs.statSync(dirPath).isDirectory()) continue
+      for (const f of fs.readdirSync(dirPath)) {
+        if (f.startsWith('.')) continue
+        const full = path.join(dirPath, f)
         const stat = fs.statSync(full)
-        const meta = index[full] || {}
-        return {
-          name: f, path: full, size: stat.size, mtime: stat.mtime.toISOString(),
-          title: meta.title || null,
-          uploader: meta.uploader || null,
-          description: meta.description || null,
-          thumbnailUrl: meta.thumbnailUrl || null,
-          url: meta.url || null,
-          downloadedAt: meta.downloadedAt || null,
-        }
-      })
-      .sort((a, b) => new Date(b.mtime) - new Date(a.mtime))
+        if (stat.isDirectory()) continue
+        entries.push(makeEntry(f, full, stat, index[full] || {}, dir))
+      }
+    }
+    return entries.sort((a, b) => new Date(b.mtime) - new Date(a.mtime))
+  })
+
+  ipcMain.handle('library:listFolders', () => {
+    const { outputFolder } = readConfig()
+    if (!outputFolder || !fs.existsSync(outputFolder)) return []
+    return fs.readdirSync(outputFolder)
+      .filter(f => !f.startsWith('.') && fs.statSync(path.join(outputFolder, f)).isDirectory())
+      .sort()
+  })
+
+  ipcMain.handle('library:createFolder', (_, name) => {
+    const { outputFolder } = readConfig()
+    const folderPath = path.join(outputFolder, name)
+    if (!fs.existsSync(folderPath)) fs.mkdirSync(folderPath)
+    return name
+  })
+
+  ipcMain.handle('library:moveFile', (_, { filePath, targetFolder }) => {
+    const { outputFolder } = readConfig()
+    const fileName = path.basename(filePath)
+    const newPath = targetFolder
+      ? path.join(outputFolder, targetFolder, fileName)
+      : path.join(outputFolder, fileName)
+    if (filePath !== newPath) {
+      fs.renameSync(filePath, newPath)
+      moveMetadataEntry(filePath, newPath)
+    }
+    return newPath
   })
 
   ipcMain.handle('adblock:setEnabled', (_, isEnabled) => {
