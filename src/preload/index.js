@@ -20,6 +20,8 @@ contextBridge.exposeInMainWorld('api', {
   moveFile: args => ipcRenderer.invoke('library:moveFile', args),
   renameFolder: (from, to) => ipcRenderer.invoke('library:renameFolder', { from, to }),
   deleteFolder: (folder, strategy) => ipcRenderer.invoke('library:deleteFolder', { folder, strategy }),
+  autoClassify: () => ipcRenderer.invoke('library:autoClassify'),
+  fetchClassifyModels: (provider, apiKey) => ipcRenderer.invoke('classify:fetchModels', { provider, apiKey }),
 
   onQueueUpdated: cb => {
     const handler = (_, q) => cb(q)
