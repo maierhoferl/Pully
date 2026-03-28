@@ -31,7 +31,9 @@ export async function callLLMWithVideo(provider, apiKey, model, prompt, videoUrl
   const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
   if (!res.ok) throw new Error(`Gemini video API error: ${res.status}`)
   const data = await res.json()
-  return data.candidates[0].content.parts[0].text
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
+  if (text == null) throw new Error(`Gemini returned no text. Response: ${JSON.stringify(data).slice(0, 200)}`)
+  return text
 }
 
 /** Fetch available model names for a provider. Returns string[]. */
@@ -72,7 +74,9 @@ async function _callGemini(apiKey, model, messages) {
   const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents }) })
   if (!res.ok) throw new Error(`Gemini API error: ${res.status}`)
   const data = await res.json()
-  return data.candidates[0].content.parts[0].text
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
+  if (text == null) throw new Error(`Gemini returned no text. Response: ${JSON.stringify(data).slice(0, 200)}`)
+  return text
 }
 
 async function _callClaude(apiKey, model, messages) {
@@ -83,11 +87,13 @@ async function _callClaude(apiKey, model, messages) {
       'anthropic-version': '2023-06-01',
       'content-type': 'application/json',
     },
-    body: JSON.stringify({ model, max_tokens: 1024, messages })
+    body: JSON.stringify({ model, max_tokens: 2048, messages })
   })
   if (!res.ok) throw new Error(`Claude API error: ${res.status}`)
   const data = await res.json()
-  return data.content[0].text
+  const text = data?.content?.[0]?.text
+  if (text == null) throw new Error(`Claude returned no text. Response: ${JSON.stringify(data).slice(0, 200)}`)
+  return text
 }
 
 async function _callOpenAI(apiKey, model, messages) {
@@ -101,5 +107,7 @@ async function _callOpenAI(apiKey, model, messages) {
   })
   if (!res.ok) throw new Error(`OpenAI API error: ${res.status}`)
   const data = await res.json()
-  return data.choices[0].message.content
+  const text = data?.choices?.[0]?.message?.content
+  if (text == null) throw new Error(`OpenAI returned no text. Response: ${JSON.stringify(data).slice(0, 200)}`)
+  return text
 }

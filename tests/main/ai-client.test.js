@@ -89,4 +89,34 @@ describe('fetchProviderModels', () => {
     expect(models).toContain('gemini-2.0-flash')
     expect(models).not.toContain('embedding-001')
   })
+
+  it('returns model IDs for Claude', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ data: [{ id: 'claude-haiku-4-6' }, { id: 'claude-sonnet-4-6' }] }),
+    })
+    const models = await fetchProviderModels('claude', 'key')
+    expect(models).toContain('claude-haiku-4-6')
+    expect(models).toContain('claude-sonnet-4-6')
+  })
+
+  it('returns gpt-* model IDs for OpenAI, sorted', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        data: [
+          { id: 'gpt-4o-mini' },
+          { id: 'gpt-4o' },
+          { id: 'whisper-1' },        // should be excluded
+          { id: 'text-embedding-3-small' }, // should be excluded
+        ]
+      }),
+    })
+    const models = await fetchProviderModels('openai', 'key')
+    expect(models).toContain('gpt-4o-mini')
+    expect(models).toContain('gpt-4o')
+    expect(models).not.toContain('whisper-1')
+    expect(models).not.toContain('text-embedding-3-small')
+    expect(models).toEqual([...models].sort()) // sorted
+  })
 })
