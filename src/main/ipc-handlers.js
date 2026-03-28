@@ -9,6 +9,12 @@ import { generateSummary } from './ai-summarizer.js'
 import fs from 'fs'
 import path from 'path'
 
+// Helper files to exclude from library and classification logic
+function isHelperFile(fileName) {
+  // Exclude markdown notes, text metadata files, and thumbnail sidecars
+  return /\.(md|txt|nfo)$/i.test(fileName) || /\.thumb(\.[a-z]+)?$/i.test(fileName)
+}
+
 export function registerIpcHandlers(downloadManager, mainWindow, logger) {
   ipcMain.handle('config:read', () => readConfig())
   ipcMain.handle('config:write', (_, data) => {
@@ -61,13 +67,11 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
       }
     }
 
-    const isThumbnailSidecar = name => /\.thumb(\.[a-z]+)?$/i.test(name)
-
     const entries = []
     try {
       const rootItems = fs.readdirSync(outputFolder)
       for (const f of rootItems) {
-        if (f.startsWith('.') || isThumbnailSidecar(f)) continue
+        if (f.startsWith('.') || isHelperFile(f)) continue
         const full = path.join(outputFolder, f)
         try {
           const stat = fs.statSync(full)
@@ -83,7 +87,7 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
         try {
           if (!fs.statSync(dirPath).isDirectory()) continue
           for (const f of fs.readdirSync(dirPath)) {
-            if (f.startsWith('.') || isThumbnailSidecar(f)) continue
+            if (f.startsWith('.') || isHelperFile(f)) continue
             const full = path.join(dirPath, f)
             try {
               const stat = fs.statSync(full)
@@ -233,6 +237,7 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
     const moved = []
     let skipped = 0
     for (const file of rootFiles) {
+      if (isHelperFile(file)) continue
       const filePath = path.join(outputFolder, file)
       const meta = index[filePath] || {}
       const { folder } = await classifyVideo(

@@ -2,15 +2,18 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAppStore } from '../store/app-store'
 
-const CATEGORIES = ['All', 'Download', 'Classify', 'Summarize', 'Notes', 'App']
-const LEVELS = ['All', 'Info', 'Warn', 'Error']
+const CATEGORIES = ['Download', 'Classify', 'Summarize', 'Notes', 'App']
+const LEVELS = ['Info', 'Warn', 'Error']
 
 export function DebugTab() {
   const logEntries = useAppStore((state) => state.logEntries)
-  const [categoryFilter, setCategoryFilter] = useState('All')
-  const [levelFilter, setLevelFilter] = useState('All')
+  const [selectedCategories, setSelectedCategories] = useState(
+    new Set(['Download', 'Classify', 'Summarize', 'Notes']) // All except 'App'
+  )
+  const [selectedLevels, setSelectedLevels] = useState(
+    new Set(['Warn', 'Error']) // Warn and Error by default
+  )
   const [pauseScroll, setPauseScroll] = useState(false)
-  const [expandedRows, setExpandedRows] = useState(new Set())
   const listEndRef = useRef(null)
 
   // Auto-scroll to bottom unless paused
@@ -20,24 +23,34 @@ export function DebugTab() {
     }
   }, [logEntries, pauseScroll])
 
+  const toggleCategory = (category) => {
+    const newSelected = new Set(selectedCategories)
+    if (newSelected.has(category)) {
+      newSelected.delete(category)
+    } else {
+      newSelected.add(category)
+    }
+    setSelectedCategories(newSelected)
+  }
+
+  const toggleLevel = (level) => {
+    const newSelected = new Set(selectedLevels)
+    if (newSelected.has(level)) {
+      newSelected.delete(level)
+    } else {
+      newSelected.add(level)
+    }
+    setSelectedLevels(newSelected)
+  }
+
   const filtered = logEntries.filter((entry) => {
-    const catMatch =
-      categoryFilter === 'All' ||
-      entry.category.toLowerCase() === categoryFilter.toLowerCase()
-    const levelMatch =
-      levelFilter === 'All' ||
-      entry.level.toLowerCase() === levelFilter.toLowerCase()
+    const catMatch = selectedCategories.has(entry.category)
+    const levelMatch = selectedLevels.has(entry.level)
     return catMatch && levelMatch
   })
 
-  const toggleExpand = (index) => {
-    const newExpanded = new Set(expandedRows)
-    if (newExpanded.has(index)) {
-      newExpanded.delete(index)
-    } else {
-      newExpanded.add(index)
-    }
-    setExpandedRows(newExpanded)
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text)
   }
 
   const handleClear = () => {
@@ -57,53 +70,55 @@ export function DebugTab() {
     }
   }
 
-  const getCategoryColor = (category) => {
+  const getCategoryBgColor = (category) => {
     const colors = {
-      download: 'bg-green-50 border-l-4 border-green-500',
-      classify: 'bg-purple-50 border-l-4 border-purple-500',
-      summarize: 'bg-orange-50 border-l-4 border-orange-500',
-      notes: 'bg-blue-50 border-l-4 border-blue-500',
-      app: 'bg-gray-50 border-l-4 border-gray-500'
+      download: 'bg-green-100 text-green-800',
+      classify: 'bg-purple-100 text-purple-800',
+      summarize: 'bg-orange-100 text-orange-800',
+      notes: 'bg-blue-100 text-blue-800',
+      app: 'bg-gray-100 text-gray-800'
     }
-    return colors[category] || 'bg-gray-50'
+    return colors[category.toLowerCase()] || 'bg-gray-100 text-gray-800'
   }
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
       {/* Toolbar */}
       <div className="bg-white border-b border-gray-200 p-4 space-y-3">
-        {/* Category Filter */}
-        <div className="flex gap-2 flex-wrap">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setCategoryFilter(cat)}
-              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                categoryFilter === cat
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+        {/* Category Filter - Multi-select */}
+        <div>
+          <div className="text-xs font-semibold text-gray-700 mb-2">Categories</div>
+          <div className="flex gap-3 flex-wrap">
+            {CATEGORIES.map((cat) => (
+              <label key={cat} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedCategories.has(cat)}
+                  onChange={() => toggleCategory(cat)}
+                  className="rounded"
+                />
+                <span className="text-sm text-gray-700">{cat}</span>
+              </label>
+            ))}
+          </div>
         </div>
 
-        {/* Level Filter */}
-        <div className="flex gap-2 flex-wrap">
-          {LEVELS.map((level) => (
-            <button
-              key={level}
-              onClick={() => setLevelFilter(level)}
-              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                levelFilter === level
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              {level}
-            </button>
-          ))}
+        {/* Level Filter - Multi-select */}
+        <div>
+          <div className="text-xs font-semibold text-gray-700 mb-2">Level</div>
+          <div className="flex gap-3 flex-wrap">
+            {LEVELS.map((level) => (
+              <label key={level} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedLevels.has(level)}
+                  onChange={() => toggleLevel(level)}
+                  className="rounded"
+                />
+                <span className="text-sm text-gray-700">{level}</span>
+              </label>
+            ))}
+          </div>
         </div>
 
         {/* Action Buttons */}
@@ -131,49 +146,87 @@ export function DebugTab() {
         </div>
       </div>
 
-      {/* Log List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      {/* Log Table */}
+      <div className="flex-1 overflow-auto">
         {filtered.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
             No log entries
           </div>
         ) : (
-          filtered.map((entry, idx) => (
-            <div
-              key={idx}
-              className={`p-3 rounded border cursor-pointer transition-all ${getCategoryColor(
-                entry.category
-              )}`}
-              onClick={() => toggleExpand(idx)}
-            >
-              {/* Log row */}
-              <div className="flex items-start gap-2">
-                <span className="text-xs text-gray-500 flex-shrink-0 font-mono">
-                  {new Date(entry.ts).toLocaleTimeString()}
-                </span>
-                <span
-                  className={`px-2 py-0.5 rounded text-xs font-bold flex-shrink-0 ${getLevelColor(
-                    entry.level
-                  )}`}
-                >
-                  {entry.level.toUpperCase()}
-                </span>
-                <span className="px-2 py-0.5 bg-gray-200 text-gray-800 rounded text-xs font-medium flex-shrink-0">
-                  {entry.category}
-                </span>
-                <span className="text-sm flex-1">{entry.message}</span>
-              </div>
-
-              {/* Expanded meta */}
-              {expandedRows.has(idx) && entry.meta && (
-                <div className="mt-2 ml-24 pt-2 border-t border-gray-300">
-                  <pre className="text-xs bg-gray-800 text-gray-100 p-2 rounded overflow-auto">
-                    {JSON.stringify(entry.meta, null, 2)}
-                  </pre>
-                </div>
-              )}
-            </div>
-          ))
+          <table className="w-full border-collapse">
+            <thead className="bg-gray-200 sticky top-0">
+              <tr>
+                <th className="border border-gray-300 px-3 py-2 text-left text-xs font-semibold text-gray-700 w-32">
+                  Time
+                </th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-xs font-semibold text-gray-700 w-20">
+                  Level
+                </th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-xs font-semibold text-gray-700 w-24">
+                  Category
+                </th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-xs font-semibold text-gray-700 flex-1">
+                  Message
+                </th>
+                <th className="border border-gray-300 px-3 py-2 text-center text-xs font-semibold text-gray-700 w-12">
+                  Meta
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...filtered].reverse().map((entry, idx) => (
+                <tr key={idx} className="border-b hover:bg-gray-100 transition-colors">
+                  <td className="border border-gray-300 px-3 py-2 text-xs text-gray-600 font-mono whitespace-nowrap">
+                    {new Date(entry.ts).toLocaleTimeString()}
+                  </td>
+                  <td className="border border-gray-300 px-3 py-2">
+                    <span
+                      className={`px-2 py-0.5 rounded text-xs font-bold ${getLevelColor(
+                        entry.level
+                      )}`}
+                    >
+                      {entry.level.toUpperCase()}
+                    </span>
+                  </td>
+                  <td className="border border-gray-300 px-3 py-2">
+                    <span
+                      className={`px-2 py-0.5 rounded text-xs font-medium ${getCategoryBgColor(
+                        entry.category
+                      )}`}
+                    >
+                      {entry.category}
+                    </span>
+                  </td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm text-gray-800 max-w-md truncate">
+                    <div className="flex items-center gap-2">
+                      <span className="flex-1 truncate">{entry.message}</span>
+                      <button
+                        onClick={() => copyToClipboard(entry.message)}
+                        className="flex-shrink-0 px-2 py-1 bg-gray-300 text-gray-700 rounded text-xs font-medium hover:bg-gray-400 transition-colors"
+                        title="Copy message"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </td>
+                  <td className="border border-gray-300 px-3 py-2 text-center">
+                    {entry.meta ? (
+                      <details className="cursor-pointer">
+                        <summary className="text-xs text-blue-600 font-semibold select-none">
+                          View
+                        </summary>
+                        <pre className="mt-2 text-xs bg-gray-800 text-gray-100 p-2 rounded overflow-auto max-h-48">
+                          {JSON.stringify(entry.meta, null, 2)}
+                        </pre>
+                      </details>
+                    ) : (
+                      <span className="text-xs text-gray-400">—</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
         <div ref={listEndRef} />
       </div>
