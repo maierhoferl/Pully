@@ -3,7 +3,6 @@ import { useAppStore } from '../store/app-store.js'
 
 const TABS = [
   { id: 'browser', label: 'Browser' },
-  { id: 'downloads', label: 'Downloads' },
   { id: 'library', label: 'Library' },
 ]
 
