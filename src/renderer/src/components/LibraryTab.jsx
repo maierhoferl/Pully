@@ -1,21 +1,20 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useAppStore } from '../store/app-store.js'
-
-function fmtSize(b) {
-  if (b > 1e9) return `${(b / 1e9).toFixed(2)} GB`
-  if (b > 1e6) return `${(b / 1e6).toFixed(1)} MB`
-  return `${(b / 1e3).toFixed(0)} KB`
-}
-function fmtDate(iso) {
-  return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-}
+import LibraryDetailPanel from './LibraryDetailPanel.jsx'
 
 export default function LibraryTab() {
   const { libraryFiles, setLibraryFiles, config } = useAppStore()
+  const [selectedPath, setSelectedPath] = useState(null)
 
   useEffect(() => {
     window.api.listLibrary().then(setLibraryFiles)
   }, [])
+
+  const selected = selectedPath ? libraryFiles.find(f => f.path === selectedPath) : null
+
+  function handleSelect(file) {
+    setSelectedPath(prev => prev === file.path ? null : file.path)
+  }
 
   if (!config.outputFolder) {
     return (
@@ -32,19 +31,44 @@ export default function LibraryTab() {
       </div>
     )
   }
+
   return (
-    <div className="p-4">
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-        {libraryFiles.map(file => (
-          <button key={file.path} onClick={() => window.api.revealInFinder(file.path)}
-            className="bg-gray-800 hover:bg-gray-700 rounded-lg p-3 text-left transition-colors"
-            title="Reveal in Finder">
-            <div className="aspect-video bg-gray-700 rounded mb-2 flex items-center justify-center text-3xl">🎬</div>
-            <p className="text-xs text-white font-medium truncate">{file.name}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{fmtSize(file.size)} · {fmtDate(file.mtime)}</p>
-          </button>
-        ))}
+    <div className="flex h-full overflow-hidden">
+      <div className="flex-1 overflow-y-auto p-3">
+        <div className="flex flex-col gap-1">
+          {libraryFiles.map(file => {
+            const title = file.title || file.name.replace(/\.[^/.]+$/, '')
+            const uploader = file.uploader || '—'
+            const isSelected = file.path === selectedPath
+            return (
+              <button
+                key={file.path}
+                onClick={() => handleSelect(file)}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors w-full ${
+                  isSelected
+                    ? 'bg-indigo-900/50 border border-indigo-700'
+                    : 'bg-gray-800 hover:bg-gray-700 border border-transparent'
+                }`}
+              >
+                <div className="w-16 aspect-video bg-gray-700 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
+                  {file.thumbnailUrl
+                    ? <img src={file.thumbnailUrl} alt="" className="w-full h-full object-cover"
+                        onError={e => { e.target.style.display = 'none' }} />
+                    : <span className="text-gray-500 text-lg">▶</span>
+                  }
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-white truncate">{title}</p>
+                  <p className="text-xs text-gray-400 truncate">{uploader}</p>
+                </div>
+              </button>
+            )
+          })}
+        </div>
       </div>
+      {selected && (
+        <LibraryDetailPanel file={selected} onClose={() => setSelectedPath(null)} />
+      )}
     </div>
   )
 }
