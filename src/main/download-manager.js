@@ -1,7 +1,10 @@
 import { EventEmitter } from 'events'
+import fs from 'fs'
+import path from 'path'
 import { startDownload } from './ytdlp-runner.js'
 import { readConfig } from './config-store.js'
-import { writeMetadataEntry, downloadAndStoreThumbnail } from './metadata-store.js'
+import { writeMetadataEntry, downloadAndStoreThumbnail, moveMetadataEntry } from './metadata-store.js'
+import { classifyVideo } from './auto-classifier.js'
 
 export class DownloadManager extends EventEmitter {
   constructor() {
@@ -74,6 +77,26 @@ export class DownloadManager extends EventEmitter {
           if (item.metadata.thumbnailUrl) {
             downloadAndStoreThumbnail(item.metadata.thumbnailUrl, actualPath).catch(() => {})
           }
+        }
+        const cfg = readConfig()
+        if (cfg.autoClassifyEnabled && actualPath) {
+          try {
+            const folderNames = fs.readdirSync(cfg.outputFolder)
+              .filter(f => !f.startsWith('.') && fs.statSync(path.join(cfg.outputFolder, f)).isDirectory())
+            if (folderNames.length > 0) {
+              classifyVideo(
+                { title: item.metadata.title, uploader: item.metadata.uploader, description: item.metadata.description, url: item.metadata.url },
+                folderNames,
+                cfg
+              ).then(({ folder }) => {
+                if (folder) {
+                  const newPath = path.join(cfg.outputFolder, folder, path.basename(actualPath))
+                  fs.renameSync(actualPath, newPath)
+                  moveMetadataEntry(actualPath, newPath)
+                }
+              }).catch(() => {})
+            }
+          } catch { /* don't block completion on classify errors */ }
         }
         this.emit('completed', { id: item.id })
         this.emit('queue-updated', this.getAll())

@@ -2,13 +2,41 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 vi.mock('../../src/main/ytdlp-runner.js', () => ({ startDownload: vi.fn() }))
 vi.mock('../../src/main/config-store.js', () => ({
-  readConfig: vi.fn(() => ({ outputFolder: '/tmp/vids', maxConcurrent: 2 }))
+  readConfig: vi.fn(() => ({
+    outputFolder: '/tmp/vids',
+    maxConcurrent: 2,
+    autoClassifyEnabled: false,
+    autoClassifyProvider: 'local',
+    autoClassifyApiKey: '',
+    autoClassifyModel: '',
+  }))
 }))
-vi.mock('../../src/main/metadata-store.js', () => ({ writeMetadataEntry: vi.fn(), downloadAndStoreThumbnail: vi.fn().mockResolvedValue(undefined) }))
+vi.mock('../../src/main/metadata-store.js', () => ({
+  writeMetadataEntry: vi.fn(),
+  downloadAndStoreThumbnail: vi.fn().mockResolvedValue(undefined),
+  moveMetadataEntry: vi.fn(),
+}))
+vi.mock('../../src/main/auto-classifier.js', () => ({
+  classifyVideo: vi.fn().mockResolvedValue({ folder: null, tier: 'none' })
+}))
+
+vi.mock('fs', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    default: {
+      ...actual,
+      readdirSync: vi.fn(() => ['Music']),
+      statSync: vi.fn(() => ({ isDirectory: () => true })),
+      renameSync: vi.fn(),
+    }
+  }
+})
 
 import { startDownload } from '../../src/main/ytdlp-runner.js'
 import { DownloadManager } from '../../src/main/download-manager.js'
 import { writeMetadataEntry } from '../../src/main/metadata-store.js'
+import { classifyVideo } from '../../src/main/auto-classifier.js'
+import { moveMetadataEntry } from '../../src/main/metadata-store.js'
 
 beforeEach(() => vi.clearAllMocks())
 
@@ -106,5 +134,43 @@ describe('DownloadManager', () => {
       actualPath,
       expect.objectContaining({ title: 'My Video', uploader: 'Author', downloadedAt: expect.any(String) })
     )
+  })
+})
+
+describe('auto-classify on download completion', () => {
+  it('does not call classifyVideo when autoClassifyEnabled is false', async () => {
+    let onDone
+    startDownload.mockImplementation((url, fmt, dir, onProg, done) => { onDone = done; return { kill: vi.fn() } })
+    const dm = new DownloadManager()
+    dm.add('https://a.com', 'mp4', 'V1', { title: 'Guitar music', uploader: '', description: '', thumbnailUrl: null, url: '' })
+    onDone('/tmp/vids/video.mp4')
+    await new Promise(r => setTimeout(r, 10))
+    expect(classifyVideo).not.toHaveBeenCalled()
+  })
+
+  it('calls classifyVideo and moves file when autoClassifyEnabled is true and folder matches', async () => {
+    const { readConfig } = await import('../../src/main/config-store.js')
+    readConfig.mockReturnValue({
+      outputFolder: '/tmp/vids',
+      maxConcurrent: 2,
+      autoClassifyEnabled: true,
+      autoClassifyProvider: 'local',
+      autoClassifyApiKey: '',
+      autoClassifyModel: '',
+    })
+    classifyVideo.mockResolvedValue({ folder: 'Music', tier: 'keyword' })
+
+    let onDone
+    startDownload.mockImplementation((url, fmt, dir, onProg, done) => { onDone = done; return { kill: vi.fn() } })
+    const dm = new DownloadManager()
+    dm.add('https://a.com', 'mp4', 'Guitar music', { title: 'Guitar music', uploader: '', description: '', thumbnailUrl: null, url: '' })
+    onDone('/tmp/vids/guitar-music.mp4')
+    await new Promise(r => setTimeout(r, 20))
+    expect(classifyVideo).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Guitar music' }),
+      ['Music'],
+      expect.objectContaining({ autoClassifyEnabled: true })
+    )
+    expect(moveMetadataEntry).toHaveBeenCalled()
   })
 })
