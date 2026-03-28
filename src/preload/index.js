@@ -12,6 +12,8 @@ contextBridge.exposeInMainWorld('api', {
   listLibrary: () => ipcRenderer.invoke('library:list'),
   revealInFinder: filePath => ipcRenderer.invoke('library:reveal', filePath),
   playFile: filePath => ipcRenderer.invoke('library:play', filePath),
+  openUrl: url => ipcRenderer.invoke('shell:openUrl', url),
+  deleteFile: filePath => ipcRenderer.invoke('library:delete', filePath),
 
   onQueueUpdated: cb => {
     const handler = (_, q) => cb(q)

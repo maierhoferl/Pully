@@ -16,6 +16,11 @@ export default function LibraryTab() {
     setSelectedPath(prev => prev === file.path ? null : file.path)
   }
 
+  function handleDeleted(filePath) {
+    setLibraryFiles(libraryFiles.filter(f => f.path !== filePath))
+    setSelectedPath(null)
+  }
+
   if (!config.outputFolder) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-2">
@@ -67,7 +72,7 @@ export default function LibraryTab() {
         </div>
       </div>
       {selected && (
-        <LibraryDetailPanel file={selected} onClose={() => setSelectedPath(null)} />
+        <LibraryDetailPanel file={selected} onClose={() => setSelectedPath(null)} onDeleted={handleDeleted} />
       )}
     </div>
   )

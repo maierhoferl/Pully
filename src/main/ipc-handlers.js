@@ -2,7 +2,7 @@ import { ipcMain, dialog, shell, session } from 'electron'
 import { readConfig, writeConfig } from './config-store.js'
 import { enableAdblock, disableAdblock } from './adblock-manager.js'
 import { extractInfo } from './ytdlp-runner.js'
-import { readMetadataIndex } from './metadata-store.js'
+import { readMetadataIndex, deleteMetadataEntry } from './metadata-store.js'
 import fs from 'fs'
 import path from 'path'
 
@@ -37,6 +37,7 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
           uploader: meta.uploader || null,
           description: meta.description || null,
           thumbnailUrl: meta.thumbnailUrl || null,
+          url: meta.url || null,
           downloadedAt: meta.downloadedAt || null,
         }
       })
@@ -54,8 +55,13 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
   })
 
   ipcMain.handle('library:reveal', (_, filePath) => shell.showItemInFolder(filePath))
-
   ipcMain.handle('library:play', (_, filePath) => shell.openPath(filePath))
+  ipcMain.handle('shell:openUrl', (_, url) => shell.openExternal(url))
+
+  ipcMain.handle('library:delete', async (_, filePath) => {
+    await shell.trashItem(filePath)
+    deleteMetadataEntry(filePath)
+  })
 
   // Forward download manager events to renderer
   downloadManager.on('queue-updated', q => mainWindow.webContents.send('download:queue-updated', q))

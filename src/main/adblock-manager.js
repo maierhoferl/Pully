@@ -16,13 +16,21 @@ const YOUTUBE_EXTRA_CSS =
     'ytd-rich-item-renderer:has(ytd-ad-slot-renderer)'
   ].join(',\n') + ' { display: none !important; }'
 
-// Exception rules to prevent the prebuilt lists from blocking YouTube's player APIs.
-// Without these, the video player can silently fail to initialize (shows white/blank).
+// Exception rules to prevent the prebuilt lists from blocking YouTube's player APIs
+// and CDN resources. Without these:
+// - Video player silently fails to initialize (white/blank player)
+// - Thumbnail images in the Library tab fail to load (renderer origin is not youtube.com
+//   so CDN requests are treated as third-party by filter rules)
 const YOUTUBE_PLAYER_EXCEPTIONS = [
   '@@||www.youtube.com/youtubei/^$first-party',
   '@@||www.youtube.com/api/stats/$first-party',
   '@@||www.youtube.com/s/player/$first-party',
   '@@||jnn-pa.googleapis.com^',
+  // YouTube image/thumbnail CDNs — must be allowlisted globally because the
+  // library panel loads these from a non-youtube.com origin (renderer process)
+  '@@||i.ytimg.com^',
+  '@@||yt3.ggpht.com^',
+  '@@||yt3.googleusercontent.com^',
 ]
 
 let blocker = null

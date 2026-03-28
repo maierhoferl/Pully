@@ -64,14 +64,16 @@ function MediaEntry({ entry }) {
   const [downloadId, setDownloadId] = useState(null)
 
   async function handleDownload() {
+    const sourceUrl = entry.webpage_url || entry.url
     const metadata = {
       title: entry.title || entry.id || 'Untitled',
       uploader: entry.uploader || entry.channel || null,
       description: entry.description || null,
       thumbnailUrl: entry.thumbnail || null,
+      url: sourceUrl,
     }
     const id = await window.api.addDownload(
-      entry.webpage_url || entry.url,
+      sourceUrl,
       selected,
       entry.title || entry.id || 'Untitled',
       metadata

@@ -24,3 +24,10 @@ export function writeMetadataEntry(filePath, metadata, indexPath) {
   index[filePath] = metadata
   fs.writeFileSync(p, JSON.stringify(index, null, 2))
 }
+
+export function deleteMetadataEntry(filePath, indexPath) {
+  const p = indexPath || defaultPath()
+  const index = readMetadataIndex(p)
+  delete index[filePath]
+  fs.writeFileSync(p, JSON.stringify(index, null, 2))
+}
