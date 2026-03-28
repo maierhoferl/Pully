@@ -2,7 +2,8 @@ const https = require('https')
 const fs = require('fs')
 const path = require('path')
 
-const BINARIES = {
+// --- yt-dlp ---
+const YTDLP_BINARIES = {
   darwin: {
     url: 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos',
     dest: path.join(__dirname, '..', 'resources', 'yt-dlp'),
@@ -20,20 +21,6 @@ const BINARIES = {
   }
 }
 
-const info = BINARIES[process.platform]
-
-if (!info) {
-  console.log(`Unsupported platform: ${process.platform}, skipping yt-dlp download`)
-  process.exit(0)
-}
-
-if (fs.existsSync(info.dest)) {
-  console.log('yt-dlp already present, skipping')
-  process.exit(0)
-}
-
-fs.mkdirSync(path.dirname(info.dest), { recursive: true })
-
 function download(url, dest, executable, hops = 0) {
   if (hops > 5) { console.error('Too many redirects'); process.exit(1) }
   https.get(url, res => {
@@ -50,7 +37,7 @@ function download(url, dest, executable, hops = 0) {
     file.on('finish', () => {
       file.close()
       if (executable) fs.chmodSync(dest, 0o755)
-      console.log('yt-dlp downloaded to', dest)
+      console.log('Downloaded to', dest)
     })
   }).on('error', err => {
     fs.unlink(dest, () => {})
@@ -59,4 +46,28 @@ function download(url, dest, executable, hops = 0) {
   })
 }
 
-download(info.url, info.dest, info.executable)
+// Download yt-dlp
+const ytdlpInfo = YTDLP_BINARIES[process.platform]
+if (!ytdlpInfo) {
+  console.log(`Unsupported platform: ${process.platform}, skipping yt-dlp download`)
+} else if (fs.existsSync(ytdlpInfo.dest)) {
+  console.log('yt-dlp already present, skipping')
+} else {
+  fs.mkdirSync(path.dirname(ytdlpInfo.dest), { recursive: true })
+  download(ytdlpInfo.url, ytdlpInfo.dest, ytdlpInfo.executable)
+}
+
+// Copy ffmpeg from ffmpeg-static
+const ffmpegSrc = require('ffmpeg-static')
+const ffmpegDest = path.join(
+  __dirname, '..', 'resources',
+  process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg'
+)
+if (fs.existsSync(ffmpegDest)) {
+  console.log('ffmpeg already present, skipping')
+} else {
+  fs.mkdirSync(path.dirname(ffmpegDest), { recursive: true })
+  fs.copyFileSync(ffmpegSrc, ffmpegDest)
+  if (process.platform !== 'win32') fs.chmodSync(ffmpegDest, 0o755)
+  console.log('ffmpeg copied to', ffmpegDest)
+}
