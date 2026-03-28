@@ -31,7 +31,7 @@ export default function SidePanel() {
 
   return (
     <div ref={containerRef} className="flex flex-col h-full bg-gray-950 border-l border-gray-700">
-      <div style={{ height: `${splitPct}%` }} className="overflow-y-auto min-h-0 flex-shrink-0">
+      <div style={{ height: `${splitPct}%` }} className="overflow-y-auto min-h-0 flex-shrink-0 border-t-2 border-blue-600">
         <MediaPanel />
       </div>
       <div

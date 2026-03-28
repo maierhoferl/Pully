@@ -65,6 +65,11 @@ export default function BrowserTab() {
       setCanGoForward(wv.canGoForward())
       currentUrlRef.current = url
       scanPage(url)
+      if (url.includes('youtube.com')) {
+        wv.executeJavaScript(
+          `localStorage.setItem('yt-player-autoplay-preference', JSON.stringify({data:"false",creation:Date.now()}))`
+        )
+      }
     }
 
     wv.addEventListener('did-navigate', onNavigate)
@@ -134,6 +139,7 @@ export default function BrowserTab() {
       <div className="flex flex-1 min-h-0">
         <webview ref={webviewRef} src={HOME} className="flex-1 min-w-0" style={{ height: '100%' }} allowpopups="true" />
         <div
+          role="separator"
           className="w-1 bg-gray-800 hover:bg-blue-600 cursor-col-resize flex-shrink-0 flex items-center justify-center transition-colors"
           onMouseDown={handleSideDragStart}
         >
