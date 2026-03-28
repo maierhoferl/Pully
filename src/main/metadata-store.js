@@ -43,6 +43,33 @@ export function moveMetadataEntry(oldPath, newPath, indexPath) {
   }
 }
 
+// Moves the thumbnail sidecar file alongside a relocated video and updates thumbnailLocalPath.
+// Must be called AFTER moveMetadataEntry so index[newVideoPath] already exists.
+export function moveThumbnailSidecar(oldVideoPath, newVideoPath, indexPath) {
+  const index = readMetadataIndex(indexPath)
+  const meta = index[newVideoPath]
+  if (!meta) return
+
+  // Find the sidecar: prefer the recorded thumbnailLocalPath, fall back to probing extensions
+  let foundPath = null
+  if (meta.thumbnailLocalPath && fs.existsSync(meta.thumbnailLocalPath)) {
+    foundPath = meta.thumbnailLocalPath
+  } else {
+    for (const ext of ['jpg', 'webp', 'png']) {
+      const candidate = oldVideoPath.replace(/\.[^.]+$/, `.thumb.${ext}`)
+      if (fs.existsSync(candidate)) { foundPath = candidate; break }
+    }
+  }
+  if (!foundPath) return
+
+  const thumbExt = path.extname(foundPath).slice(1)
+  const newThumbPath = newVideoPath.replace(/\.[^.]+$/, `.thumb.${thumbExt}`)
+  try {
+    if (foundPath !== newThumbPath) fs.renameSync(foundPath, newThumbPath)
+    writeMetadataEntry(newVideoPath, { ...meta, thumbnailLocalPath: newThumbPath }, indexPath)
+  } catch { /* best-effort */ }
+}
+
 // Converts an absolute local file path to a pully:// URL for use in the renderer
 export function toPullyUrl(localPath) {
   return 'pully:' + pathToFileURL(localPath).href.slice('file:'.length)
@@ -56,7 +83,11 @@ export function renameFolderInIndex(oldDirPath, newDirPath, indexPath) {
   const updated = {}
   for (const [fp, meta] of Object.entries(index)) {
     if (fp.startsWith(prefix)) {
-      updated[newDirPath + sep + fp.slice(prefix.length)] = meta
+      const newMeta = { ...meta }
+      if (newMeta.thumbnailLocalPath && newMeta.thumbnailLocalPath.startsWith(prefix)) {
+        newMeta.thumbnailLocalPath = newDirPath + sep + newMeta.thumbnailLocalPath.slice(prefix.length)
+      }
+      updated[newDirPath + sep + fp.slice(prefix.length)] = newMeta
     } else {
       updated[fp] = meta
     }
@@ -86,12 +117,15 @@ export async function downloadAndStoreThumbnail(thumbnailUrl, videoPath) {
     const ext = thumbnailUrl.match(/\.(webp|png)(?:[?#]|$)/i)?.[1] || 'jpg'
     const thumbPath = videoPath.replace(/\.[^.]+$/, `.thumb.${ext}`)
     if (fs.existsSync(thumbPath)) {
-      // File already downloaded — just backfill the metadata entry if needed
-      const index = readMetadataIndex()
-      if (index[videoPath] && !index[videoPath].thumbnailLocalPath) {
-        writeMetadataEntry(videoPath, { ...index[videoPath], thumbnailLocalPath: thumbPath })
+      if (fs.statSync(thumbPath).size > 0) {
+        // File already downloaded — just backfill the metadata entry if needed
+        const index = readMetadataIndex()
+        if (index[videoPath] && !index[videoPath].thumbnailLocalPath) {
+          writeMetadataEntry(videoPath, { ...index[videoPath], thumbnailLocalPath: thumbPath })
+        }
+        return
       }
-      return
+      // Zero-byte sidecar: fall through to re-download
     }
     const response = await fetch(thumbnailUrl)
     if (!response.ok) return

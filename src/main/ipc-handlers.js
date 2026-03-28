@@ -2,7 +2,7 @@ import { ipcMain, dialog, shell, session } from 'electron'
 import { readConfig, writeConfig } from './config-store.js'
 import { enableAdblock, disableAdblock } from './adblock-manager.js'
 import { extractInfo } from './ytdlp-runner.js'
-import { readMetadataIndex, deleteMetadataEntry, moveMetadataEntry, toPullyUrl, downloadAndStoreThumbnail, renameFolderInIndex, deleteFolderFromIndex } from './metadata-store.js'
+import { readMetadataIndex, deleteMetadataEntry, moveMetadataEntry, moveThumbnailSidecar, toPullyUrl, downloadAndStoreThumbnail, renameFolderInIndex, deleteFolderFromIndex } from './metadata-store.js'
 import { classifyVideo, fetchProviderModels } from './auto-classifier.js'
 import fs from 'fs'
 import path from 'path'
@@ -78,11 +78,20 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
       }
     }
 
-    // Backfill: for existing entries that have a remote thumbnailUrl but no local
-    // thumbnail yet, kick off a background download so next refresh shows it locally.
+    // Backfill: kick off a background thumbnail download when there is no local copy.
+    // Also re-trigger when thumbnailLocalPath is recorded but the file has been deleted.
     for (const [videoPath, meta] of Object.entries(index)) {
-      if (meta.thumbnailUrl && !meta.thumbnailLocalPath) {
+      if (!meta.thumbnailUrl) continue
+      if (!meta.thumbnailLocalPath) {
         downloadAndStoreThumbnail(meta.thumbnailUrl, videoPath).catch(() => {})
+      } else if (!fs.existsSync(meta.thumbnailLocalPath)) {
+        // Stale thumbnailLocalPath — re-download only if no sidecar already on disk
+        const hasSidecar = ['jpg', 'webp', 'png'].some(
+          ext => fs.existsSync(videoPath.replace(/\.[^.]+$/, `.thumb.${ext}`))
+        )
+        if (!hasSidecar) {
+          downloadAndStoreThumbnail(meta.thumbnailUrl, videoPath).catch(() => {})
+        }
       }
     }
 
@@ -123,6 +132,8 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
     const filePaths = fileNames.map(f => path.join(dirPath, f))
     if (strategy === 'unassign') {
       for (const fp of filePaths) {
+        // Skip sidecar files — moveThumbnailSidecar will relocate them alongside the video
+        if (/\.thumb(\.[a-z]+)?$/i.test(path.basename(fp))) continue
         const base = path.basename(fp)
         const ext = path.extname(base)
         const stem = path.basename(base, ext)
@@ -134,6 +145,7 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
         }
         fs.renameSync(fp, dest)
         moveMetadataEntry(fp, dest)
+        moveThumbnailSidecar(fp, dest)
       }
       fs.rmSync(dirPath, { recursive: true })
     } else {
@@ -159,6 +171,7 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
     if (filePath !== newPath) {
       fs.renameSync(filePath, newPath)
       moveMetadataEntry(filePath, newPath)
+      moveThumbnailSidecar(filePath, newPath)
     }
     return newPath
   })
@@ -197,6 +210,7 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
         }
         fs.renameSync(filePath, newPath)
         moveMetadataEntry(filePath, newPath)
+        moveThumbnailSidecar(filePath, newPath)
         moved.push({ file, toFolder: folder })
       } else {
         skipped++

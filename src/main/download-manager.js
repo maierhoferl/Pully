@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import { startDownload } from './ytdlp-runner.js'
 import { readConfig } from './config-store.js'
-import { writeMetadataEntry, downloadAndStoreThumbnail, moveMetadataEntry } from './metadata-store.js'
+import { writeMetadataEntry, downloadAndStoreThumbnail, moveMetadataEntry, moveThumbnailSidecar } from './metadata-store.js'
 import { classifyVideo } from './auto-classifier.js'
 
 export class DownloadManager extends EventEmitter {
@@ -101,6 +101,7 @@ export class DownloadManager extends EventEmitter {
                   }
                   fs.renameSync(actualPath, newPath)
                   moveMetadataEntry(actualPath, newPath)
+                  moveThumbnailSidecar(actualPath, newPath)
                 }
               }).catch(() => {})
             }

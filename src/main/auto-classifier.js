@@ -19,7 +19,7 @@ function classifyByKeyword(videoEntry, folderNames) {
   const blob = [
     videoEntry.title || '',
     videoEntry.uploader || '',
-    (videoEntry.description || '').slice(0, 300),
+    videoEntry.description || '',
     videoEntry.url || ''
   ].join(' ').toLowerCase()
 
@@ -57,7 +57,7 @@ async function getEmbeddingPipeline() {
 
 async function classifyByEmbedding(videoEntry, folderNames) {
   const pipe = await getEmbeddingPipeline()
-  const videoText = `${videoEntry.title || ''} by ${videoEntry.uploader || ''}. ${(videoEntry.description || '').slice(0, 200)}`
+  const videoText = `${videoEntry.title || ''} by ${videoEntry.uploader || ''}. ${videoEntry.description || ''}`
   const videoOutput = await pipe(videoText, { pooling: 'mean', normalize: true })
   const videoVec = Array.from(videoOutput.data)
 
@@ -81,7 +81,7 @@ const DEFAULT_MODELS = {
 }
 
 function buildLLMPrompt(videoEntry, folderNames) {
-  const desc = videoEntry.description ? '. Description: ' + videoEntry.description.slice(0, 100) : ''
+  const desc = videoEntry.description ? '. Description: ' + videoEntry.description : ''
   return `Folders: ${folderNames.join(', ')}\nVideo: "${videoEntry.title || ''}" by "${videoEntry.uploader || ''}"${desc}\nReply with exactly one folder name from the list, or "none".`
 }
 
