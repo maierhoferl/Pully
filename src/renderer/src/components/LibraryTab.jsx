@@ -24,6 +24,8 @@ function folderColor(name) {
 export default function LibraryTab() {
   const { libraryFiles, setLibraryFiles, config, downloads, removeDownloadByUrl,
           librarySort, librarySearch, setLibrarySort, setLibrarySearch } = useAppStore()
+  const librarySelectedFile = useAppStore(s => s.librarySelectedFile)
+  const setLibrarySelectedFile = useAppStore(s => s.setLibrarySelectedFile)
   const [allFolders, setAllFolders] = useState([])
   const [selectedPath, setSelectedPath] = useState(null)
   const [collapsed, setCollapsed] = useState(new Set())
@@ -86,6 +88,13 @@ export default function LibraryTab() {
   useEffect(() => {
     if (renamingFolder) renameInputRef.current?.focus()
   }, [renamingFolder])
+
+  useEffect(() => {
+    if (librarySelectedFile) {
+      setSelectedPath(librarySelectedFile)
+      setLibrarySelectedFile(null) // consume the request
+    }
+  }, [librarySelectedFile])
 
   // Exclude files that are still being downloaded
   const activeUrls = useMemo(() => new Set(

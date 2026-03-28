@@ -13,6 +13,8 @@ export function SettingsPanel() {
   const [folderError, setFolderError] = useState('')
   const [availableModels, setAvailableModels] = useState([])
   const [modelsFetching, setModelsFetching] = useState(false)
+  const [aiModels, setAiModels] = useState([])
+  const [aiModelsFetching, setAiModelsFetching] = useState(false)
 
   async function handleBrowse() {
     const folder = await window.api.openFolder()
@@ -43,6 +45,21 @@ export function SettingsPanel() {
     const saved = await window.api.writeConfig(local)
     setConfig(saved)
     setSettingsOpen(false)
+  }
+
+  async function handleFetchAiModels() {
+    const provider = local.aiProvider || 'gemini'
+    const apiKey = local.aiApiKey
+    if (!apiKey) return
+    setAiModelsFetching(true)
+    try {
+      const models = await window.api.fetchAiModels(provider, apiKey)
+      setAiModels(models)
+    } catch {
+      setAiModels([])
+    } finally {
+      setAiModelsFetching(false)
+    }
   }
 
   const isCloudProvider = local.autoClassifyProvider && local.autoClassifyProvider !== 'local'
@@ -142,6 +159,85 @@ export function SettingsPanel() {
               </div>
             </>
           )}
+        </div>
+
+        {/* AI Summary section */}
+        <div className="mb-6 border-t border-gray-700 pt-4">
+          <h3 className="text-sm font-semibold text-white mb-3">AI Summary</h3>
+
+          <div className="mb-3 flex items-center justify-between">
+            <span className="text-sm text-gray-400">Auto-summarize new downloads</span>
+            <button
+              onClick={() => setLocal(c => ({ ...c, autoSummarizeEnabled: !c.autoSummarizeEnabled }))}
+              className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${
+                local.autoSummarizeEnabled ? 'bg-blue-600' : 'bg-gray-600'
+              }`}
+            >
+              <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                local.autoSummarizeEnabled ? 'translate-x-5' : 'translate-x-0.5'
+              }`} />
+            </button>
+          </div>
+
+          <div className="mb-2">
+            <label className="block text-xs text-gray-500 mb-1">Provider</label>
+            <select
+              value={local.aiProvider || 'gemini'}
+              onChange={e => { setLocal(c => ({ ...c, aiProvider: e.target.value, aiModel: '' })); setAiModels([]) }}
+              className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-blue-500"
+            >
+              <option value="gemini">Gemini (Google)</option>
+              <option value="claude">Claude (Anthropic)</option>
+              <option value="openai">OpenAI</option>
+            </select>
+          </div>
+
+          <div className="mb-2">
+            <label className="block text-xs text-gray-500 mb-1">API Key</label>
+            <input
+              type="password"
+              value={local.aiApiKey || ''}
+              onChange={e => setLocal(c => ({ ...c, aiApiKey: e.target.value }))}
+              onBlur={handleFetchAiModels}
+              placeholder="Enter API key…"
+              className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          <div className="mb-3">
+            <label className="block text-xs text-gray-500 mb-1">Model</label>
+            {aiModels.length > 0 ? (
+              <select
+                value={local.aiModel || ''}
+                onChange={e => setLocal(c => ({ ...c, aiModel: e.target.value }))}
+                className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-blue-500"
+              >
+                <option value="">Default</option>
+                {aiModels.map(m => <option key={m} value={m}>{m}</option>)}
+              </select>
+            ) : (
+              <input
+                type="text"
+                value={local.aiModel || ''}
+                onChange={e => setLocal(c => ({ ...c, aiModel: e.target.value }))}
+                placeholder={aiModelsFetching ? 'Loading models…' : 'Leave blank for default'}
+                className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-blue-500"
+              />
+            )}
+          </div>
+
+          <div className="mb-1">
+            <label className="block text-xs text-gray-500 mb-1">Default summary prompt</label>
+            <textarea
+              value={local.defaultSummaryPrompt || ''}
+              onChange={e => setLocal(c => ({ ...c, defaultSummaryPrompt: e.target.value }))}
+              rows={3}
+              className="w-full bg-gray-800 text-white text-xs px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-blue-500 resize-none"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Override per folder by adding a <code className="text-gray-400">summary-prompt.md</code> file inside that folder.
+            </p>
+          </div>
         </div>
 
         <div className="flex justify-end gap-2">
