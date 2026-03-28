@@ -1,3 +1,5 @@
+import logger from './logger.js'
+
 let embeddingPipeline = null
 let _hfPipeline = null
 
@@ -124,23 +126,61 @@ async function classifyByLLM(videoEntry, folderNames, config) {
 // --- Public API ---
 
 export async function classifyVideo(videoEntry, folderNames, config = {}) {
+  logger.info('classify', `Started: ${videoEntry.filename}`, {
+    filename: videoEntry.filename
+  })
+
   if (!folderNames || folderNames.length === 0) return { folder: null, tier: 'none' }
 
   const keyword = classifyByKeyword(videoEntry, folderNames)
-  if (keyword) return { folder: keyword, tier: 'keyword' }
+  if (keyword) {
+    logger.info('classify', `Classified by keyword: ${videoEntry.filename}`, {
+      filename: videoEntry.filename,
+      tier: 'keyword',
+      folder: keyword
+    })
+    return { folder: keyword, tier: 'keyword' }
+  }
 
   try {
     const embedding = await classifyByEmbedding(videoEntry, folderNames)
-    if (embedding) return { folder: embedding, tier: 'embedding' }
+    if (embedding) {
+      const pipe = await getEmbeddingPipeline()
+      const videoText = `${videoEntry.title || ''} by ${videoEntry.uploader || ''}. ${videoEntry.description || ''}`
+      const videoOutput = await pipe(videoText, { pooling: 'mean', normalize: true })
+      const videoVec = Array.from(videoOutput.data)
+      const out = await pipe(embedding, { pooling: 'mean', normalize: true })
+      const similarity = cosineSimilarity(videoVec, Array.from(out.data))
+
+      logger.info('classify', `Classified by embedding: ${videoEntry.filename}`, {
+        filename: videoEntry.filename,
+        tier: 'embedding',
+        folder: embedding,
+        similarity: similarity.toFixed(3)
+      })
+      return { folder: embedding, tier: 'embedding' }
+    }
   } catch { /* fall through */ }
 
   if (config.autoClassifyProvider && config.autoClassifyProvider !== 'local' && config.autoClassifyApiKey) {
     try {
       const llm = await classifyByLLM(videoEntry, folderNames, config)
-      if (llm) return { folder: llm, tier: 'llm' }
+      if (llm) {
+        logger.info('classify', `Classified by LLM: ${videoEntry.filename}`, {
+          filename: videoEntry.filename,
+          tier: 'llm',
+          folder: llm,
+          provider: config.autoClassifyProvider
+        })
+        return { folder: llm, tier: 'llm' }
+      }
     } catch { /* fall through */ }
   }
 
+  logger.info('classify', `No classification: ${videoEntry.filename}`, {
+    filename: videoEntry.filename,
+    folder: 'none'
+  })
   return { folder: null, tier: 'none' }
 }
 
