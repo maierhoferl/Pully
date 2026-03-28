@@ -14,8 +14,6 @@ export default function NotesTab() {
     window.api.listFolders().then(setFolders)
   }, [])
 
-  const selectedFolder = activeNotesFolder !== undefined ? activeNotesFolder : null
-
   return (
     <div className="flex h-full overflow-hidden">
       {/* Left sidebar — folder list */}
@@ -23,7 +21,7 @@ export default function NotesTab() {
         <div className="px-3 pt-3 pb-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">Folders</div>
         <NotesFolderList
           folders={folders}
-          activeFolder={selectedFolder}
+          activeFolder={activeNotesFolder}
           onSelect={setActiveNotesFolder}
         />
       </div>
@@ -31,7 +29,7 @@ export default function NotesTab() {
       {/* Right panel — chapter view */}
       <div className="flex-1 overflow-hidden">
         <NotesChapterView
-          folderName={selectedFolder}
+          folderName={activeNotesFolder}
           activeChapter={activeNotesChapter}
         />
       </div>

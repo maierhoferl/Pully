@@ -2,18 +2,22 @@ import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-vi.mock('../../src/renderer/src/store/app-store.js', () => {
-  const state = {
-    activeNotesFolder: null,
-    activeNotesChapter: null,
-    libraryFiles: [],
-    setActiveNotesFolder: vi.fn(),
-    setActiveNotesChapter: vi.fn(),
-    setActiveTab: vi.fn(),
-    setLibrarySelectedFile: vi.fn(),
-  }
-  return { useAppStore: vi.fn(selector => selector ? selector(state) : state) }
-})
+// Use vi.hoisted so these refs are available inside the vi.mock factory (which is hoisted before imports)
+const mockSetActiveNotesFolder = vi.hoisted(() => vi.fn())
+
+const mockState = vi.hoisted(() => ({
+  activeNotesFolder: null,
+  activeNotesChapter: null,
+  libraryFiles: [],
+  setActiveNotesFolder: mockSetActiveNotesFolder,
+  setActiveNotesChapter: vi.fn(),
+  setActiveTab: vi.fn(),
+  setLibrarySelectedFile: vi.fn(),
+}))
+
+vi.mock('@renderer/store/app-store.js', () => ({
+  useAppStore: vi.fn(selector => selector ? selector(mockState) : mockState),
+}))
 
 const mockApi = {
   listFolders: vi.fn(async () => ['Travel', 'Cooking']),
@@ -30,7 +34,7 @@ const mockApi = {
 }
 window.api = mockApi
 
-import NotesTab from '../../src/renderer/src/components/NotesTab.jsx'
+import NotesTab from '@renderer/components/NotesTab.jsx'
 
 beforeEach(() => vi.clearAllMocks())
 
@@ -58,5 +62,12 @@ describe('NotesTab', () => {
     await waitFor(() => screen.getByText('✎ Edit'))
     fireEvent.click(screen.getByText('✎ Edit'))
     expect(screen.getByRole('textbox')).toBeTruthy()
+  })
+
+  it('clicking a folder calls setActiveNotesFolder with that folder name', async () => {
+    render(<NotesTab />)
+    await waitFor(() => screen.getByText('Travel'))
+    fireEvent.click(screen.getByText('Travel'))
+    expect(mockSetActiveNotesFolder).toHaveBeenCalledWith('Travel')
   })
 })
