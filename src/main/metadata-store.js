@@ -1,0 +1,26 @@
+import fs from 'fs'
+import path from 'path'
+import { createRequire } from 'module'
+
+const _require = createRequire(import.meta.url)
+
+function defaultPath() {
+  const { app } = _require('electron')
+  return path.join(app.getPath('userData'), 'metadata-index.json')
+}
+
+export function readMetadataIndex(indexPath) {
+  const p = indexPath || defaultPath()
+  try {
+    return JSON.parse(fs.readFileSync(p, 'utf8'))
+  } catch {
+    return {}
+  }
+}
+
+export function writeMetadataEntry(filePath, metadata, indexPath) {
+  const p = indexPath || defaultPath()
+  const index = readMetadataIndex(p)
+  index[filePath] = metadata
+  fs.writeFileSync(p, JSON.stringify(index, null, 2))
+}
