@@ -66,6 +66,11 @@ export default function BrowserTab() {
       setCanGoForward(wv.canGoForward())
       currentUrlRef.current = url
       scanPage(url)
+      if (url.includes('youtube.com')) {
+        wv.executeJavaScript(
+          `localStorage.setItem('yt-player-autoplay-preference', JSON.stringify({data:"false",creation:Date.now()}))`
+        )
+      }
     }
 
     wv.addEventListener('did-navigate', onNavigate)
