@@ -36,6 +36,7 @@ export default function LibraryTab() {
   const [renamingFolder, setRenamingFolder] = useState(null) // folder name being renamed
   const [renameInput, setRenameInput] = useState('')
   const renameInputRef = useRef(null)
+  const skipRenameBlurRef = useRef(false)
   const [deletingFolder, setDeletingFolder] = useState(null) // { name, count }
 
   async function refresh() {
@@ -192,6 +193,10 @@ export default function LibraryTab() {
   }
 
   async function handleRenameFolder() {
+    if (skipRenameBlurRef.current) {
+      skipRenameBlurRef.current = false
+      return
+    }
     const name = renameInput.trim()
     setRenamingFolder(null)
     setRenameInput('')
@@ -390,7 +395,10 @@ export default function LibraryTab() {
         <div
           style={{ position: 'fixed', top: contextMenu.y, left: contextMenu.x, zIndex: 1000 }}
           className="bg-gray-800 border border-gray-700 rounded-lg shadow-xl py-1 min-w-[148px]"
-          onMouseDown={e => e.stopPropagation()}
+          onMouseDown={e => {
+            e.stopPropagation()
+            if (renamingFolder) skipRenameBlurRef.current = true
+          }}
         >
           <button
             onClick={() => { setContextMenu(null); setCreating(true) }}
