@@ -57,7 +57,7 @@ describe('classifyVideo — Tier 1 keyword', () => {
 describe('classifyVideo — Tier 2 embedding', () => {
   it('assigns folder when cosine similarity >= 0.45', async () => {
     const mockPipe = vi.fn().mockImplementation(async (text) => ({
-      data: text.toLowerCase().includes('anime')
+      data: (text.toLowerCase().includes('anime') || text.toLowerCase().includes('attack on titan'))
         ? new Float32Array([1, 0, 0])
         : new Float32Array([0.3, 0.9, 0.1])
     }))

@@ -50,13 +50,14 @@ async function getEmbeddingPipeline() {
 async function classifyByEmbedding(videoEntry, folderNames) {
   const pipe = await getEmbeddingPipeline()
   const videoText = `${videoEntry.title || ''} by ${videoEntry.uploader || ''}. ${(videoEntry.description || '').slice(0, 200)}`
+  const videoOutput = await pipe(videoText, { pooling: 'mean', normalize: true })
+  const videoVec = Array.from(videoOutput.data)
 
   let bestFolder = null
   let bestSim = -1
   for (const folder of folderNames) {
-    const combinedOut = await pipe(`${folder} ${videoText}`, { pooling: 'mean', normalize: true })
-    const folderOut = await pipe(folder, { pooling: 'mean', normalize: true })
-    const sim = cosineSimilarity(Array.from(combinedOut.data), Array.from(folderOut.data))
+    const out = await pipe(folder, { pooling: 'mean', normalize: true })
+    const sim = cosineSimilarity(videoVec, Array.from(out.data))
     if (sim > bestSim) { bestSim = sim; bestFolder = folder }
   }
 
