@@ -1,5 +1,7 @@
 # Pully
 
+![Pully — Download and Manage Any Video. No Drama.](resources/social-preview.png)
+
 A desktop app for downloading videos from YouTube and other sites. Built with Electron, React, and yt-dlp.
 
 ## Download
