@@ -48,3 +48,16 @@ test('renders active downloads before completed ones', () => {
   expect(rows[0]).toHaveTextContent('Active Video')
   expect(rows[1]).toHaveTextContent('Done Video')
 })
+
+test('renders cancelling downloads as active (before done)', () => {
+  useAppStore.setState({
+    downloads: [
+      { id: '1', title: 'Done Video', status: 'done' },
+      { id: '2', title: 'Cancelling Video', status: 'cancelling' },
+    ],
+  })
+  render(<ProgressPanel />)
+  const rows = screen.getAllByTestId('download-row')
+  expect(rows[0]).toHaveTextContent('Cancelling Video')
+  expect(rows[1]).toHaveTextContent('Done Video')
+})
