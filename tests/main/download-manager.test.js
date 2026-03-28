@@ -19,6 +19,14 @@ vi.mock('../../src/main/metadata-store.js', () => ({
 vi.mock('../../src/main/auto-classifier.js', () => ({
   classifyVideo: vi.fn().mockResolvedValue({ folder: null, tier: 'none' })
 }))
+vi.mock('../../src/main/notes-store.js', () => ({
+  initChapter: vi.fn(),
+  moveChapter: vi.fn(),
+  writeSummarySection: vi.fn(),
+}))
+vi.mock('../../src/main/ai-summarizer.js', () => ({
+  generateSummary: vi.fn(async () => 'Auto summary'),
+}))
 
 vi.mock('fs', async (importOriginal) => {
   const actual = await importOriginal()
@@ -33,10 +41,13 @@ vi.mock('fs', async (importOriginal) => {
 })
 
 import { startDownload } from '../../src/main/ytdlp-runner.js'
+import { readConfig } from '../../src/main/config-store.js'
 import { DownloadManager } from '../../src/main/download-manager.js'
 import { writeMetadataEntry } from '../../src/main/metadata-store.js'
 import { classifyVideo } from '../../src/main/auto-classifier.js'
 import { moveMetadataEntry } from '../../src/main/metadata-store.js'
+import { initChapter, moveChapter, writeSummarySection } from '../../src/main/notes-store.js'
+import { generateSummary } from '../../src/main/ai-summarizer.js'
 
 beforeEach(() => vi.clearAllMocks())
 
@@ -172,5 +183,29 @@ describe('auto-classify on download completion', () => {
       expect.objectContaining({ autoClassifyEnabled: true })
     )
     expect(moveMetadataEntry).toHaveBeenCalled()
+  })
+})
+
+describe('notes + summarize pipeline on download completion', () => {
+  it('calls initChapter after successful download', () => {
+    let onDone
+    startDownload.mockImplementation((_u, _f, _d, _p, done) => { onDone = done; return { kill: vi.fn() } })
+    readConfig.mockReturnValue({ outputFolder: '/out', maxConcurrent: 1, autoClassifyEnabled: false, autoSummarizeEnabled: false })
+    const dm = new DownloadManager()
+    dm.add('https://yt.com/v=1', 'mp4', 'Title', { title: 'Title', url: 'https://yt.com/v=1', thumbnailUrl: null })
+    onDone('/out/Title.mp4')
+    expect(initChapter).toHaveBeenCalledWith('/out/Title.mp4', expect.objectContaining({ title: 'Title' }), '/out')
+  })
+
+  it('calls generateSummary when autoSummarizeEnabled and no classify', async () => {
+    let onDone
+    startDownload.mockImplementation((_u, _f, _d, _p, done) => { onDone = done; return { kill: vi.fn() } })
+    readConfig.mockReturnValue({ outputFolder: '/out', maxConcurrent: 1, autoClassifyEnabled: false, autoSummarizeEnabled: true, aiApiKey: 'k', aiProvider: 'gemini', aiModel: '' })
+    const dm = new DownloadManager()
+    dm.add('https://yt.com/v=1', 'mp4', 'Title', { title: 'Title', url: 'https://yt.com/v=1', thumbnailUrl: null })
+    onDone('/out/Title.mp4')
+    await new Promise(r => setTimeout(r, 20))
+    expect(generateSummary).toHaveBeenCalledWith('/out/Title.mp4', expect.any(Object), expect.objectContaining({ aiProvider: 'gemini' }))
+    expect(writeSummarySection).toHaveBeenCalledWith('/out/Title.mp4', 'Auto summary', '/out')
   })
 })

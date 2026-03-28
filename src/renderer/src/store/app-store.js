@@ -35,4 +35,13 @@ export const useAppStore = create((set) => ({
 
   librarySearch: '',
   setLibrarySearch: query => set({ librarySearch: query }),
+
+  activeNotesFolder: null,
+  setActiveNotesFolder: (folder) => set({ activeNotesFolder: folder }),
+
+  activeNotesChapter: null,
+  setActiveNotesChapter: (chapter) => set({ activeNotesChapter: chapter }),
+
+  librarySelectedFile: null,
+  setLibrarySelectedFile: (filePath) => set({ librarySelectedFile: filePath }),
 }))

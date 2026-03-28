@@ -6,6 +6,7 @@ import { useIpcEvents } from './hooks/useIpcEvents.js'
 
 const BrowserTab = lazy(() => import('./components/BrowserTab.jsx'))
 const LibraryTab = lazy(() => import('./components/LibraryTab.jsx'))
+const NotesTab = lazy(() => import('./components/NotesTab.jsx'))
 
 const Loading = () => <div className="flex items-center justify-center h-full text-gray-400">Loading…</div>
 
@@ -21,6 +22,7 @@ export default function App() {
         <Suspense fallback={<Loading />}>
           <div className={activeTab === 'browser' ? 'h-full' : 'hidden'}><BrowserTab /></div>
           <div className={activeTab === 'library' ? 'h-full overflow-y-auto' : 'hidden'}><LibraryTab /></div>
+          <div className={activeTab === 'notes' ? 'h-full overflow-hidden' : 'hidden'}><NotesTab /></div>
         </Suspense>
       </div>
       {settingsOpen && <SettingsPanel />}

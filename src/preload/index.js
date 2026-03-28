@@ -21,7 +21,14 @@ contextBridge.exposeInMainWorld('api', {
   renameFolder: (from, to) => ipcRenderer.invoke('library:renameFolder', { from, to }),
   deleteFolder: (folder, strategy) => ipcRenderer.invoke('library:deleteFolder', { folder, strategy }),
   autoClassify: () => ipcRenderer.invoke('library:autoClassify'),
-  fetchClassifyModels: (provider, apiKey) => ipcRenderer.invoke('classify:fetchModels', { provider, apiKey }),
+  fetchClassifyModels: (provider, apiKey) => ipcRenderer.invoke('classify:fetchModels', provider, apiKey),
+
+  // Notes
+  readNotes: (folderName) => ipcRenderer.invoke('notes:read', folderName),
+  initChapter: (filePath) => ipcRenderer.invoke('notes:init-chapter', filePath),
+  updateBullets: (filePath, bullets) => ipcRenderer.invoke('notes:update-bullets', filePath, bullets),
+  generateSummary: (filePath) => ipcRenderer.invoke('notes:generate-summary', filePath),
+  fetchAiModels: (provider, apiKey) => ipcRenderer.invoke('classify:fetchModels', provider, apiKey),
 
   onQueueUpdated: cb => {
     const handler = (_, q) => cb(q)
