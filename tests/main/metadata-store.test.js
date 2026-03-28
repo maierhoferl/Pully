@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
-import { readMetadataIndex, writeMetadataEntry } from '../../src/main/metadata-store.js'
+import { readMetadataIndex, writeMetadataEntry, renameFolderInIndex, deleteFolderFromIndex } from '../../src/main/metadata-store.js'
 
 let tmp
 beforeEach(() => { tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vd-meta-')) })
@@ -36,5 +36,51 @@ describe('writeMetadataEntry', () => {
     const index = readMetadataIndex(p)
     expect(index['/a.mp4'].title).toBe('A')
     expect(index['/b.mp4'].title).toBe('B')
+  })
+})
+
+describe('renameFolderInIndex', () => {
+  it('updates all metadata keys under the old directory path', () => {
+    const p = path.join(tmp, 'meta.json')
+    writeMetadataEntry('/out/Japan/v1.mp4', { title: 'V1', uploader: null, description: null, thumbnailUrl: null, downloadedAt: null }, p)
+    writeMetadataEntry('/out/Japan/v2.mp4', { title: 'V2', uploader: null, description: null, thumbnailUrl: null, downloadedAt: null }, p)
+    writeMetadataEntry('/out/other.mp4',    { title: 'Other', uploader: null, description: null, thumbnailUrl: null, downloadedAt: null }, p)
+    renameFolderInIndex('/out/Japan', '/out/JapanTrip', p)
+    const idx = readMetadataIndex(p)
+    expect(idx['/out/JapanTrip/v1.mp4']?.title).toBe('V1')
+    expect(idx['/out/JapanTrip/v2.mp4']?.title).toBe('V2')
+    expect(idx['/out/Japan/v1.mp4']).toBeUndefined()
+    expect(idx['/out/Japan/v2.mp4']).toBeUndefined()
+    expect(idx['/out/other.mp4']?.title).toBe('Other')
+  })
+
+  it('is a no-op when no entries match', () => {
+    const p = path.join(tmp, 'meta.json')
+    writeMetadataEntry('/out/other.mp4', { title: 'Other', uploader: null, description: null, thumbnailUrl: null, downloadedAt: null }, p)
+    renameFolderInIndex('/out/Japan', '/out/JapanTrip', p)
+    const idx = readMetadataIndex(p)
+    expect(idx['/out/other.mp4']?.title).toBe('Other')
+  })
+})
+
+describe('deleteFolderFromIndex', () => {
+  it('removes all metadata entries under the directory', () => {
+    const p = path.join(tmp, 'meta.json')
+    writeMetadataEntry('/out/Japan/v1.mp4', { title: 'V1', uploader: null, description: null, thumbnailUrl: null, downloadedAt: null }, p)
+    writeMetadataEntry('/out/Japan/v2.mp4', { title: 'V2', uploader: null, description: null, thumbnailUrl: null, downloadedAt: null }, p)
+    writeMetadataEntry('/out/other.mp4',    { title: 'Other', uploader: null, description: null, thumbnailUrl: null, downloadedAt: null }, p)
+    deleteFolderFromIndex('/out/Japan', p)
+    const idx = readMetadataIndex(p)
+    expect(idx['/out/Japan/v1.mp4']).toBeUndefined()
+    expect(idx['/out/Japan/v2.mp4']).toBeUndefined()
+    expect(idx['/out/other.mp4']?.title).toBe('Other')
+  })
+
+  it('is a no-op when no entries match', () => {
+    const p = path.join(tmp, 'meta.json')
+    writeMetadataEntry('/out/other.mp4', { title: 'Other', uploader: null, description: null, thumbnailUrl: null, downloadedAt: null }, p)
+    deleteFolderFromIndex('/out/Japan', p)
+    const idx = readMetadataIndex(p)
+    expect(idx['/out/other.mp4']?.title).toBe('Other')
   })
 })
