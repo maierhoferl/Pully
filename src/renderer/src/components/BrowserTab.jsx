@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { useAppStore } from '../store/app-store.js'
-import { MediaPanel } from './MediaPanel.jsx'
+import SidePanel from './SidePanel.jsx'
 
 const HOME = 'https://www.youtube.com'
 const RESCAN_INTERVAL_MS = 30_000
@@ -10,6 +10,7 @@ export default function BrowserTab() {
   const [inputUrl, setInputUrl] = useState(HOME)
   const [canGoBack, setCanGoBack] = useState(false)
   const [canGoForward, setCanGoForward] = useState(false)
+  const [sideWidth, setSideWidth] = useState(320)
   const { startMediaScan, setMediaScanResults } = useAppStore()
   const scanDebounceRef = useRef(null)
   const currentUrlRef = useRef(null)
@@ -42,9 +43,7 @@ export default function BrowserTab() {
       setCanGoForward(wv.canGoForward())
     }
 
-    const onNavigate = () => {
-      updateNav()
-    }
+    const onNavigate = () => { updateNav() }
 
     const onInPageNavigate = () => {
       const url = wv.getURL()
@@ -66,11 +65,6 @@ export default function BrowserTab() {
       setCanGoForward(wv.canGoForward())
       currentUrlRef.current = url
       scanPage(url)
-      if (url.includes('youtube.com')) {
-        wv.executeJavaScript(
-          `localStorage.setItem('yt-player-autoplay-preference', JSON.stringify({data:"false",creation:Date.now()}))`
-        )
-      }
     }
 
     wv.addEventListener('did-navigate', onNavigate)
@@ -105,6 +99,24 @@ export default function BrowserTab() {
     wv.loadURL(url)
   }
 
+  function handleSideDragStart(e) {
+    e.preventDefault()
+    const startX = e.clientX
+    const startWidth = sideWidth
+
+    function onMove(ev) {
+      setSideWidth(Math.max(200, Math.min(600, startWidth + (startX - ev.clientX))))
+    }
+
+    function onUp() {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-1 px-2 py-1 bg-gray-900 border-b border-gray-700">
@@ -119,9 +131,17 @@ export default function BrowserTab() {
             placeholder="Enter URL or search…" />
         </form>
       </div>
-      <div className="flex-1 flex flex-col min-h-0">
-        <webview ref={webviewRef} src={HOME} className="flex-1" style={{ width: '100%' }} allowpopups="true" />
-        <MediaPanel />
+      <div className="flex flex-1 min-h-0">
+        <webview ref={webviewRef} src={HOME} className="flex-1 min-w-0" style={{ height: '100%' }} allowpopups="true" />
+        <div
+          className="w-1 bg-gray-800 hover:bg-blue-600 cursor-col-resize flex-shrink-0 flex items-center justify-center transition-colors"
+          onMouseDown={handleSideDragStart}
+        >
+          <div className="h-6 w-0.5 bg-gray-600 rounded pointer-events-none" />
+        </div>
+        <div style={{ width: sideWidth }} className="flex-shrink-0 h-full">
+          <SidePanel />
+        </div>
       </div>
     </div>
   )
