@@ -87,4 +87,30 @@ describe('Logger', () => {
     expect(parsed.meta).toBeUndefined()
     expect(parsed.message).toBe('Test without meta')
   })
+
+  it('should clean up logs older than 3 days', () => {
+    logger = createLogger(tempDir)
+
+    // Create old log files (4 days old)
+    const oldDate = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000)
+    const oldFileName = oldDate.toISOString().split('T')[0] + '.log'
+    const oldFilePath = path.join(tempDir, oldFileName)
+    fs.writeFileSync(oldFilePath, '{}')
+    // Set file's modification time to 4 days ago
+    const oldTime = Date.now() - 4 * 24 * 60 * 60 * 1000
+    fs.utimesSync(oldFilePath, oldTime / 1000, oldTime / 1000)
+
+    // Create a recent file (today)
+    const today = new Date().toISOString().split('T')[0]
+    const todayPath = path.join(tempDir, `${today}.log`)
+    fs.writeFileSync(todayPath, '{}')
+
+    // Trigger cleanup via setDebugMode
+    logger.setDebugMode(true)
+
+    // Old file should be deleted
+    expect(fs.existsSync(oldFilePath)).toBe(false)
+    // Recent file should exist
+    expect(fs.existsSync(todayPath)).toBe(true)
+  })
 })
