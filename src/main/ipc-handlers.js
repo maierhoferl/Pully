@@ -59,25 +59,42 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
     const isThumbnailSidecar = name => /\.thumb(\.[a-z]+)?$/i.test(name)
 
     const entries = []
-    const rootItems = fs.readdirSync(outputFolder)
-    for (const f of rootItems) {
-      if (f.startsWith('.') || isThumbnailSidecar(f)) continue
-      const full = path.join(outputFolder, f)
-      const stat = fs.statSync(full)
-      if (stat.isDirectory()) continue
-      entries.push(makeEntry(f, full, stat, index[full] || {}, null))
-    }
-    for (const dir of rootItems) {
-      if (dir.startsWith('.')) continue
-      const dirPath = path.join(outputFolder, dir)
-      if (!fs.statSync(dirPath).isDirectory()) continue
-      for (const f of fs.readdirSync(dirPath)) {
+    try {
+      const rootItems = fs.readdirSync(outputFolder)
+      for (const f of rootItems) {
         if (f.startsWith('.') || isThumbnailSidecar(f)) continue
-        const full = path.join(dirPath, f)
-        const stat = fs.statSync(full)
-        if (stat.isDirectory()) continue
-        entries.push(makeEntry(f, full, stat, index[full] || {}, dir))
+        const full = path.join(outputFolder, f)
+        try {
+          const stat = fs.statSync(full)
+          if (stat.isDirectory()) continue
+          entries.push(makeEntry(f, full, stat, index[full] || {}, null))
+        } catch {
+          // Skip files we can't stat
+        }
       }
+      for (const dir of rootItems) {
+        if (dir.startsWith('.')) continue
+        const dirPath = path.join(outputFolder, dir)
+        try {
+          if (!fs.statSync(dirPath).isDirectory()) continue
+          for (const f of fs.readdirSync(dirPath)) {
+            if (f.startsWith('.') || isThumbnailSidecar(f)) continue
+            const full = path.join(dirPath, f)
+            try {
+              const stat = fs.statSync(full)
+              if (stat.isDirectory()) continue
+              entries.push(makeEntry(f, full, stat, index[full] || {}, dir))
+            } catch {
+              // Skip files we can't stat
+            }
+          }
+        } catch {
+          // Skip directories we can't read
+        }
+      }
+    } catch {
+      // Return empty if we can't read the root folder
+      return []
     }
 
     // Backfill: kick off a background thumbnail download when there is no local copy.
@@ -103,9 +120,20 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
   ipcMain.handle('library:listFolders', () => {
     const { outputFolder } = readConfig()
     if (!outputFolder || !fs.existsSync(outputFolder)) return []
-    return fs.readdirSync(outputFolder)
-      .filter(f => !f.startsWith('.') && fs.statSync(path.join(outputFolder, f)).isDirectory())
-      .sort()
+    try {
+      return fs.readdirSync(outputFolder)
+        .filter(f => {
+          if (f.startsWith('.')) return false
+          try {
+            return fs.statSync(path.join(outputFolder, f)).isDirectory()
+          } catch {
+            return false
+          }
+        })
+        .sort()
+    } catch {
+      return []
+    }
   })
 
   ipcMain.handle('library:createFolder', (_, name) => {

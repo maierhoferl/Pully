@@ -10,6 +10,12 @@ import { initAdblock, enableAdblock, startBackgroundUpdates } from './adblock-ma
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
+// Suppress MaxListenersExceededWarning from Electron's internal webContents listeners
+// (e.g., when navigating pages, webContents may add multiple 'did-stop-loading' listeners)
+if (process.defaultMaxListeners < 20) {
+  process.setMaxListeners(20)
+}
+
 // Register pully:// scheme so the renderer can load local thumbnail files
 // regardless of whether the page is served from file:// or http://localhost.
 // Must be called before app.ready.
@@ -18,6 +24,14 @@ protocol.registerSchemesAsPrivileged([
 ])
 
 app.setName('Pully')
+
+let mainWindow = null
+let downloadManager = null
+
+// Increase max listeners for webContents to prevent warning spam during navigation
+app.on('web-contents-created', (_, webContents) => {
+  webContents.setMaxListeners(30)
+})
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -43,7 +57,7 @@ function createWindow() {
     console.error('Failed to initialize binaries:', err)
   }
 
-  const downloadManager = new DownloadManager()
+  downloadManager = new DownloadManager()
   registerIpcHandlers(downloadManager, win)
 
   if (process.env.NODE_ENV === 'development') {
@@ -52,6 +66,7 @@ function createWindow() {
     win.loadFile(path.join(__dirname, '../renderer/index.html'))
   }
 
+  mainWindow = win
   return win
 }
 
@@ -100,4 +115,16 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
+})
+
+// Graceful shutdown: clean up resources before quitting
+app.on('before-quit', () => {
+  // Clear all IPC listeners and stop accepting IPC requests
+  if (mainWindow && mainWindow.webContents) {
+    mainWindow.webContents.removeAllListeners()
+  }
+  // Stop the download manager from processing new downloads
+  if (downloadManager) {
+    downloadManager.removeAllListeners()
+  }
 })

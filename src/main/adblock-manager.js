@@ -48,7 +48,7 @@ export async function initAdblock() {
 
 function setupCosmeticInjection() {
   app.on('web-contents-created', (_, contents) => {
-    contents.on('did-finish-load', async () => {
+    const onFinishLoad = async () => {
       if (!enabled) return
       try {
         const url = contents.getURL()
@@ -64,6 +64,10 @@ function setupCosmeticInjection() {
       } catch {
         // webContents may have been destroyed before injection completed
       }
+    }
+    contents.on('did-finish-load', onFinishLoad)
+    contents.once('destroyed', () => {
+      contents.removeListener('did-finish-load', onFinishLoad)
     })
   })
 }
