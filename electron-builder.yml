@@ -8,6 +8,9 @@ files:
   - "!tests/**"
   - "!docs/**"
   - "!scripts/**"
+asarUnpack:
+  - "node_modules/@huggingface/transformers/**"
+  - "node_modules/onnxruntime-node/**"
 afterSign: scripts/notarize.js
 mac:
   target:
