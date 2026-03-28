@@ -2,7 +2,7 @@ import { ipcMain, dialog, shell, session } from 'electron'
 import { readConfig, writeConfig } from './config-store.js'
 import { enableAdblock, disableAdblock } from './adblock-manager.js'
 import { extractInfo } from './ytdlp-runner.js'
-import { readMetadataIndex, deleteMetadataEntry, moveMetadataEntry } from './metadata-store.js'
+import { readMetadataIndex, deleteMetadataEntry, moveMetadataEntry, toPullyUrl, downloadAndStoreThumbnail } from './metadata-store.js'
 import fs from 'fs'
 import path from 'path'
 
@@ -26,6 +26,13 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
     if (!outputFolder || !fs.existsSync(outputFolder)) return []
     const index = readMetadataIndex()
 
+    // Prefer local thumbnail (pully:// URL) over remote URL; fall back to remote.
+    function thumbnailSrc(meta) {
+      const local = meta.thumbnailLocalPath
+      if (local && fs.existsSync(local)) return toPullyUrl(local)
+      return meta.thumbnailUrl || null
+    }
+
     function makeEntry(fileName, fullPath, stat, meta, folder) {
       return {
         name: fileName, path: fullPath, folder,
@@ -33,7 +40,7 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
         title: meta.title || null,
         uploader: meta.uploader || null,
         description: meta.description || null,
-        thumbnailUrl: meta.thumbnailUrl || null,
+        thumbnailUrl: thumbnailSrc(meta),
         url: meta.url || null,
         downloadedAt: meta.downloadedAt || null,
       }
@@ -60,6 +67,15 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
         entries.push(makeEntry(f, full, stat, index[full] || {}, dir))
       }
     }
+
+    // Backfill: for existing entries that have a remote thumbnailUrl but no local
+    // thumbnail yet, kick off a background download so next refresh shows it locally.
+    for (const [videoPath, meta] of Object.entries(index)) {
+      if (meta.thumbnailUrl && !meta.thumbnailLocalPath) {
+        downloadAndStoreThumbnail(meta.thumbnailUrl, videoPath).catch(() => {})
+      }
+    }
+
     return entries.sort((a, b) => new Date(b.mtime) - new Date(a.mtime))
   })
 

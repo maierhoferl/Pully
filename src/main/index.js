@@ -1,4 +1,4 @@
-import { app, BrowserWindow, session } from 'electron'
+import { app, BrowserWindow, session, protocol, net } from 'electron'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { DownloadManager } from './download-manager.js'
@@ -8,6 +8,13 @@ import { readConfig } from './config-store.js'
 import { initAdblock, enableAdblock, startBackgroundUpdates } from './adblock-manager.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+// Register pully:// scheme so the renderer can load local thumbnail files
+// regardless of whether the page is served from file:// or http://localhost.
+// Must be called before app.ready.
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'pully', privileges: { standard: true, secure: true, corsEnabled: true, bypassCSP: true } }
+])
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -46,6 +53,10 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  // Serve local thumbnail files via pully:// — replaces file:// which is blocked
+  // from http://localhost origins in dev mode.
+  protocol.handle('pully', req => net.fetch(req.url.replace('pully:', 'file:')))
+
   // Relax CSP so webview can load external sites
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     callback({

@@ -4,7 +4,7 @@ vi.mock('../../src/main/ytdlp-runner.js', () => ({ startDownload: vi.fn() }))
 vi.mock('../../src/main/config-store.js', () => ({
   readConfig: vi.fn(() => ({ outputFolder: '/tmp/vids', maxConcurrent: 2 }))
 }))
-vi.mock('../../src/main/metadata-store.js', () => ({ writeMetadataEntry: vi.fn() }))
+vi.mock('../../src/main/metadata-store.js', () => ({ writeMetadataEntry: vi.fn(), downloadAndStoreThumbnail: vi.fn().mockResolvedValue(undefined) }))
 
 import { startDownload } from '../../src/main/ytdlp-runner.js'
 import { DownloadManager } from '../../src/main/download-manager.js'

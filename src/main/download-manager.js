@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events'
 import { startDownload } from './ytdlp-runner.js'
 import { readConfig } from './config-store.js'
-import { writeMetadataEntry } from './metadata-store.js'
+import { writeMetadataEntry, downloadAndStoreThumbnail } from './metadata-store.js'
 
 export class DownloadManager extends EventEmitter {
   constructor() {
@@ -57,6 +57,9 @@ export class DownloadManager extends EventEmitter {
             ...item.metadata,
             downloadedAt: new Date().toISOString()
           })
+          if (item.metadata.thumbnailUrl) {
+            downloadAndStoreThumbnail(item.metadata.thumbnailUrl, actualPath).catch(() => {})
+          }
         }
         this.emit('completed', { id: item.id })
         this.emit('queue-updated', this.getAll())

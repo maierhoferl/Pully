@@ -4,14 +4,14 @@ import LibraryDetailPanel from './LibraryDetailPanel.jsx'
 
 // Stable color per folder name (derived from name hash so colors don't shift when folders are added)
 const PALETTE = [
-  { border: 'border-indigo-500', bg: 'bg-indigo-950/60', text: 'text-indigo-300', dot: 'bg-indigo-500', dragBg: 'bg-indigo-900/40' },
-  { border: 'border-emerald-500', bg: 'bg-emerald-950/60', text: 'text-emerald-300', dot: 'bg-emerald-500', dragBg: 'bg-emerald-900/40' },
-  { border: 'border-amber-500', bg: 'bg-amber-950/60', text: 'text-amber-300', dot: 'bg-amber-500', dragBg: 'bg-amber-900/40' },
-  { border: 'border-rose-500', bg: 'bg-rose-950/60', text: 'text-rose-300', dot: 'bg-rose-500', dragBg: 'bg-rose-900/40' },
-  { border: 'border-cyan-500', bg: 'bg-cyan-950/60', text: 'text-cyan-300', dot: 'bg-cyan-500', dragBg: 'bg-cyan-900/40' },
-  { border: 'border-violet-500', bg: 'bg-violet-950/60', text: 'text-violet-300', dot: 'bg-violet-500', dragBg: 'bg-violet-900/40' },
-  { border: 'border-orange-500', bg: 'bg-orange-950/60', text: 'text-orange-300', dot: 'bg-orange-500', dragBg: 'bg-orange-900/40' },
-  { border: 'border-teal-500', bg: 'bg-teal-950/60', text: 'text-teal-300', dot: 'bg-teal-500', dragBg: 'bg-teal-900/40' },
+  { border: 'border-indigo-500', bg: 'bg-indigo-950/60', text: 'text-indigo-300', dot: 'bg-indigo-500', dragBg: 'bg-indigo-900/40', ring: 'ring-indigo-500' },
+  { border: 'border-emerald-500', bg: 'bg-emerald-950/60', text: 'text-emerald-300', dot: 'bg-emerald-500', dragBg: 'bg-emerald-900/40', ring: 'ring-emerald-500' },
+  { border: 'border-amber-500', bg: 'bg-amber-950/60', text: 'text-amber-300', dot: 'bg-amber-500', dragBg: 'bg-amber-900/40', ring: 'ring-amber-500' },
+  { border: 'border-rose-500', bg: 'bg-rose-950/60', text: 'text-rose-300', dot: 'bg-rose-500', dragBg: 'bg-rose-900/40', ring: 'ring-rose-500' },
+  { border: 'border-cyan-500', bg: 'bg-cyan-950/60', text: 'text-cyan-300', dot: 'bg-cyan-500', dragBg: 'bg-cyan-900/40', ring: 'ring-cyan-500' },
+  { border: 'border-violet-500', bg: 'bg-violet-950/60', text: 'text-violet-300', dot: 'bg-violet-500', dragBg: 'bg-violet-900/40', ring: 'ring-violet-500' },
+  { border: 'border-orange-500', bg: 'bg-orange-950/60', text: 'text-orange-300', dot: 'bg-orange-500', dragBg: 'bg-orange-900/40', ring: 'ring-orange-500' },
+  { border: 'border-teal-500', bg: 'bg-teal-950/60', text: 'text-teal-300', dot: 'bg-teal-500', dragBg: 'bg-teal-900/40', ring: 'ring-teal-500' },
 ]
 
 function folderColor(name) {
@@ -124,8 +124,19 @@ export default function LibraryTab() {
           const isDragOver = dragOverFolder === key
 
           return (
-            <div key={key}>
-              {/* Folder header — also a drop target */}
+            <div
+              key={key}
+              className={[
+                'transition-all rounded-sm',
+                isDragOver
+                  ? `ring-2 ring-offset-1 ring-offset-gray-900 ${isRoot ? 'ring-gray-500' : color.ring}`
+                  : '',
+              ].join(' ')}
+              onDragOver={e => { e.preventDefault(); setDragOverFolder(key) }}
+              onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget)) setDragOverFolder(null) }}
+              onDrop={e => { e.preventDefault(); handleDrop(key) }}
+            >
+              {/* Folder header */}
               <div
                 className={[
                   'flex items-center gap-2 px-3 py-1.5 cursor-pointer select-none sticky top-0 z-10 transition-colors',
@@ -134,9 +145,6 @@ export default function LibraryTab() {
                     : `border-l-2 ${color.border} ${isDragOver ? color.dragBg : color.bg}`,
                 ].join(' ')}
                 onClick={() => toggleCollapse(key)}
-                onDragOver={e => { e.preventDefault(); setDragOverFolder(key) }}
-                onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget)) setDragOverFolder(null) }}
-                onDrop={e => { e.preventDefault(); handleDrop(key) }}
               >
                 {!isRoot && <div className={`w-2 h-2 rounded-full flex-shrink-0 ${color.dot}`} />}
                 <span className={`text-xs font-semibold uppercase tracking-wide ${isRoot ? 'text-gray-400' : color.text}`}>
