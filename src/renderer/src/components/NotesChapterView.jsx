@@ -136,26 +136,34 @@ export default function NotesChapterView({ folderName, activeChapter }) {
   const setActiveTab = useAppStore(s => s.setActiveTab)
   const setLibrarySelectedFile = useAppStore(s => s.setLibrarySelectedFile)
 
-  // ⚠️ Use file.path (not fileBasename) because LibraryTab uses setSelectedPath
-  const handlePlayInLibrary = (fileBasename) => {
+  async function resolveFilePath(fileBasename) {
     const files = useAppStore.getState().libraryFiles
     const file = files.find(f => f.name === fileBasename && (folderName ? f.folder === folderName : !f.folder))
+    if (file) return file.path
+    // Fallback: construct path from config when libraryFiles hasn't been loaded yet
+    const cfg = await window.api.readConfig()
+    return folderName
+      ? `${cfg.outputFolder}/${folderName}/${fileBasename}`
+      : `${cfg.outputFolder}/${fileBasename}`
+  }
+
+  // ⚠️ Use file.path (not fileBasename) because LibraryTab uses setSelectedPath
+  const handlePlayInLibrary = async (fileBasename) => {
+    const files = useAppStore.getState().libraryFiles
+    const file = files.find(f => f.name === fileBasename && (folderName ? f.folder === folderName : !f.folder))
+    const filePath = file ? file.path : await resolveFilePath(fileBasename)
     setActiveTab('library')
-    setLibrarySelectedFile(file ? file.path : fileBasename)
+    setLibrarySelectedFile(filePath)
   }
 
   const handleGenerateSummary = async (fileBasename) => {
-    const files = useAppStore.getState().libraryFiles
-    const file = files.find(f => f.name === fileBasename && (folderName ? f.folder === folderName : !f.folder))
-    if (!file) throw new Error('File not found in library')
-    return window.api.generateSummary(file.path)
+    const filePath = await resolveFilePath(fileBasename)
+    return window.api.generateSummary(filePath)
   }
 
-  const handleUpdateBullets = (fileBasename, bullets) => {
-    const files = useAppStore.getState().libraryFiles
-    const file = files.find(f => f.name === fileBasename && (folderName ? f.folder === folderName : !f.folder))
-    if (!file) return
-    window.api.updateBullets(file.path, bullets)
+  const handleUpdateBullets = async (fileBasename, bullets) => {
+    const filePath = await resolveFilePath(fileBasename)
+    window.api.updateBullets(filePath, bullets)
     setChapters(prev => prev.map(c => c.file === fileBasename ? { ...c, bullets } : c))
   }
 

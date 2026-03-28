@@ -2,9 +2,9 @@ import React, { useState } from 'react'
 import { useAppStore } from '../store/app-store.js'
 
 const DEFAULT_MODELS = {
+  gemini: 'gemini-2.0-flash',
   claude: 'claude-haiku-4-6',
-  gemini: 'gemini-3.1-flash-lite',
-  openai: 'gpt-5-nano',
+  openai: 'gpt-4o-mini',
 }
 
 export function SettingsPanel() {

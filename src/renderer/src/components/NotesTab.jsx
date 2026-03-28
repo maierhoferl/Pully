@@ -9,10 +9,17 @@ export default function NotesTab() {
   const activeNotesFolder = useAppStore(s => s.activeNotesFolder)
   const activeNotesChapter = useAppStore(s => s.activeNotesChapter)
   const setActiveNotesFolder = useAppStore(s => s.setActiveNotesFolder)
+  const activeTab = useAppStore(s => s.activeTab)
 
   useEffect(() => {
     window.api.listFolders().then(setFolders)
   }, [])
+
+  useEffect(() => {
+    if (activeTab === 'notes') {
+      window.api.listFolders().then(setFolders)
+    }
+  }, [activeTab])
 
   return (
     <div className="flex h-full overflow-hidden">

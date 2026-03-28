@@ -118,7 +118,7 @@ export class DownloadManager extends EventEmitter {
                     finalPath = newPath
                   } catch { /* skip if move fails */ }
                 }
-                if (cfg.autoSummarizeEnabled && item.metadata) {
+                if (cfg.autoSummarizeEnabled && cfg.aiApiKey && item.metadata) {
                   generateSummary(finalPath, { ...item.metadata, url: item.metadata.url }, cfg)
                     .then(summary => writeSummarySection(finalPath, summary, cfg.outputFolder))
                     .catch(() => {})
@@ -126,7 +126,7 @@ export class DownloadManager extends EventEmitter {
               }).catch(() => {})
             }
           } catch { /* don't block completion on classify errors */ }
-        } else if (cfg.autoSummarizeEnabled && actualPath && item.metadata) {
+        } else if (cfg.autoSummarizeEnabled && cfg.aiApiKey && actualPath && item.metadata) {
           generateSummary(actualPath, { ...item.metadata, url: item.metadata.url }, cfg)
             .then(summary => writeSummarySection(actualPath, summary, cfg.outputFolder))
             .catch(() => {})

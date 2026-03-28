@@ -3,8 +3,8 @@ import { readConfig, writeConfig } from './config-store.js'
 import { enableAdblock, disableAdblock } from './adblock-manager.js'
 import { extractInfo } from './ytdlp-runner.js'
 import { readMetadataIndex, deleteMetadataEntry, moveMetadataEntry, toPullyUrl, downloadAndStoreThumbnail, renameFolderInIndex, deleteFolderFromIndex } from './metadata-store.js'
-import { classifyVideo, fetchProviderModels } from './auto-classifier.js'
-import { initChapter, readFolderNotes, writeSummarySection, writeBulletsSection } from './notes-store.js'
+import { classifyVideo } from './auto-classifier.js'
+import { initChapter, moveChapter, readFolderNotes, writeSummarySection, writeBulletsSection } from './notes-store.js'
 import { generateSummary } from './ai-summarizer.js'
 import fs from 'fs'
 import path from 'path'
@@ -128,6 +128,9 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
         }
         fs.renameSync(fp, dest)
         moveMetadataEntry(fp, dest)
+        try {
+          moveChapter(fp, dest, outputFolder)
+        } catch {}
       }
       fs.rmSync(dirPath, { recursive: true })
     } else {
@@ -153,6 +156,9 @@ export function registerIpcHandlers(downloadManager, mainWindow) {
     if (filePath !== newPath) {
       fs.renameSync(filePath, newPath)
       moveMetadataEntry(filePath, newPath)
+      try {
+        moveChapter(filePath, newPath, outputFolder)
+      } catch {}
     }
     return newPath
   })
