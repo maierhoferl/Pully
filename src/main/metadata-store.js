@@ -43,31 +43,13 @@ export function moveMetadataEntry(oldPath, newPath, indexPath) {
   }
 }
 
-// Moves the thumbnail sidecar file alongside a relocated video and updates thumbnailLocalPath.
-// Must be called AFTER moveMetadataEntry so index[newVideoPath] already exists.
-export function moveThumbnailSidecar(oldVideoPath, newVideoPath, indexPath) {
-  const index = readMetadataIndex(indexPath)
-  const meta = index[newVideoPath]
-  if (!meta) return
-
-  // Find the sidecar: prefer the recorded thumbnailLocalPath, fall back to probing extensions
-  let foundPath = null
-  if (meta.thumbnailLocalPath && fs.existsSync(meta.thumbnailLocalPath)) {
-    foundPath = meta.thumbnailLocalPath
-  } else {
-    for (const ext of ['jpg', 'webp', 'png']) {
-      const candidate = oldVideoPath.replace(/\.[^.]+$/, `.thumb.${ext}`)
-      if (fs.existsSync(candidate)) { foundPath = candidate; break }
-    }
+// Moves the .thumb.jpg sidecar alongside a relocated video.
+export function moveThumbnailSidecar(oldVideoPath, newVideoPath) {
+  const oldThumb = oldVideoPath.replace(/\.[^.]+$/, '.thumb.jpg')
+  const newThumb = newVideoPath.replace(/\.[^.]+$/, '.thumb.jpg')
+  if (oldThumb !== newThumb && fs.existsSync(oldThumb)) {
+    try { fs.renameSync(oldThumb, newThumb) } catch { /* best-effort */ }
   }
-  if (!foundPath) return
-
-  const thumbExt = path.extname(foundPath).slice(1)
-  const newThumbPath = newVideoPath.replace(/\.[^.]+$/, `.thumb.${thumbExt}`)
-  try {
-    if (foundPath !== newThumbPath) fs.renameSync(foundPath, newThumbPath)
-    writeMetadataEntry(newVideoPath, { ...meta, thumbnailLocalPath: newThumbPath }, indexPath)
-  } catch { /* best-effort */ }
 }
 
 // Converts an absolute local file path to a pully:// URL for use in the renderer
@@ -108,33 +90,18 @@ export function deleteFolderFromIndex(dirPath, indexPath) {
 // In-progress set to avoid duplicate concurrent downloads
 const _thumbnailPending = new Set()
 
-// Downloads thumbnailUrl to disk next to videoPath, then updates the metadata entry.
+// Downloads thumbnailUrl and saves it as <videoPath>.thumb.jpg.
 // Fire-and-forget safe — all errors are silently swallowed.
 export async function downloadAndStoreThumbnail(thumbnailUrl, videoPath) {
   if (_thumbnailPending.has(videoPath)) return
   _thumbnailPending.add(videoPath)
   try {
-    const ext = thumbnailUrl.match(/\.(webp|png)(?:[?#]|$)/i)?.[1] || 'jpg'
-    const thumbPath = videoPath.replace(/\.[^.]+$/, `.thumb.${ext}`)
-    if (fs.existsSync(thumbPath)) {
-      if (fs.statSync(thumbPath).size > 0) {
-        // File already downloaded — just backfill the metadata entry if needed
-        const index = readMetadataIndex()
-        if (index[videoPath] && !index[videoPath].thumbnailLocalPath) {
-          writeMetadataEntry(videoPath, { ...index[videoPath], thumbnailLocalPath: thumbPath })
-        }
-        return
-      }
-      // Zero-byte sidecar: fall through to re-download
-    }
+    const thumbPath = videoPath.replace(/\.[^.]+$/, '.thumb.jpg')
+    if (fs.existsSync(thumbPath) && fs.statSync(thumbPath).size > 0) return
     const response = await fetch(thumbnailUrl)
     if (!response.ok) return
     const buffer = Buffer.from(await response.arrayBuffer())
     fs.writeFileSync(thumbPath, buffer)
-    const index = readMetadataIndex()
-    if (index[videoPath]) {
-      writeMetadataEntry(videoPath, { ...index[videoPath], thumbnailLocalPath: thumbPath })
-    }
   } catch {
     // best-effort
   } finally {

@@ -41,17 +41,9 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
     if (!outputFolder || !fs.existsSync(outputFolder)) return []
     const index = readMetadataIndex()
 
-    // Prefer local thumbnail (pully:// URL) over remote URL; fall back to remote.
-    function thumbnailSrc(meta, videoPath) {
-      const local = meta.thumbnailLocalPath
-      if (local && fs.existsSync(local)) return toPullyUrl(local)
-      // thumbnailLocalPath may not be in metadata yet (async download in flight);
-      // check the expected sidecar paths directly on disk.
-      for (const ext of ['jpg', 'webp', 'png']) {
-        const implied = videoPath.replace(/\.[^.]+$/, `.thumb.${ext}`)
-        if (fs.existsSync(implied)) return toPullyUrl(implied)
-      }
-      return meta.thumbnailUrl || null
+    function thumbnailSrc(videoPath) {
+      const thumbPath = videoPath.replace(/\.[^.]+$/, '.thumb.jpg')
+      return fs.existsSync(thumbPath) ? toPullyUrl(thumbPath) : null
     }
 
     function makeEntry(fileName, fullPath, stat, meta, folder) {
@@ -61,7 +53,7 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
         title: meta.title || null,
         uploader: meta.uploader || null,
         description: meta.description || null,
-        thumbnailUrl: thumbnailSrc(meta, fullPath),
+        thumbnailUrl: thumbnailSrc(fullPath),
         url: meta.url || null,
         downloadedAt: meta.downloadedAt || null,
       }
@@ -106,20 +98,12 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
       return []
     }
 
-    // Backfill: kick off a background thumbnail download when there is no local copy.
-    // Also re-trigger when thumbnailLocalPath is recorded but the file has been deleted.
+    // Backfill: download .thumb.jpg if missing and we have a remote URL.
     for (const [videoPath, meta] of Object.entries(index)) {
       if (!meta.thumbnailUrl) continue
-      if (!meta.thumbnailLocalPath) {
+      const thumbPath = videoPath.replace(/\.[^.]+$/, '.thumb.jpg')
+      if (!fs.existsSync(thumbPath)) {
         downloadAndStoreThumbnail(meta.thumbnailUrl, videoPath).catch(() => {})
-      } else if (!fs.existsSync(meta.thumbnailLocalPath)) {
-        // Stale thumbnailLocalPath — re-download only if no sidecar already on disk
-        const hasSidecar = ['jpg', 'webp', 'png'].some(
-          ext => fs.existsSync(videoPath.replace(/\.[^.]+$/, `.thumb.${ext}`))
-        )
-        if (!hasSidecar) {
-          downloadAndStoreThumbnail(meta.thumbnailUrl, videoPath).catch(() => {})
-        }
       }
     }
 
@@ -191,11 +175,10 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
       }
       fs.rmSync(dirPath, { recursive: true })
     } else {
-      const index = readMetadataIndex()
       for (const fp of filePaths) {
-        const thumbPath = index[fp]?.thumbnailLocalPath
+        const thumbPath = fp.replace(/\.[^.]+$/, '.thumb.jpg')
         await shell.trashItem(fp)
-        if (thumbPath && fs.existsSync(thumbPath)) await shell.trashItem(thumbPath)
+        if (fs.existsSync(thumbPath)) await shell.trashItem(thumbPath)
         deleteMetadataEntry(fp)
       }
       deleteFolderFromIndex(dirPath)
@@ -316,13 +299,9 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
   ipcMain.handle('shell:openUrl', (_, url) => shell.openExternal(url))
 
   ipcMain.handle('library:delete', async (_, filePath) => {
-    // Also trash the local thumbnail if one exists
-    const index = readMetadataIndex()
-    const thumbPath = index[filePath]?.thumbnailLocalPath
+    const thumbPath = filePath.replace(/\.[^.]+$/, '.thumb.jpg')
     await shell.trashItem(filePath)
-    if (thumbPath && fs.existsSync(thumbPath)) {
-      await shell.trashItem(thumbPath)
-    }
+    if (fs.existsSync(thumbPath)) await shell.trashItem(thumbPath)
     deleteMetadataEntry(filePath)
   })
 
