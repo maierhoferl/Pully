@@ -21,6 +21,8 @@ export function SettingsPanel() {
   const [availableModels, setAvailableModels] = useState([])
   const [modelsFetching, setModelsFetching] = useState(false)
   const [aiModels, setAiModels] = useState([])
+  const [curationRunning, setCurationRunning] = useState(false)
+  const [curationStatus, setCurationStatus] = useState('')
 
   async function handleBrowse() {
     const folder = await window.api.openFolder()
@@ -68,6 +70,30 @@ export function SettingsPanel() {
       setAiModels(models)
     } catch {
       setAiModels([])
+    }
+  }
+
+  async function handleRunCuration() {
+    setCurationRunning(true)
+    setCurationStatus('')
+    try {
+      const results = await window.api.runCuration()
+      const fixedCount = results.filter((r) => r.status === 'fixed').length
+      const hasErrors = results.some((r) => r.status === 'error')
+      if (hasErrors) {
+        setCurationStatus('⚠ Some issues encountered')
+      } else if (fixedCount > 0) {
+        setCurationStatus(`✓ Done — ${fixedCount} issue${fixedCount === 1 ? '' : 's'} fixed`)
+      } else {
+        setCurationStatus('✓ Done')
+      }
+      // Clear status after 3 seconds
+      setTimeout(() => setCurationStatus(''), 3000)
+    } catch (error) {
+      setCurationStatus('✗ Failed')
+      setTimeout(() => setCurationStatus(''), 3000)
+    } finally {
+      setCurationRunning(false)
     }
   }
 
@@ -172,6 +198,42 @@ export function SettingsPanel() {
                     />
                   </button>
                 </div>
+              </div>
+
+              <div className="border-t border-gray-800 pt-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <div className="text-sm font-medium text-white">Maintain Pully Folder</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Validates and repairs the Pully folder structure at startup
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setLocal((c) => ({ ...c, maintainFolder: !c.maintainFolder }))}
+                    className={`relative w-10 h-6 rounded-full transition-colors flex-shrink-0 ${
+                      local.maintainFolder ? 'bg-indigo-600' : 'bg-gray-700'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                        local.maintainFolder ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                <button
+                  onClick={handleRunCuration}
+                  disabled={curationRunning}
+                  className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-700 disabled:cursor-not-allowed text-white text-sm px-4 py-2 rounded font-medium transition-colors"
+                >
+                  {curationRunning ? 'Running…' : 'Maintain Folder Now'}
+                </button>
+                {curationStatus && (
+                  <div className="mt-2 text-xs text-gray-400 text-center">
+                    {curationStatus}
+                  </div>
+                )}
               </div>
             </div>
           )}

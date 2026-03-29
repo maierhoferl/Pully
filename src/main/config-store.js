@@ -24,7 +24,8 @@ function getDefaults() {
     autoSummarizeModel: '',
     defaultSummaryPrompt:
       'Summarize this video in 3-5 sentences. Highlight the main topic, key points covered, and anything particularly useful or actionable for the viewer.',
-    debugMode: false
+    debugMode: false,
+    maintainFolder: true
   }
 }
 

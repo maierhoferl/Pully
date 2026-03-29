@@ -17,19 +17,33 @@ export async function generateSummary(filePath, metadata, config) {
   })
 
   try {
-    const { aiProvider, aiApiKey, defaultSummaryPrompt } = config
+    const { aiProvider, aiApiKey, defaultSummaryPrompt, outputFolder } = config
     const folderPath = path.dirname(filePath)
     const customPromptPath = path.join(folderPath, 'summary-prompt.md')
+    const agentCommandPath = outputFolder ? path.join(outputFolder, '.agent', 'commands', 'summarize.md') : null
 
     let prompt =
       defaultSummaryPrompt ||
       'Summarize the key topics and insights in concise bullet points. Cover the what, why, how and the implications. Use concise language of an expert. Never go beyond what is covered.'
     let promptSource = 'default'
+
+    // Priority 1: Per-folder custom prompt (highest priority)
     if (fs.existsSync(customPromptPath)) {
       const custom = fs.readFileSync(customPromptPath, 'utf8').trim()
       if (custom) {
         prompt = custom
         promptSource = 'custom'
+      }
+    }
+    // Priority 2: Library-wide .agent/commands/summarize.md (second priority)
+    else if (agentCommandPath && fs.existsSync(agentCommandPath)) {
+      const agentContent = fs.readFileSync(agentCommandPath, 'utf8')
+      // Extract prompt from frontmatter+content
+      const match = agentContent.match(/^---[\s\S]*?---\n([\s\S]*)$/)
+      const agentPrompt = match ? match[1].trim() : agentContent.trim()
+      if (agentPrompt) {
+        prompt = agentPrompt
+        promptSource = 'agent-command'
       }
     }
 
@@ -81,7 +95,6 @@ export async function generateSummary(filePath, metadata, config) {
     })
 
     // Write summary section and emit event for real-time renderer update
-    const { outputFolder } = config
     if (outputFolder) {
       writeSummarySection(filePath, result, outputFolder)
     }

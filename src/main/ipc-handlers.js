@@ -1,6 +1,7 @@
-import { ipcMain, dialog, shell, session, BrowserWindow } from 'electron'
+import { ipcMain, dialog, shell, session, BrowserWindow, app } from 'electron'
 import { EventEmitter } from 'events'
 import { readConfig, writeConfig } from './config-store.js'
+import { runCuration } from './folder-curator.js'
 import { enableAdblock, disableAdblock } from './adblock-manager.js'
 import { extractInfo, getDefaultBinaryPath } from './ytdlp-runner.js'
 import {
@@ -29,8 +30,13 @@ import { spawn } from 'child_process'
 
 // Helper files to exclude from library and classification logic
 function isHelperFile(fileName) {
-  // Exclude markdown notes, text metadata files, and thumbnail sidecars
-  return /\.(md|txt|nfo)$/i.test(fileName) || /\.thumb(\.[a-z]+)?$/i.test(fileName)
+  // Exclude markdown notes, text metadata files, thumbnail sidecars, and Pully metadata
+  return (
+    /\.(md|txt|nfo)$/i.test(fileName) ||
+    /\.thumb(\.[a-z]+)?$/i.test(fileName) ||
+    fileName === '.pully.json' ||
+    fileName === '.gitignore'
+  )
 }
 
 export function registerIpcHandlers(downloadManager, mainWindow, logger) {
@@ -449,6 +455,21 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
     await shell.trashItem(filePath)
     if (fs.existsSync(thumbPath)) await shell.trashItem(thumbPath)
     deleteMetadataEntry(filePath)
+  })
+
+  ipcMain.handle('library:runCuration', async () => {
+    const { outputFolder } = readConfig()
+    if (!outputFolder || !fs.existsSync(outputFolder)) {
+      logger.warn('curation', 'Curation skipped: no output folder configured')
+      return []
+    }
+    const results = await runCuration(outputFolder, app.getPath('userData'))
+    for (const result of results) {
+      const level = result.status === 'error' ? 'error' : 'info'
+      const msg = `${result.task}: ${result.status}`
+      logger[level]('curation', msg, { task: result.task, details: result.details })
+    }
+    return results
   })
 
   // Forward download manager events to renderer

@@ -31,7 +31,13 @@ export function useIpcEvents() {
     const unsubChapterUpdated = window.api.on('notes:chapter-updated', handleChapterUpdated)
 
     window.api.getAllDownloads().then(setDownloads)
-    window.api.readConfig().then(setConfig)
+    window.api.readConfig().then((cfg) => {
+      setConfig(cfg)
+      // Trigger folder curation on startup if enabled (fire-and-forget)
+      if (cfg.maintainFolder) {
+        window.api.runCuration().catch(() => {})
+      }
+    })
 
     return () => {
       unsubQueue()

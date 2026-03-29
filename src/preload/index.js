@@ -25,6 +25,7 @@ contextBridge.exposeInMainWorld('api', {
   deleteFolder: (folder, strategy) =>
     ipcRenderer.invoke('library:deleteFolder', { folder, strategy }),
   autoClassify: () => ipcRenderer.invoke('library:autoClassify'),
+  runCuration: () => ipcRenderer.invoke('library:runCuration'),
   fetchClassifyModels: (provider, apiKey) =>
     ipcRenderer.invoke('classify:fetchModels', provider, apiKey),
 
