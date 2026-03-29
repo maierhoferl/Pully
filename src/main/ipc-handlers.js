@@ -1,10 +1,11 @@
-import { ipcMain, dialog, shell, session } from 'electron'
+import { ipcMain, dialog, shell, session, BrowserWindow } from 'electron'
+import { EventEmitter } from 'events'
 import { readConfig, writeConfig } from './config-store.js'
 import { enableAdblock, disableAdblock } from './adblock-manager.js'
 import { extractInfo, getDefaultBinaryPath } from './ytdlp-runner.js'
 import { readMetadataIndex, deleteMetadataEntry, moveMetadataEntry, moveThumbnailSidecar, toPullyUrl, downloadAndStoreThumbnail, renameFolderInIndex, deleteFolderFromIndex, createReferenceFile } from './metadata-store.js'
 import { classifyVideo } from './auto-classifier.js'
-import { initChapter, moveChapter, readFolderNotes, writeSummarySection, writeBulletsSection } from './notes-store.js'
+import { initChapter, moveChapter, readFolderNotes, writeSummarySection, writeBulletsSection, setNotesEventEmitter } from './notes-store.js'
 import { generateSummary } from './ai-summarizer.js'
 import fs from 'fs'
 import path from 'path'
@@ -17,6 +18,15 @@ function isHelperFile(fileName) {
 }
 
 export function registerIpcHandlers(downloadManager, mainWindow, logger) {
+  // Create event emitter for notes events
+  const notesEmitter = new EventEmitter()
+  setNotesEventEmitter(notesEmitter)
+
+  // Forward notes events to renderer
+  notesEmitter.on('notes:chapter-updated', (data) => {
+    mainWindow.webContents.send('notes:chapter-updated', data)
+  })
+
   ipcMain.handle('log:renderer', (_, { level, category, message, meta }) => {
     const fn = logger[level] ?? logger.info
     fn.call(logger, category, message, meta)

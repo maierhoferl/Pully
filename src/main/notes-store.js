@@ -2,6 +2,26 @@ import fs from 'fs'
 import path from 'path'
 import logger from './logger.js'
 
+// Event emitter for notes changes (injected from ipc-handlers)
+let eventEmitter = null
+
+/**
+ * Set the event emitter for notes events.
+ * This is called from ipc-handlers.js to provide dependency injection.
+ */
+export function setNotesEventEmitter(emitter) {
+  eventEmitter = emitter
+}
+
+/**
+ * Emit a notes:chapter-updated event with the updated chapter data.
+ */
+function emitChapterUpdated(notesPath, chapter) {
+  if (eventEmitter) {
+    eventEmitter.emit('notes:chapter-updated', { notesPath, chapter })
+  }
+}
+
 /** Returns absolute path to the notes.md for the folder containing filePath. */
 export function getNotesPath(filePath, outputFolder) {
   // If filePath looks like a URL (starts with protocol), use root notes.md
@@ -119,6 +139,8 @@ export function initChapter(filePath, metadata, outputFolder) {
       // We have a real filename now, update the file anchor
       updateChapterAnchor(notesPath, metadata.url, 'file', fileBasename)
     }
+    // Emit event after adoption
+    emitChapterUpdated(notesPath, existingChapter)
     return { isNew: false, filePath: notesPath, chapterId: existingChapter.heading }
   }
 
@@ -137,6 +159,13 @@ export function initChapter(filePath, metadata, outputFolder) {
     filename: fileBasename,
     videoTitle: metadata.title
   })
+
+  // Emit event after creating new chapter
+  const { chapters } = readFolderNotes(null, outputFolder)
+  const chapter = chapters.find(ch => ch.file === fileBasename || ch.url === metadata.url)
+  if (chapter) {
+    emitChapterUpdated(notesPath, chapter)
+  }
 }
 
 /** Parse notes.md into structured chapters. folderName null = root. */
@@ -227,6 +256,13 @@ export function writeSummarySection(filePath, summary, outputFolder) {
   logger.info('notes', `Summary written: ${fileBasename}`, {
     filename: fileBasename
   })
+
+  // Emit event after updating summary
+  const { chapters } = readFolderNotes(null, outputFolder)
+  const chapter = chapters.find(ch => ch.file === fileBasename)
+  if (chapter) {
+    emitChapterUpdated(notesPath, chapter)
+  }
 }
 
 export function writeBulletsSection(filePath, bullets, outputFolder) {
@@ -238,6 +274,13 @@ export function writeBulletsSection(filePath, bullets, outputFolder) {
     filename: fileBasename,
     bulletCount: bullets.length
   })
+
+  // Emit event after updating bullets
+  const { chapters } = readFolderNotes(null, outputFolder)
+  const chapter = chapters.find(ch => ch.file === fileBasename)
+  if (chapter) {
+    emitChapterUpdated(notesPath, chapter)
+  }
 }
 
 /** Extracts a chapter block from content. Returns { chapterContent, remaining }. */
@@ -303,4 +346,11 @@ export function moveChapter(oldFilePath, newFilePath, outputFolder) {
     oldFolder: path.dirname(oldFilePath),
     newFolder: path.dirname(newFilePath)
   })
+
+  // Emit event after moving chapter
+  const { chapters } = readFolderNotes(null, outputFolder)
+  const chapter = chapters.find(ch => ch.file === newBasename)
+  if (chapter) {
+    emitChapterUpdated(newNotesPath, chapter)
+  }
 }
