@@ -62,6 +62,7 @@ function MediaEntry({ entry }) {
   const formats = getBestFormats(entry)
   const [selected, setSelected] = useState(formats[0]?.format_id || 'best')
   const [downloadId, setDownloadId] = useState(null)
+  const [rememberState, setRememberState] = useState('idle') // idle | pending | done | exists | error
 
   async function handleDownload() {
     const sourceUrl = entry.webpage_url || entry.url
@@ -81,6 +82,32 @@ function MediaEntry({ entry }) {
     setDownloadId(id)
   }
 
+  async function handleRemember() {
+    if (rememberState !== 'idle') return
+    setRememberState('pending')
+    try {
+      const result = await window.api.rememberMedia({
+        title: entry.title || entry.id || 'Untitled',
+        uploader: entry.uploader || entry.channel || null,
+        description: entry.description || null,
+        thumbnailUrl: entry.thumbnail || null,
+        url: entry.webpage_url || entry.url,
+      })
+      setRememberState(result.alreadyExists ? 'exists' : 'done')
+    } catch {
+      setRememberState('error')
+    }
+  }
+
+  const rememberLabel = { idle: 'Remember', pending: '…', done: 'Saved ✓', exists: 'In library', error: 'Failed' }[rememberState]
+  const rememberStyle = {
+    idle: 'bg-gray-700 hover:bg-gray-600 text-gray-200 cursor-pointer',
+    pending: 'bg-gray-600 text-gray-400 cursor-not-allowed',
+    done: 'bg-purple-800 text-purple-200 cursor-default',
+    exists: 'bg-gray-700 text-gray-400 cursor-default',
+    error: 'bg-red-800 text-red-200 cursor-default',
+  }[rememberState]
+
   return (
     <div className="flex items-center gap-3 py-2.5 px-3 hover:bg-gray-800 rounded-lg border border-transparent hover:border-gray-700 transition-colors">
       {entry.thumbnail && (
@@ -96,6 +123,14 @@ function MediaEntry({ entry }) {
           {formats.map(f => <option key={f.format_id} value={f.format_id}>{f.label}</option>)}
         </select>
       </div>
+      <button
+        onClick={handleRemember}
+        disabled={rememberState !== 'idle'}
+        title={rememberState === 'exists' ? 'Already in library' : 'Save reference without downloading'}
+        className={`text-sm font-semibold px-3 py-1.5 rounded flex-shrink-0 transition-colors ${rememberStyle}`}
+      >
+        {rememberLabel}
+      </button>
       {downloadId
         ? <DownloadButton downloadId={downloadId} />
         : (

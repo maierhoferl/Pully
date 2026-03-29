@@ -364,7 +364,7 @@ export default function LibraryTab() {
                             {file.thumbnailUrl
                               ? <img key={file.thumbnailUrl} src={file.thumbnailUrl} alt="" className="w-full h-full object-cover"
                                   onError={e => { e.target.style.display = 'none' }} />
-                              : <span className="text-gray-500 text-lg">▶</span>
+                              : <span className="text-gray-500 text-lg">{file.name?.endsWith('.ref') ? '🔖' : '▶'}</span>
                             }
                           </div>
                           <div className="min-w-0 flex-1">

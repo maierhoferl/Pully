@@ -2,7 +2,7 @@ import { ipcMain, dialog, shell, session } from 'electron'
 import { readConfig, writeConfig } from './config-store.js'
 import { enableAdblock, disableAdblock } from './adblock-manager.js'
 import { extractInfo, getDefaultBinaryPath } from './ytdlp-runner.js'
-import { readMetadataIndex, deleteMetadataEntry, moveMetadataEntry, moveThumbnailSidecar, toPullyUrl, downloadAndStoreThumbnail, renameFolderInIndex, deleteFolderFromIndex } from './metadata-store.js'
+import { readMetadataIndex, deleteMetadataEntry, moveMetadataEntry, moveThumbnailSidecar, toPullyUrl, downloadAndStoreThumbnail, renameFolderInIndex, deleteFolderFromIndex, createReferenceFile } from './metadata-store.js'
 import { classifyVideo } from './auto-classifier.js'
 import { initChapter, moveChapter, readFolderNotes, writeSummarySection, writeBulletsSection } from './notes-store.js'
 import { generateSummary } from './ai-summarizer.js'
@@ -36,6 +36,16 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
   ipcMain.handle('download:retry', (_, id) => downloadManager.retry(id))
   ipcMain.handle('download:cancel', (_, id) => downloadManager.cancel(id))
   ipcMain.handle('download:getAll', () => downloadManager.getAll())
+
+  ipcMain.handle('library:remember', async (_, { title, uploader, description, thumbnailUrl, url }) => {
+    const { outputFolder } = readConfig()
+    if (!outputFolder || !fs.existsSync(outputFolder)) throw new Error('No output folder configured')
+    const index = readMetadataIndex()
+    const existing = Object.entries(index).find(([, m]) => m.isReference && m.url === url)
+    if (existing) return { refPath: existing[0], alreadyExists: true }
+    const refPath = await createReferenceFile(outputFolder, { title, uploader, description, thumbnailUrl, url })
+    return { refPath, alreadyExists: false }
+  })
 
   ipcMain.handle('library:list', () => {
     const { outputFolder } = readConfig()

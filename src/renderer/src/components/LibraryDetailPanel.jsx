@@ -27,6 +27,7 @@ export default function LibraryDetailPanel({ file, onClose, onDelete }) {
     setActiveTab('notes')
   }
 
+  const isRef = file.name?.endsWith('.ref')
   const title = file.title || file.name.replace(/\.[^/.]+$/, '')
   const uploader = file.uploader || '—'
   const description = file.description || '—'
@@ -68,7 +69,26 @@ export default function LibraryDetailPanel({ file, onClose, onDelete }) {
       </div>
 
       <div className="mx-4 mb-3 flex-shrink-0">
-        {isPlaying ? (
+        {isRef ? (
+          <div className="relative aspect-video bg-gray-800 rounded overflow-hidden flex items-center justify-center">
+            {file.thumbnailUrl && (
+              <img
+                key={file.thumbnailUrl}
+                src={file.thumbnailUrl}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover opacity-50"
+                onError={e => { e.target.style.display = 'none' }}
+              />
+            )}
+            <button
+              onClick={() => file.url && window.api.openUrl(file.url)}
+              disabled={!file.url}
+              className="relative z-10 bg-purple-700 hover:bg-purple-600 text-white font-bold px-5 py-2.5 rounded text-sm transition-colors disabled:opacity-40"
+            >
+              ▶ Watch Online
+            </button>
+          </div>
+        ) : isPlaying ? (
           <VideoPlayer
             src={file.videoUrl}
             onClose={() => setIsPlaying(false)}

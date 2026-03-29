@@ -87,6 +87,28 @@ export function deleteFolderFromIndex(dirPath, indexPath) {
   fs.writeFileSync(p, JSON.stringify(index, null, 2))
 }
 
+// Creates a .ref stub file representing a remembered (not downloaded) online video.
+// Writes metadata to the index and fire-and-forgets the thumbnail sidecar download.
+export async function createReferenceFile(outputFolder, { title, uploader, description, thumbnailUrl, url }) {
+  const safe = (title || 'Untitled')
+    .replace(/[/\\:*?"<>|]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim() || 'Untitled'
+  let refPath = path.join(outputFolder, `${safe}.ref`)
+  let counter = 1
+  while (fs.existsSync(refPath)) {
+    refPath = path.join(outputFolder, `${safe} (${counter}).ref`)
+    counter++
+  }
+  const downloadedAt = new Date().toISOString()
+  fs.writeFileSync(refPath, JSON.stringify({ type: 'reference', url }))
+  writeMetadataEntry(refPath, { title, uploader, description, thumbnailUrl, url, downloadedAt, isReference: true })
+  if (thumbnailUrl) {
+    downloadAndStoreThumbnail(thumbnailUrl, refPath).catch(() => {})
+  }
+  return refPath
+}
+
 // In-progress set to avoid duplicate concurrent downloads
 const _thumbnailPending = new Set()
 
