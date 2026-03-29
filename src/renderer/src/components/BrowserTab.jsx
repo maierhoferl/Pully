@@ -3,7 +3,7 @@ import { useAppStore } from '../store/app-store.js'
 import SidePanel from './SidePanel.jsx'
 
 const HOME = 'https://www.youtube.com'
-const RESCAN_INTERVAL_MS = 30_000
+const RESCAN_INTERVAL_MS = 2_000
 
 export default function BrowserTab() {
   const webviewRef = useRef(null)
