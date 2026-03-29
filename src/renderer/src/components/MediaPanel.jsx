@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useAppStore } from '../store/app-store.js'
 
 function formatSize(bytes) {
@@ -6,6 +6,64 @@ function formatSize(bytes) {
   if (bytes > 1e9) return `${(bytes / 1e9).toFixed(1)} GB`
   if (bytes > 1e6) return `${(bytes / 1e6).toFixed(1)} MB`
   return `${(bytes / 1e3).toFixed(0)} KB`
+}
+
+function PlaylistIcon() {
+  const canvasRef = useRef(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const scale = window.devicePixelRatio || 1
+    canvas.width = 96 * scale
+    canvas.height = 56 * scale
+    ctx.scale(scale, scale)
+
+    // Background
+    ctx.fillStyle = '#1f2937'
+    ctx.fillRect(0, 0, 96, 56)
+
+    // Draw stacked lines (playlist representation)
+    ctx.strokeStyle = '#9ca3af'
+    ctx.lineWidth = 1.5
+    ctx.lineCap = 'round'
+
+    const lineWidth = 40
+    const startX = (96 - lineWidth) / 2
+    const startY = 16
+
+    for (let i = 0; i < 3; i++) {
+      const y = startY + i * 12
+      ctx.beginPath()
+      ctx.moveTo(startX, y)
+      ctx.lineTo(startX + lineWidth, y)
+      ctx.stroke()
+    }
+
+    // Small play icon on the right
+    ctx.fillStyle = '#6b7280'
+    const playX = startX + lineWidth + 8
+    const playY = 20
+    const playSize = 8
+    ctx.beginPath()
+    ctx.moveTo(playX, playY)
+    ctx.lineTo(playX, playY + playSize)
+    ctx.lineTo(playX + playSize * 0.85, playY + playSize / 2)
+    ctx.closePath()
+    ctx.fill()
+  }, [])
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="w-24 h-14 rounded-md flex-shrink-0 shadow"
+      style={{ display: 'block' }}
+    />
+  )
 }
 
 function getBestFormats(entry) {
@@ -131,14 +189,16 @@ function MediaEntry({ entry }) {
       </div>
       {/* Thumbnail + action buttons */}
       <div className="flex gap-3 mt-2">
-        {entry.thumbnail && (
+        {entry.thumbnail ? (
           <img
             src={entry.thumbnail}
             alt=""
             className="w-24 h-14 object-cover rounded-md flex-shrink-0 shadow"
             onError={e => { e.target.style.display = 'none' }}
           />
-        )}
+        ) : isPlaylist ? (
+          <PlaylistIcon />
+        ) : null}
         <div className="flex flex-col gap-1.5">
           <button
             onClick={handleRemember}
@@ -191,6 +251,10 @@ export function MediaPanel() {
     return `${mediaScanResults.length} video${mediaScanResults.length !== 1 ? 's' : ''} found`
   }
 
+  // Split results into videos and playlists
+  const videos = hasResults ? mediaScanResults.filter(e => !e.playlist_id) : []
+  const playlists = hasResults ? mediaScanResults.filter(e => e.playlist_id) : []
+
   return (
     <div className="bg-gray-950">
       <div onClick={() => hasResults && setCollapsed(c => !c)}
@@ -212,9 +276,26 @@ export function MediaPanel() {
       </div>
       {!collapsed && hasResults && (
         <div className="p-2 flex flex-col gap-1">
-          {mediaScanResults.map(entry => (
-            <MediaEntry key={entry.id || entry.url} entry={entry} />
-          ))}
+          {videos.length > 0 && (
+            <>
+              <div className="text-xs font-semibold text-gray-400 px-1 py-1.5 uppercase tracking-wider">Videos</div>
+              <div className="flex flex-col gap-1">
+                {videos.map(entry => (
+                  <MediaEntry key={entry.id || entry.url} entry={entry} />
+                ))}
+              </div>
+            </>
+          )}
+          {playlists.length > 0 && (
+            <>
+              <div className="text-xs font-semibold text-gray-400 px-1 py-1.5 uppercase tracking-wider mt-2">Playlists</div>
+              <div className="flex flex-col gap-1">
+                {playlists.map(entry => (
+                  <MediaEntry key={entry.id || entry.url} entry={entry} />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
