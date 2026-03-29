@@ -85,6 +85,7 @@ export function startDownload(url, formatId, outputDir, onProgress, onDone, onEr
   logger.info('app', 'yt-dlp process spawned', { url, pid: proc.pid })
   let buf = ''
   let actualPath = null
+  const stderrLines = []
   proc.stdout.on('data', data => {
     buf += data.toString()
     const lines = buf.split('\n')
@@ -98,12 +99,22 @@ export function startDownload(url, formatId, outputDir, onProgress, onDone, onEr
       }
     }
   })
+  proc.stderr.on('data', chunk => {
+    stderrLines.push(chunk.toString())
+  })
   proc.on('close', code => {
     logger.info('app', 'yt-dlp process exited', { url, exitCode: code })
-    code === 0 ? onDone(actualPath) : onError(new Error(`yt-dlp exited ${code}`))
+    if (code === 0) {
+      onDone(actualPath)
+    } else {
+      const stderr = stderrLines.join('').trim()
+      const errorMsg = stderr ? `yt-dlp exited ${code}\n${stderr}` : `yt-dlp exited ${code}`
+      onError(new Error(errorMsg))
+    }
   })
   proc.on('error', err => {
     logger.error('app', 'yt-dlp process error', { error: err.message })
+    onError(err)
   })
   return proc
 }

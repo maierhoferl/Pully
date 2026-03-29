@@ -105,7 +105,7 @@ export class DownloadManager extends EventEmitter {
               duration: `${duration.toFixed(2)}s`,
               fileSize: `${(fileSize / 1024 / 1024).toFixed(2)}MB`
             })
-          } catch (err) {
+          } catch {
             // If we can't get file stats, log without them
             logger.info('download', `Completed: ${actualPath}`, { url: item.url })
           }
@@ -181,9 +181,18 @@ export class DownloadManager extends EventEmitter {
         item.error = err.message
         this.active.delete(item.id)
 
-        // Log download failure
+        // Extract stderr and exit code from error message if present
+        const errorLines = err.message.split('\n')
+        const firstLine = errorLines[0]
+        const stderr = errorLines.slice(1).join('\n').trim()
+        const exitCodeMatch = firstLine.match(/yt-dlp exited (\d+)/)
+        const exitCode = exitCodeMatch ? parseInt(exitCodeMatch[1]) : null
+
+        // Log download failure with details
         logger.error('download', `Failed: ${path.basename(item.filePath || item.title)}`, {
           url: item.url,
+          exitCode,
+          stderr: stderr.slice(0, 1000),
           error: err.message
         })
 

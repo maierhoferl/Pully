@@ -257,6 +257,9 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
         fs.renameSync(filePath, newPath)
         moveMetadataEntry(filePath, newPath)
         moveThumbnailSidecar(filePath, newPath)
+        try {
+          moveChapter(filePath, newPath, outputFolder)
+        } catch {}
         moved.push({ file, toFolder: folder })
       } else {
         skipped++
