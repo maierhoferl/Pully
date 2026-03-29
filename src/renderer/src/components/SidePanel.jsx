@@ -46,15 +46,15 @@ export default function SidePanel({ onRememberSite }) {
       >
         <div className="w-6 h-0.5 bg-gray-600 rounded pointer-events-none" />
       </div>
-      <div className="flex flex-col flex-1 border-t border-gray-300">
+      <div className="flex flex-col flex-1 border-t border-gray-700">
         {/* Tab bar */}
-        <div className="flex border-b border-gray-300 bg-gray-50">
+        <div className="flex border-b border-gray-700 bg-gray-800">
           <button
             onClick={() => setActiveTab('notes')}
             className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
               activeTab === 'notes'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'text-blue-400 border-b-2 border-blue-500'
+                : 'text-gray-400 hover:text-gray-300'
             }`}
           >
             Notes
@@ -63,8 +63,8 @@ export default function SidePanel({ onRememberSite }) {
             onClick={() => setActiveTab('progress')}
             className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
               activeTab === 'progress'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'text-blue-400 border-b-2 border-blue-500'
+                : 'text-gray-400 hover:text-gray-300'
             }`}
           >
             Progress
