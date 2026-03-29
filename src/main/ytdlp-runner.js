@@ -46,48 +46,85 @@ export function ensureBinary(src, dest) {
   logger.info('app', 'yt-dlp binary confirmed', { binaryPath: dest })
 }
 
-export function extractInfo(url, binaryPath = getDefaultBinaryPath()) {
+export function extractInfo(url, binaryPath = getDefaultBinaryPath(), retryCount = 0) {
   return new Promise((resolve) => {
-    const proc = spawn(binaryPath, [
+    // Arguments for yt-dlp with YouTube-friendly flags
+    const args = [
       '--dump-json',
       '--flat-playlist',
       '--no-warnings',
+      '--socket-timeout',
+      '15',
       '--playlist-items',
       '1-20',
+      '--user-agent',
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       url
-    ])
-    logger.info('app', 'yt-dlp process spawned', { url, pid: proc.pid })
+    ]
+
+    let timedOut = false
+    const proc = spawn(binaryPath, args)
+    logger.info('app', 'yt-dlp process spawned', { url, pid: proc.pid, retryCount })
     let out = ''
+    let err = ''
+
     proc.stdout.on('data', (d) => {
       out += d.toString()
     })
     proc.stderr.on('data', (chunk) => {
+      err += chunk.toString()
       for (const line of chunk.toString().split('\n')) {
         if (line.trim()) logger.warn('app', line.trim())
       }
     })
+
     proc.on('close', (code) => {
-      logger.info('app', 'yt-dlp process exited', { url, exitCode: code })
-      if (code !== 0) return resolve([])
+      if (timedOut) return // Already resolved via timeout
+
+      logger.info('app', 'yt-dlp process exited', { url, exitCode: code, retryCount })
+
+      if (code !== 0) {
+        // Retry once on failure (YouTube might be throttling)
+        if (retryCount < 1 && err.includes('ERROR')) {
+          logger.info('app', 'yt-dlp extraction failed, retrying...', { url })
+          setTimeout(() => {
+            extractInfo(url, binaryPath, retryCount + 1)
+              .then(resolve)
+              .catch(() => resolve([]))
+          }, 1000)
+          return
+        }
+        return resolve([])
+      }
+
       const entries = []
       for (const line of out.trim().split('\n')) {
         if (!line.trim()) continue
         try {
           entries.push(JSON.parse(line))
         } catch {
-          /* skip */
+          /* skip malformed JSON */
         }
       }
       resolve(entries)
     })
+
     proc.on('error', (err) => {
-      logger.error('app', 'yt-dlp process error', { error: err.message })
-    })
-    // Timeout after 30s
-    setTimeout(() => {
-      proc.kill()
+      logger.error('app', 'yt-dlp process error', { error: err.message, url })
       resolve([])
-    }, 30000)
+    })
+
+    // Timeout after 20s (reduced from 30s for faster feedback)
+    const timeoutId = setTimeout(() => {
+      timedOut = true
+      proc.kill()
+      logger.warn('app', 'yt-dlp process timeout', { url, pid: proc.pid })
+      // Don't retry on timeout - just return empty
+      resolve([])
+    }, 20000)
+
+    // Clear timeout if process finishes first
+    proc.on('close', () => clearTimeout(timeoutId))
   })
 }
 

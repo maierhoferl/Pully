@@ -35,6 +35,99 @@ export default function BrowserTab() {
   const scanPage = useCallback(
     async (pageUrl) => {
       try {
+        // For YouTube, try to extract videos from the page first before using yt-dlp
+        if (pageUrl && pageUrl.includes('youtube.com')) {
+          try {
+            const pageVideos = await webviewRef.current?.executeJavaScript(`
+              (function() {
+                const videos = [];
+                const isWatchPage = /watch\\?v=/.test(location.href);
+                const isPlaylistPage = /list=/.test(location.href) || /playlist\\?/.test(location.href);
+
+                // Try to extract from ytInitialData if available (most reliable)
+                let initialData = null;
+                try {
+                  const scripts = document.querySelectorAll('script');
+                  for (const script of scripts) {
+                    if (script.textContent.includes('var ytInitialData = ')) {
+                      const match = script.textContent.match(/var ytInitialData = ({.*?});/s);
+                      if (match) {
+                        initialData = JSON.parse(match[1]);
+                        break;
+                      }
+                    }
+                  }
+                } catch (e) {}
+
+                if (isWatchPage) {
+                  // Extract video info from watch page
+                  const videoId = new URLSearchParams(location.search).get('v');
+                  if (videoId) {
+                    let title = document.title.replace(' - YouTube', '').trim();
+                    // Try to get more specific title from page
+                    const titleElement = document.querySelector('h1 yt-formatted-string, h1.title');
+                    if (titleElement) title = titleElement.textContent.trim();
+
+                    videos.push({
+                      id: videoId,
+                      url: \`https://www.youtube.com/watch?v=\${videoId}\`,
+                      webpage_url: location.href,
+                      title: title || videoId,
+                      description: '',
+                      thumbnail: \`https://img.youtube.com/vi/\${videoId}/maxresdefault.jpg\`,
+                      ext: 'mp4'
+                    });
+                  }
+                } else if (isPlaylistPage) {
+                  // Extract playlist videos - try multiple selectors for robustness
+                  const videoSelectors = [
+                    'a#video-title-link[href*="watch?v="]',
+                    'a.yt-simple-endpoint[href*="watch?v="]',
+                    'span[role="link"][href*="watch?v="]'
+                  ];
+
+                  let videoLinks = [];
+                  for (const selector of videoSelectors) {
+                    videoLinks = Array.from(document.querySelectorAll(selector));
+                    if (videoLinks.length > 0) break;
+                  }
+
+                  const playlistId = new URLSearchParams(location.search).get('list');
+
+                  videoLinks.forEach((link, index) => {
+                    if (index >= 20) return; // Limit to 20 videos
+                    const href = link.getAttribute('href');
+                    if (!href) return;
+
+                    const videoId = new URLSearchParams(href.split('?')[1]).get('v');
+                    if (videoId) {
+                      videos.push({
+                        id: videoId,
+                        url: \`https://www.youtube.com\${href}\`,
+                        webpage_url: \`https://www.youtube.com\${href}\`,
+                        title: link.textContent.trim() || videoId,
+                        description: '',
+                        thumbnail: \`https://img.youtube.com/vi/\${videoId}/default.jpg\`,
+                        playlist_id: playlistId,
+                        ext: 'mp4'
+                      });
+                    }
+                  });
+                }
+
+                return videos.length > 0 ? videos : null;
+              })()
+            `)
+            if (pageVideos && pageVideos.length > 0) {
+              setMediaScanResults(pageVideos)
+              return
+            }
+          } catch (e) {
+            // JS extraction failed, fall through to yt-dlp
+          }
+        }
+
+        // Fallback to yt-dlp for non-YouTube sites or if JS extraction failed
         const results = await window.api.extractInfo(pageUrl)
         setMediaScanResults(results)
       } catch {
