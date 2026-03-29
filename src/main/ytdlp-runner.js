@@ -55,6 +55,11 @@ export function extractInfo(url, binaryPath = getDefaultBinaryPath()) {
     logger.info('app', 'yt-dlp process spawned', { url, pid: proc.pid })
     let out = ''
     proc.stdout.on('data', d => { out += d.toString() })
+    proc.stderr.on('data', chunk => {
+      for (const line of chunk.toString().split('\n')) {
+        if (line.trim()) logger.warn('app', line.trim())
+      }
+    })
     proc.on('close', code => {
       logger.info('app', 'yt-dlp process exited', { url, exitCode: code })
       if (code !== 0) return resolve([])
@@ -96,11 +101,17 @@ export function startDownload(url, formatId, outputDir, onProgress, onDone, onEr
         onProgress({ percent: parseFloat(m[1]), speed: m[2], eta: m[3] })
       } else if (line.trim() && !line.startsWith('[')) {
         actualPath = line.trim()
+      } else if (line.trim()) {
+        logger.info('download', line.trim())
       }
     }
   })
   proc.stderr.on('data', chunk => {
-    stderrLines.push(chunk.toString())
+    const text = chunk.toString()
+    stderrLines.push(text)
+    for (const line of text.split('\n')) {
+      if (line.trim()) logger.warn('download', line.trim())
+    }
   })
   proc.on('close', code => {
     logger.info('app', 'yt-dlp process exited', { url, exitCode: code })
