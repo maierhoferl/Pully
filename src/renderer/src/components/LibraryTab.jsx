@@ -361,11 +361,7 @@ export default function LibraryTab() {
                           onClick={() => setSelectedPath(prev => prev === file.path ? null : file.path)}
                         >
                           <div className="w-16 aspect-video bg-gray-700 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
-                            {file.thumbnailUrl
-                              ? <img key={file.thumbnailUrl} src={file.thumbnailUrl} alt="" className="w-full h-full object-cover"
-                                  onError={e => { e.target.style.display = 'none' }} />
-                              : <span className="text-gray-500 text-lg">{file.name?.endsWith('.ref') ? '🔖' : '▶'}</span>
-                            }
+                            <span className="text-gray-500 text-lg">{file.name?.endsWith('.ref') ? '🔖' : '▶'}</span>
                           </div>
                           <div className="min-w-0 flex-1">
                             <p className="text-sm font-medium text-white truncate">{title}</p>

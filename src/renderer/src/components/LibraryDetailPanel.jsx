@@ -71,15 +71,6 @@ export default function LibraryDetailPanel({ file, onClose, onDelete }) {
       <div className="mx-4 mb-3 flex-shrink-0">
         {isRef ? (
           <div className="relative aspect-video bg-gray-800 rounded overflow-hidden flex items-center justify-center">
-            {file.thumbnailUrl && (
-              <img
-                key={file.thumbnailUrl}
-                src={file.thumbnailUrl}
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover opacity-50"
-                onError={e => { e.target.style.display = 'none' }}
-              />
-            )}
             <button
               onClick={() => file.url && window.api.openUrl(file.url)}
               disabled={!file.url}
@@ -95,15 +86,6 @@ export default function LibraryDetailPanel({ file, onClose, onDelete }) {
           />
         ) : (
           <div className="relative aspect-video bg-gray-700 rounded overflow-hidden">
-            {file.thumbnailUrl && (
-              <img
-                key={file.thumbnailUrl}
-                src={file.thumbnailUrl}
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover"
-                onError={e => { e.target.style.display = 'none' }}
-              />
-            )}
             <button
               onClick={() => setIsPlaying(true)}
               className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/50 transition-colors"
