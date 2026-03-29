@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useAppStore } from '../store/app-store.js'
 import { ChapterCard } from './ChapterCard.jsx'
 
-export default function NotesChapterView({ folderName, activeChapter }) {
+export default function NotesChapterView({ folderName, activeChapter, onPlay }) {
   const [chapters, setChapters] = useState([])
   const [loading, setLoading] = useState(false)
   const [loadError, setLoadError] = useState(null)
@@ -70,8 +70,10 @@ export default function NotesChapterView({ folderName, activeChapter }) {
         >
           <ChapterCard
             chapter={chapter}
+            folderName={folderName}
             onGenerateSummary={handleGenerateSummary}
             onUpdateBullets={handleUpdateBullets}
+            onPlay={onPlay}
           />
         </div>
       ))}

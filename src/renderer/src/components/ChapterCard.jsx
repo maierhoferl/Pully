@@ -10,7 +10,7 @@ function safeHostname(url) {
   }
 }
 
-export function ChapterCard({ chapter, onGenerateSummary, onUpdateBullets }) {
+export function ChapterCard({ chapter, folderName, onGenerateSummary, onUpdateBullets, onPlay }) {
   const [editingBullets, setEditingBullets] = useState(false)
   const [bulletText, setBulletText] = useState(chapter.bullets.join('\n'))
   const [summarizing, setSummarizing] = useState(false)
@@ -47,6 +47,33 @@ export function ChapterCard({ chapter, onGenerateSummary, onUpdateBullets }) {
     }
   }
 
+  const handleHeadingClick = async () => {
+    if (!onPlay) return
+    const libraryFiles = useAppStore.getState().libraryFiles
+    const file = libraryFiles?.find(
+      (f) => f.name === chapter.filePath && (folderName ? f.folder === folderName : !f.folder)
+    )
+    if (file) {
+      onPlay(file)
+    } else {
+      // Fallback: construct file object when libraryFiles hasn't been loaded
+      const cfg = await window.api.readConfig()
+      const filePath = folderName
+        ? `${cfg.outputFolder}/${folderName}/${chapter.filePath}`
+        : `${cfg.outputFolder}/${chapter.filePath}`
+      const fileObj = {
+        path: filePath,
+        name: chapter.filePath,
+        title: chapter.title,
+        folder: folderName,
+        contentType: chapter.contentType,
+        url: chapter.url,
+        downloadedAt: chapter.downloadedAt
+      }
+      onPlay(fileObj)
+    }
+  }
+
   const libraryFiles = useAppStore((s) => s.libraryFiles)
   const fileMatch = libraryFiles?.find((f) => f.name === chapter.filePath)
   const contentType = fileMatch?.contentType || chapter.contentType || 'video'
@@ -54,7 +81,18 @@ export function ChapterCard({ chapter, onGenerateSummary, onUpdateBullets }) {
   return (
     <div className="mb-6 last:mb-0">
       <div className="flex items-start mb-2">
-        <div className="flex items-center gap-2">
+        <div
+          className="flex items-center gap-2 cursor-pointer hover:opacity-75 transition-opacity"
+          onClick={handleHeadingClick}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              handleHeadingClick()
+            }
+          }}
+        >
           <ContentTypeIcon type={contentType} size={16} className="flex-shrink-0 text-gray-500" />
           <h2 className="text-base font-semibold text-white">{chapter.title}</h2>
         </div>

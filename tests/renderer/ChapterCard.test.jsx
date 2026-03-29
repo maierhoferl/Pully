@@ -3,6 +3,27 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ChapterCard } from '@renderer/components/ChapterCard.jsx'
 
+const mockLibraryFiles = [
+  {
+    name: 'video.mp4',
+    path: '/output/video.mp4',
+    folder: null,
+    title: 'Chapter 1: Introduction'
+  }
+]
+
+vi.mock('@renderer/store/app-store.js', () => {
+  const mockUseAppStore = vi.fn((selector) => {
+    const state = { libraryFiles: mockLibraryFiles }
+    if (selector) {
+      return selector(state)
+    }
+    return state
+  })
+  mockUseAppStore.getState = vi.fn(() => ({ libraryFiles: mockLibraryFiles }))
+  return { useAppStore: mockUseAppStore }
+})
+
 describe('ChapterCard', () => {
   const mockChapter = {
     filePath: 'video.mp4',
@@ -27,6 +48,7 @@ describe('ChapterCard', () => {
     render(
       <ChapterCard
         chapter={mockChapter}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
@@ -39,6 +61,7 @@ describe('ChapterCard', () => {
     render(
       <ChapterCard
         chapter={mockChapter}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
@@ -51,6 +74,7 @@ describe('ChapterCard', () => {
     render(
       <ChapterCard
         chapter={mockChapter}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
@@ -65,6 +89,7 @@ describe('ChapterCard', () => {
     render(
       <ChapterCard
         chapter={mockChapter}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
@@ -77,6 +102,7 @@ describe('ChapterCard', () => {
     render(
       <ChapterCard
         chapter={mockChapter}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
@@ -90,6 +116,7 @@ describe('ChapterCard', () => {
     render(
       <ChapterCard
         chapter={mockChapter}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
@@ -115,6 +142,7 @@ describe('ChapterCard', () => {
     render(
       <ChapterCard
         chapter={mockChapter}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
@@ -130,6 +158,7 @@ describe('ChapterCard', () => {
     render(
       <ChapterCard
         chapter={mockChapter}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
@@ -181,6 +210,7 @@ describe('ChapterCard', () => {
     render(
       <ChapterCard
         chapter={mockChapter}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
@@ -196,6 +226,7 @@ describe('ChapterCard', () => {
     render(
       <ChapterCard
         chapter={mockChapter}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
@@ -208,6 +239,7 @@ describe('ChapterCard', () => {
     render(
       <ChapterCard
         chapter={mockChapter}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
@@ -223,6 +255,7 @@ describe('ChapterCard', () => {
     render(
       <ChapterCard
         chapter={mockChapter}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
@@ -237,6 +270,7 @@ describe('ChapterCard', () => {
     render(
       <ChapterCard
         chapter={mockChapter}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
@@ -252,6 +286,7 @@ describe('ChapterCard', () => {
     render(
       <ChapterCard
         chapter={mockChapter}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
@@ -271,6 +306,7 @@ describe('ChapterCard', () => {
     render(
       <ChapterCard
         chapter={mockChapter}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
@@ -287,6 +323,7 @@ describe('ChapterCard', () => {
     render(
       <ChapterCard
         chapter={mockChapter}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
@@ -303,6 +340,7 @@ describe('ChapterCard', () => {
     render(
       <ChapterCard
         chapter={mockChapter}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
@@ -320,6 +358,7 @@ describe('ChapterCard', () => {
     render(
       <ChapterCard
         chapter={mockChapter}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
@@ -336,6 +375,7 @@ describe('ChapterCard', () => {
     render(
       <ChapterCard
         chapter={chapterNoBullets}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
@@ -344,17 +384,25 @@ describe('ChapterCard', () => {
     expect(screen.getByText('No notes yet.')).toBeTruthy()
   })
 
-  it('calls onPlay with filePath when Play button is clicked', () => {
+  it('calls onPlay with file object when heading is clicked', () => {
     render(
       <ChapterCard
         chapter={mockChapter}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
       />
     )
-    fireEvent.click(screen.getByText('▶ Play'))
-    expect(mockHandlers.onPlay).toHaveBeenCalledWith('video.mp4')
+    fireEvent.click(screen.getByText('Chapter 1: Introduction'))
+
+    expect(mockHandlers.onPlay).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'video.mp4',
+        path: '/output/video.mp4',
+        title: 'Chapter 1: Introduction'
+      })
+    )
   })
 
   it('does not render URL section when url is not provided', () => {
@@ -400,6 +448,7 @@ describe('ChapterCard', () => {
     const { rerender } = render(
       <ChapterCard
         chapter={mockChapter}
+        folderName={null}
         onGenerateSummary={mockHandlers.onGenerateSummary}
         onUpdateBullets={mockHandlers.onUpdateBullets}
         onPlay={mockHandlers.onPlay}
