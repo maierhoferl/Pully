@@ -219,6 +219,24 @@ export function SettingsPanel() {
                 </div>
               </div>
 
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                  Default Search Engine
+                </label>
+                <select
+                  value={local.searchEngine || 'google'}
+                  onChange={(e) =>
+                    setLocal((c) => ({ ...c, searchEngine: e.target.value }))
+                  }
+                  className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-700 focus:outline-none focus:border-indigo-600"
+                >
+                  <option value="google">Google</option>
+                  <option value="duckduckgo">DuckDuckGo</option>
+                  <option value="bing">Bing</option>
+                  <option value="brave">Brave Search</option>
+                </select>
+              </div>
+
               <div className="border-t border-gray-800 pt-4">
                 <div className="flex items-center justify-between">
                   <div>

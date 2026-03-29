@@ -66,6 +66,15 @@ contextBridge.exposeInMainWorld('api', {
   logError: (category, message, meta) =>
     ipcRenderer.invoke('log:renderer', { level: 'error', category, message, meta }),
 
+  // Bookmarks
+  listBookmarks: () => ipcRenderer.invoke('bookmarks:list'),
+  addBookmark: (data) => ipcRenderer.invoke('bookmarks:add', data),
+  removeBookmark: (url) => ipcRenderer.invoke('bookmarks:remove', url),
+
+  // History
+  listHistory: () => ipcRenderer.invoke('history:list'),
+  upsertHistory: (data) => ipcRenderer.invoke('history:upsert', data),
+
   // Generic on() method for subscribing to any IPC event
   on: (channel, callback) => {
     const handler = (_, ...args) => callback(...args)

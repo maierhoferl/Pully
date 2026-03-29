@@ -55,6 +55,9 @@ export const useAppStore = create((set) => ({
   browserActiveChapter: null,
   setBrowserActiveChapter: (data) => set({ browserActiveChapter: data }),
 
+  libraryActiveChapter: null,
+  setLibraryActiveChapter: (data) => set({ libraryActiveChapter: data }),
+
   librarySelectedFile: null,
   setLibrarySelectedFile: (filePath) => set({ librarySelectedFile: filePath }),
 
@@ -71,5 +74,23 @@ export const useAppStore = create((set) => ({
 
   setLogEntries(entries) {
     this.logEntries = entries
-  }
+  },
+
+  // Bookmarks
+  bookmarks: [],
+  setBookmarks: (bookmarks) => set({ bookmarks }),
+  addBookmarkLocal: (bm) => set((s) => ({ bookmarks: [...s.bookmarks, bm] })),
+  removeBookmarkLocal: (url) => set((s) => ({ bookmarks: s.bookmarks.filter(b => b.url !== url) })),
+
+  // History
+  historyUrls: [],
+  setHistoryUrls: (items) => set({ historyUrls: items }),
+  upsertHistoryLocal: ({ url, title }) =>
+    set((s) => {
+      const existing = s.historyUrls.find((h) => h.url === url)
+      if (existing) {
+        return { historyUrls: s.historyUrls.map((h) => (h.url === url ? { ...h, title } : h)) }
+      }
+      return { historyUrls: [...s.historyUrls, { url, title }] }
+    })
 }))

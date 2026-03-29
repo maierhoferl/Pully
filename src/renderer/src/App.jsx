@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react'
+import React, { lazy, Suspense, useEffect } from 'react'
 import { TabBar } from './components/TabBar.jsx'
 import { SettingsPanel } from './components/SettingsPanel.jsx'
 import { useAppStore } from './store/app-store.js'
@@ -17,6 +17,13 @@ export default function App() {
   useIpcEvents()
   const activeTab = useAppStore((s) => s.activeTab)
   const settingsOpen = useAppStore((s) => s.settingsOpen)
+  const { setBookmarks, setHistoryUrls } = useAppStore()
+
+  useEffect(() => {
+    // Load bookmarks and history on app mount
+    window.api.listBookmarks().then(setBookmarks).catch(() => setBookmarks([]))
+    window.api.listHistory().then(setHistoryUrls).catch(() => setHistoryUrls([]))
+  }, [])
 
   return (
     <div className="flex flex-col h-screen bg-gray-950 text-white overflow-hidden">

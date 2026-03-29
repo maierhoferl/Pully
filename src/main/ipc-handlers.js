@@ -1,6 +1,8 @@
 import { ipcMain, dialog, shell, session, BrowserWindow, app } from 'electron'
 import { EventEmitter } from 'events'
 import { readConfig, writeConfig } from './config-store.js'
+import { listBookmarks, addBookmark, removeBookmark } from './bookmarks-store.js'
+import { listHistory, upsertHistory } from './history-store.js'
 import { runCuration } from './folder-curator.js'
 import { enableAdblock, disableAdblock } from './adblock-manager.js'
 import { extractInfo, getDefaultBinaryPath } from './ytdlp-runner.js'
@@ -574,6 +576,15 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
     }
     return results
   })
+
+  // Bookmarks handlers
+  ipcMain.handle('bookmarks:list', () => listBookmarks())
+  ipcMain.handle('bookmarks:add', (_, data) => addBookmark(data))
+  ipcMain.handle('bookmarks:remove', (_, url) => removeBookmark(url))
+
+  // History handlers
+  ipcMain.handle('history:list', () => listHistory())
+  ipcMain.handle('history:upsert', (_, data) => upsertHistory(data))
 
   // Forward download manager events to renderer
   downloadManager.on('queue-updated', (q) =>

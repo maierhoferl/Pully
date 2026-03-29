@@ -8,12 +8,27 @@ const RESCAN_INTERVAL_MS = 2_000
 
 export default function BrowserTab() {
   const webviewRef = useRef(null)
+  const inputRef = useRef(null)
   const [inputUrl, setInputUrl] = useState(HOME)
   const [canGoBack, setCanGoBack] = useState(false)
   const [canGoForward, setCanGoForward] = useState(false)
   const [sideWidth, setSideWidth] = useState(320)
   const [contextMenu, setContextMenu] = useState(null)
-  const { startMediaScan, setMediaScanResults, setCurrentBrowserUrl } = useAppStore()
+  const [bookmarkPanelOpen, setBookmarkPanelOpen] = useState(false)
+  const [suggestions, setSuggestions] = useState([])
+  const [suggestionIndex, setSuggestionIndex] = useState(-1)
+  const suggestionsTimeoutRef = useRef(null)
+  const {
+    startMediaScan,
+    setMediaScanResults,
+    setCurrentBrowserUrl,
+    bookmarks,
+    historyUrls,
+    addBookmarkLocal,
+    removeBookmarkLocal,
+    upsertHistoryLocal,
+    config
+  } = useAppStore()
   const scanDebounceRef = useRef(null)
   const currentUrlRef = useRef(null)
 
@@ -77,6 +92,12 @@ export default function BrowserTab() {
       currentUrlRef.current = url
       setCurrentBrowserUrl(url)
       scanPage(url)
+
+      // Record visit in history
+      const title = wv.getTitle()
+      window.api.upsertHistory({ url, title }).catch(() => {})
+      upsertHistoryLocal({ url, title })
+
       if (url.includes('youtube.com')) {
         wv.executeJavaScript(
           `localStorage.setItem('yt-player-autoplay-preference', JSON.stringify({data:"false",creation:Date.now()}))`
@@ -132,6 +153,27 @@ export default function BrowserTab() {
     return () => window.removeEventListener('mousedown', dismiss)
   }, [contextMenu])
 
+  // Close bookmark panel on outside click
+  useEffect(() => {
+    if (!bookmarkPanelOpen) return
+    const dismiss = () => setBookmarkPanelOpen(false)
+    window.addEventListener('mousedown', dismiss)
+    return () => window.removeEventListener('mousedown', dismiss)
+  }, [bookmarkPanelOpen])
+
+  // Inline autocomplete: fill first suggestion's URL with tail selected
+  useEffect(() => {
+    if (suggestions.length > 0 && inputRef.current && !inputRef.current.value.match(/^https?:\/\//)) {
+      const firstUrl = suggestions[0].url
+      inputRef.current.value = firstUrl
+      // Select the tail (the part after what user typed)
+      const typed = inputUrl
+      if (firstUrl.startsWith(typed)) {
+        inputRef.current.setSelectionRange(typed.length, firstUrl.length)
+      }
+    }
+  }, [suggestions, inputUrl])
+
   function handleContextDownload(srcURL) {
     let title
     try {
@@ -148,11 +190,126 @@ export default function BrowserTab() {
     if (!wv) return
     let url = raw
     if (!url.match(/^https?:\/\//)) {
-      url = url.includes('.')
-        ? `https://${url}`
-        : `https://www.google.com/search?q=${encodeURIComponent(url)}`
+      if (url.includes('.')) {
+        url = `https://${url}`
+      } else {
+        // Use configured search engine
+        const searchEngine = config.searchEngine || 'google'
+        const searchUrls = {
+          google: 'https://www.google.com/search?q=',
+          duckduckgo: 'https://duckduckgo.com/?q=',
+          bing: 'https://www.bing.com/search?q=',
+          brave: 'https://search.brave.com/search?q='
+        }
+        const baseUrl = searchUrls[searchEngine] || searchUrls.google
+        url = `${baseUrl}${encodeURIComponent(url)}`
+      }
     }
     wv.loadURL(url)
+  }
+
+  function toggleBookmark() {
+    const url = currentUrlRef.current
+    if (!url) return
+
+    const isBookmarked = bookmarks.some((b) => b.url === url)
+
+    if (isBookmarked) {
+      window.api.removeBookmark(url).catch(() => {})
+      removeBookmarkLocal(url)
+    } else {
+      const title = webviewRef.current?.getTitle() || url
+      window.api.addBookmark({ url, title }).catch(() => {})
+      const bookmark = { url, title, favicon: null, addedAt: new Date().toISOString() }
+      addBookmarkLocal(bookmark)
+    }
+  }
+
+  function handleBookmarkClick(bookmarkUrl) {
+    navigate(bookmarkUrl)
+    setBookmarkPanelOpen(false)
+  }
+
+  function handleUrlInputChange(e) {
+    const value = e.target.value
+    setInputUrl(value)
+
+    // Filter history for autocomplete suggestions
+    if (value.trim().length > 0) {
+      const lowerValue = value.toLowerCase()
+      const matches = historyUrls
+        .filter(
+          (h) => h.url.toLowerCase().includes(lowerValue) || h.title.toLowerCase().includes(lowerValue)
+        )
+        .slice(0, 8)
+      setSuggestions(matches)
+      setSuggestionIndex(-1)
+    } else {
+      setSuggestions([])
+      setSuggestionIndex(-1)
+    }
+  }
+
+  function handleUrlInputKeyDown(e) {
+    if (suggestions.length === 0) {
+      if (e.key === 'Enter') {
+        navigate(inputUrl)
+        setSuggestions([])
+      }
+      return
+    }
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault()
+        setSuggestionIndex((prev) => (prev + 1) % suggestions.length)
+        break
+      case 'ArrowUp':
+        e.preventDefault()
+        setSuggestionIndex((prev) => (prev - 1 + suggestions.length) % suggestions.length)
+        break
+      case 'Enter':
+        e.preventDefault()
+        if (suggestionIndex >= 0) {
+          navigate(suggestions[suggestionIndex].url)
+        } else {
+          navigate(inputUrl)
+        }
+        setSuggestions([])
+        break
+      case 'Escape':
+        setSuggestions([])
+        setSuggestionIndex(-1)
+        break
+      default:
+        break
+    }
+  }
+
+  function handleUrlInputBlur() {
+    // Clear suggestions after 150ms to allow click to register
+    suggestionsTimeoutRef.current = setTimeout(() => {
+      setSuggestions([])
+      setSuggestionIndex(-1)
+    }, 150)
+  }
+
+  function handleUrlInputFocus() {
+    if (suggestionsTimeoutRef.current) {
+      clearTimeout(suggestionsTimeoutRef.current)
+    }
+    // Show suggestions if focused and input has value
+    if (inputUrl.trim().length > 0) {
+      const lowerValue = inputUrl.toLowerCase()
+      const matches = historyUrls
+        .filter(
+          (h) => h.url.toLowerCase().includes(lowerValue) || h.title.toLowerCase().includes(lowerValue)
+        )
+        .slice(0, 8)
+      if (matches.length > 0) {
+        setSuggestions(matches)
+      }
+    }
   }
 
   const handleRememberSite = useCallback(async () => {
@@ -295,23 +452,101 @@ export default function BrowserTab() {
         >
           →
         </button>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            navigate(inputUrl)
-          }}
-          className="flex-1"
+
+        {/* Bookmark star button */}
+        <button
+          onClick={toggleBookmark}
+          className="p-1 rounded text-gray-400 hover:text-white hover:bg-gray-700 text-lg"
+          title={bookmarks.some((b) => b.url === currentUrlRef.current) ? 'Remove bookmark' : 'Add bookmark'}
         >
-          <input
-            type="text"
-            value={inputUrl}
-            onChange={(e) => setInputUrl(e.target.value)}
-            onFocus={(e) => e.target.select()}
-            className="w-full bg-gray-800 text-white text-sm px-3 py-1 rounded border border-gray-600 focus:outline-none focus:border-blue-500"
-            placeholder="Enter URL or search…"
-          />
-        </form>
+          {bookmarks.some((b) => b.url === currentUrlRef.current) ? '★' : '☆'}
+        </button>
+
+        {/* Bookmark list button */}
+        <button
+          onClick={() => setBookmarkPanelOpen(!bookmarkPanelOpen)}
+          className="p-1 rounded text-gray-400 hover:text-white hover:bg-gray-700"
+          title="View bookmarks"
+        >
+          ⊟
+        </button>
+
+        {/* URL input with autocomplete */}
+        <div className="flex-1 relative">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              navigate(inputUrl)
+              setSuggestions([])
+            }}
+            className="w-full"
+          >
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputUrl}
+              onChange={handleUrlInputChange}
+              onKeyDown={handleUrlInputKeyDown}
+              onFocus={handleUrlInputFocus}
+              onBlur={handleUrlInputBlur}
+              className="w-full bg-gray-800 text-white text-sm px-3 py-1 rounded border border-gray-600 focus:outline-none focus:border-blue-500"
+              placeholder="Enter URL or search…"
+            />
+          </form>
+
+          {/* Autocomplete dropdown */}
+          {suggestions.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-600 rounded shadow-lg z-40 max-h-60 overflow-y-auto">
+              {suggestions.map((suggestion, idx) => (
+                <div
+                  key={idx}
+                  onMouseDown={() => handleBookmarkClick(suggestion.url)}
+                  className={`px-3 py-2 cursor-pointer text-sm ${
+                    idx === suggestionIndex ? 'bg-blue-600' : 'hover:bg-gray-700'
+                  }`}
+                >
+                  <div className="text-white truncate">{suggestion.title || suggestion.url}</div>
+                  <div className="text-gray-400 text-xs truncate">{suggestion.url}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Bookmarks panel overlay */}
+      {bookmarkPanelOpen && (
+        <div className="absolute top-12 left-2 bg-gray-800 border border-gray-700 rounded shadow-xl z-50 max-h-96 overflow-y-auto min-w-[320px]">
+          {bookmarks.length === 0 ? (
+            <div className="px-4 py-3 text-gray-400 text-sm">No bookmarks yet</div>
+          ) : (
+            bookmarks.map((bookmark, idx) => (
+              <div
+                key={idx}
+                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-700 cursor-pointer group border-b border-gray-700 last:border-b-0"
+                onMouseDown={() => handleBookmarkClick(bookmark.url)}
+              >
+                <span className="text-lg flex-shrink-0">🔖</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-white text-sm truncate">{bookmark.title}</div>
+                  <div className="text-gray-400 text-xs truncate">{bookmark.url}</div>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    window.api.removeBookmark(bookmark.url).catch(() => {})
+                    removeBookmarkLocal(bookmark.url)
+                  }}
+                  className="hidden group-hover:block text-gray-400 hover:text-red-400 flex-shrink-0"
+                  title="Remove bookmark"
+                >
+                  ✕
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
       <div className="flex flex-1 min-h-0">
         <webview
           ref={webviewRef}
