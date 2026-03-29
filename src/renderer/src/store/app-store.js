@@ -45,6 +45,9 @@ export const useAppStore = create((set) => ({
   activeNotesChapter: null,
   setActiveNotesChapter: (chapter) => set({ activeNotesChapter: chapter }),
 
+  browserActiveChapter: null,
+  setBrowserActiveChapter: (data) => set({ browserActiveChapter: data }),
+
   librarySelectedFile: null,
   setLibrarySelectedFile: (filePath) => set({ librarySelectedFile: filePath }),
 
