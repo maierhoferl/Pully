@@ -21,6 +21,10 @@ export function SettingsPanel() {
   const [availableModels, setAvailableModels] = useState([])
   const [modelsFetching, setModelsFetching] = useState(false)
   const [aiModels, setAiModels] = useState([])
+  const [classifyModels, setClassifyModels] = useState([])
+  const [classifyModelsFetching, setClassifyModelsFetching] = useState(false)
+  const [summarizeModels, setSummarizeModels] = useState([])
+  const [summarizeModelsFetching, setSummarizeModelsFetching] = useState(false)
   const [curationRunning, setCurationRunning] = useState(false)
   const [curationStatus, setCurationStatus] = useState('')
 
@@ -70,6 +74,44 @@ export function SettingsPanel() {
       setAiModels(models)
     } catch {
       setAiModels([])
+    }
+  }
+
+  async function handleFetchClassifyModels() {
+    const provider = local.autoClassifyProvider
+    const apiKey = local.autoClassifyApiKey
+    if (!provider || provider === 'local' || !apiKey) return
+    setClassifyModelsFetching(true)
+    try {
+      const models = await window.api.fetchClassifyModels(provider, apiKey)
+      setClassifyModels(models)
+      if (models.length > 0 && !local.autoClassifyModel) {
+        const def = DEFAULT_MODELS[provider]
+        setLocal((c) => ({ ...c, autoClassifyModel: models.includes(def) ? def : models[0] }))
+      }
+    } catch {
+      setClassifyModels([])
+    } finally {
+      setClassifyModelsFetching(false)
+    }
+  }
+
+  async function handleFetchSummarizeModels() {
+    const provider = local.aiProvider || 'gemini'
+    const apiKey = local.aiApiKey
+    if (!apiKey) return
+    setSummarizeModelsFetching(true)
+    try {
+      const models = await window.api.fetchAiModels(provider, apiKey)
+      setSummarizeModels(models)
+      if (models.length > 0 && !local.autoSummarizeModel) {
+        const def = DEFAULT_MODELS[provider]
+        setLocal((c) => ({ ...c, autoSummarizeModel: models.includes(def) ? def : models[0] }))
+      }
+    } catch {
+      setSummarizeModels([])
+    } finally {
+      setSummarizeModelsFetching(false)
     }
   }
 
@@ -269,14 +311,38 @@ export function SettingsPanel() {
                 <div>
                   <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
                     Model Override
+                    {local.autoClassifyApiKey && (
+                      <button
+                        onClick={handleFetchClassifyModels}
+                        disabled={classifyModelsFetching}
+                        className="ml-2 text-indigo-400 hover:text-indigo-300 text-xs disabled:text-gray-500"
+                      >
+                        {classifyModelsFetching ? 'loading…' : '(load models)'}
+                      </button>
+                    )}
                   </label>
-                  <input
-                    type="text"
-                    value={local.autoClassifyModel || ''}
-                    onChange={(e) => setLocal((c) => ({ ...c, autoClassifyModel: e.target.value }))}
-                    placeholder="Using AI tab default"
-                    className="w-full bg-gray-700 text-white text-sm px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-indigo-600"
-                  />
+                  {classifyModels.length > 0 ? (
+                    <select
+                      value={local.autoClassifyModel || ''}
+                      onChange={(e) => setLocal((c) => ({ ...c, autoClassifyModel: e.target.value }))}
+                      className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-700 focus:outline-none focus:border-indigo-600"
+                    >
+                      <option value="">Using AI tab default</option>
+                      {classifyModels.map((m) => (
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={local.autoClassifyModel || ''}
+                      onChange={(e) => setLocal((c) => ({ ...c, autoClassifyModel: e.target.value }))}
+                      placeholder="Using AI tab default"
+                      className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-700 focus:outline-none focus:border-indigo-600"
+                    />
+                  )}
                   <p className="text-xs text-gray-500 mt-1">
                     Leave blank to use the model configured in the AI tab
                   </p>
@@ -312,16 +378,42 @@ export function SettingsPanel() {
                   <div>
                     <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
                       Model Override
+                      {local.aiApiKey && (
+                        <button
+                          onClick={handleFetchSummarizeModels}
+                          disabled={summarizeModelsFetching}
+                          className="ml-2 text-indigo-400 hover:text-indigo-300 text-xs disabled:text-gray-500"
+                        >
+                          {summarizeModelsFetching ? 'loading…' : '(load models)'}
+                        </button>
+                      )}
                     </label>
-                    <input
-                      type="text"
-                      value={local.autoSummarizeModel || ''}
-                      onChange={(e) =>
-                        setLocal((c) => ({ ...c, autoSummarizeModel: e.target.value }))
-                      }
-                      placeholder="Using AI tab default"
-                      className="w-full bg-gray-700 text-white text-sm px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-indigo-600"
-                    />
+                    {summarizeModels.length > 0 ? (
+                      <select
+                        value={local.autoSummarizeModel || ''}
+                        onChange={(e) =>
+                          setLocal((c) => ({ ...c, autoSummarizeModel: e.target.value }))
+                        }
+                        className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-700 focus:outline-none focus:border-indigo-600"
+                      >
+                        <option value="">Using AI tab default</option>
+                        {summarizeModels.map((m) => (
+                          <option key={m} value={m}>
+                            {m}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={local.autoSummarizeModel || ''}
+                        onChange={(e) =>
+                          setLocal((c) => ({ ...c, autoSummarizeModel: e.target.value }))
+                        }
+                        placeholder="Using AI tab default"
+                        className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-700 focus:outline-none focus:border-indigo-600"
+                      />
+                    )}
                   </div>
 
                   <div>
