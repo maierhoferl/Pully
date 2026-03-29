@@ -1,0 +1,1775 @@
+{
+  "version": 1,
+  "created_at": "2026-03-29T15:52:14.972Z",
+  "lifetime": {
+    "total_tokens_estimated": 311888,
+    "total_reads": 106,
+    "total_writes": 166,
+    "total_sessions": 9,
+    "anatomy_hits": 103,
+    "anatomy_misses": 3,
+    "repeated_reads_blocked": 59,
+    "estimated_savings_vs_bare_cli": 237782
+  },
+  "sessions": [
+    {
+      "id": "session-2026-03-29-1754",
+      "started": "2026-03-29T15:54:21.533Z",
+      "ended": "2026-03-29T15:55:33.668Z",
+      "reads": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 4614,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 2272,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 792,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 3004,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 169,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 255,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 562,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 43,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 55,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 62,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 670,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 10682,
+        "output_tokens_estimated": 1816,
+        "reads_count": 4,
+        "writes_count": 7,
+        "repeated_reads_blocked": 3,
+        "anatomy_lookups": 4
+      }
+    },
+    {
+      "id": "session-2026-03-29-1754",
+      "started": "2026-03-29T15:54:21.533Z",
+      "ended": "2026-03-29T16:00:15.052Z",
+      "reads": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 4614,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 2715,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 792,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 3004,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/store/app-store.js",
+          "tokens_estimated": 643,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryTab.jsx",
+          "tokens_estimated": 7076,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryDetailPanel.jsx",
+          "tokens_estimated": 1294,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/NotesChapterView.jsx",
+          "tokens_estimated": 1016,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/ChapterCard.jsx",
+          "tokens_estimated": 1468,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 3786,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 169,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 255,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 562,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 43,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 55,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 62,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 670,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 470,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 553,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 521,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 279,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/store/app-store.js",
+          "tokens_estimated": 61,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryTab.jsx",
+          "tokens_estimated": 83,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryTab.jsx",
+          "tokens_estimated": 83,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryDetailPanel.jsx",
+          "tokens_estimated": 58,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryDetailPanel.jsx",
+          "tokens_estimated": 140,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/ChapterCard.jsx",
+          "tokens_estimated": 75,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/ChapterCard.jsx",
+          "tokens_estimated": 231,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 218,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 133,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 97,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 74,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 63,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 26408,
+        "output_tokens_estimated": 4955,
+        "reads_count": 10,
+        "writes_count": 23,
+        "repeated_reads_blocked": 9,
+        "anatomy_lookups": 10
+      }
+    },
+    {
+      "id": "session-2026-03-29-1754",
+      "started": "2026-03-29T15:54:21.533Z",
+      "ended": "2026-03-29T16:00:40.559Z",
+      "reads": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 4614,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 2715,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 792,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 3004,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/store/app-store.js",
+          "tokens_estimated": 643,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryTab.jsx",
+          "tokens_estimated": 7076,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryDetailPanel.jsx",
+          "tokens_estimated": 1294,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/NotesChapterView.jsx",
+          "tokens_estimated": 1016,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/ChapterCard.jsx",
+          "tokens_estimated": 1468,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 3786,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 169,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 255,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 562,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 43,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 55,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 62,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 670,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 470,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 553,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 521,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 279,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/store/app-store.js",
+          "tokens_estimated": 61,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryTab.jsx",
+          "tokens_estimated": 83,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryTab.jsx",
+          "tokens_estimated": 83,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryDetailPanel.jsx",
+          "tokens_estimated": 58,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryDetailPanel.jsx",
+          "tokens_estimated": 140,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/ChapterCard.jsx",
+          "tokens_estimated": 75,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/ChapterCard.jsx",
+          "tokens_estimated": 231,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 218,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 133,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 97,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 74,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 63,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 26408,
+        "output_tokens_estimated": 4955,
+        "reads_count": 10,
+        "writes_count": 23,
+        "repeated_reads_blocked": 9,
+        "anatomy_lookups": 10
+      }
+    },
+    {
+      "id": "session-2026-03-29-1754",
+      "started": "2026-03-29T15:54:21.533Z",
+      "ended": "2026-03-29T16:01:15.183Z",
+      "reads": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 4614,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 2715,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 792,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 3004,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/store/app-store.js",
+          "tokens_estimated": 643,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryTab.jsx",
+          "tokens_estimated": 7076,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryDetailPanel.jsx",
+          "tokens_estimated": 1294,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/NotesChapterView.jsx",
+          "tokens_estimated": 1016,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/ChapterCard.jsx",
+          "tokens_estimated": 1468,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 3786,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 169,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 255,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 562,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 43,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 55,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 62,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 670,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 470,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 553,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 521,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 279,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/store/app-store.js",
+          "tokens_estimated": 61,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryTab.jsx",
+          "tokens_estimated": 83,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryTab.jsx",
+          "tokens_estimated": 83,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryDetailPanel.jsx",
+          "tokens_estimated": 58,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryDetailPanel.jsx",
+          "tokens_estimated": 140,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/ChapterCard.jsx",
+          "tokens_estimated": 75,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/ChapterCard.jsx",
+          "tokens_estimated": 231,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 218,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 133,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 97,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 74,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 63,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 26408,
+        "output_tokens_estimated": 4955,
+        "reads_count": 10,
+        "writes_count": 23,
+        "repeated_reads_blocked": 9,
+        "anatomy_lookups": 10
+      }
+    },
+    {
+      "id": "session-2026-03-29-1754",
+      "started": "2026-03-29T15:54:21.533Z",
+      "ended": "2026-03-29T16:02:32.128Z",
+      "reads": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 4614,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 2715,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 792,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 3004,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/store/app-store.js",
+          "tokens_estimated": 643,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryTab.jsx",
+          "tokens_estimated": 7076,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryDetailPanel.jsx",
+          "tokens_estimated": 1294,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/NotesChapterView.jsx",
+          "tokens_estimated": 1016,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/ChapterCard.jsx",
+          "tokens_estimated": 1468,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 3786,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/CLAUDE.md",
+          "tokens_estimated": 800,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 169,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 255,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 562,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 43,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 55,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 62,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 670,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 470,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 553,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 521,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 279,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/store/app-store.js",
+          "tokens_estimated": 61,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryTab.jsx",
+          "tokens_estimated": 83,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryTab.jsx",
+          "tokens_estimated": 83,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryDetailPanel.jsx",
+          "tokens_estimated": 58,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryDetailPanel.jsx",
+          "tokens_estimated": 140,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/ChapterCard.jsx",
+          "tokens_estimated": 75,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/ChapterCard.jsx",
+          "tokens_estimated": 231,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 218,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 133,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 97,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 74,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 63,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/.claude/plans/happy-nibbling-dongarra.md",
+          "tokens_estimated": 1763,
+          "action": "create"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 27208,
+        "output_tokens_estimated": 6718,
+        "reads_count": 11,
+        "writes_count": 24,
+        "repeated_reads_blocked": 9,
+        "anatomy_lookups": 11
+      }
+    },
+    {
+      "id": "session-2026-03-29-1754",
+      "started": "2026-03-29T15:54:21.533Z",
+      "ended": "2026-03-29T16:02:59.920Z",
+      "reads": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 4614,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 2715,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 792,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 3004,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/store/app-store.js",
+          "tokens_estimated": 643,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryTab.jsx",
+          "tokens_estimated": 7076,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryDetailPanel.jsx",
+          "tokens_estimated": 1294,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/NotesChapterView.jsx",
+          "tokens_estimated": 1016,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/ChapterCard.jsx",
+          "tokens_estimated": 1468,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 3786,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/CLAUDE.md",
+          "tokens_estimated": 800,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 169,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 255,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 562,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 43,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 55,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 62,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 670,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 470,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 553,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 521,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/MediaPanel.jsx",
+          "tokens_estimated": 279,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/store/app-store.js",
+          "tokens_estimated": 61,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryTab.jsx",
+          "tokens_estimated": 83,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryTab.jsx",
+          "tokens_estimated": 83,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryDetailPanel.jsx",
+          "tokens_estimated": 58,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryDetailPanel.jsx",
+          "tokens_estimated": 140,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/ChapterCard.jsx",
+          "tokens_estimated": 75,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/ChapterCard.jsx",
+          "tokens_estimated": 231,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 218,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 133,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 97,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 74,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 63,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/.claude/plans/happy-nibbling-dongarra.md",
+          "tokens_estimated": 1763,
+          "action": "create"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 27208,
+        "output_tokens_estimated": 6718,
+        "reads_count": 11,
+        "writes_count": 24,
+        "repeated_reads_blocked": 9,
+        "anatomy_lookups": 11
+      }
+    },
+    {
+      "id": "session-2026-03-29-1803",
+      "started": "2026-03-29T16:03:08.692Z",
+      "ended": "2026-03-29T16:04:21.738Z",
+      "reads": [
+        {
+          "file": "/Users/lorenzmaierhofer/.claude/plans/happy-nibbling-dongarra.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 0,
+        "output_tokens_estimated": 0,
+        "reads_count": 1,
+        "writes_count": 0,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 0
+      }
+    },
+    {
+      "id": "session-2026-03-29-1803",
+      "started": "2026-03-29T16:03:08.692Z",
+      "ended": "2026-03-29T16:13:40.275Z",
+      "reads": [
+        {
+          "file": "/Users/lorenzmaierhofer/.claude/plans/happy-nibbling-dongarra.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 4633,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/metadata-store.js",
+          "tokens_estimated": 1350,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 3806,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/logger.js",
+          "tokens_estimated": 1020,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ai-summarizer.js",
+          "tokens_estimated": 1181,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/config-store.js",
+          "tokens_estimated": 445,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/preload/index.js",
+          "tokens_estimated": 1042,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/hooks/useIpcEvents.js",
+          "tokens_estimated": 373,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SettingsPanel.jsx",
+          "tokens_estimated": 4809,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/tests/main/ai-summarizer.test.js",
+          "tokens_estimated": 877,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/folder-curator.js",
+          "tokens_estimated": 3777,
+          "action": "create"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ai-summarizer.js",
+          "tokens_estimated": 391,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/config-store.js",
+          "tokens_estimated": 83,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 102,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 65,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 262,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/preload/index.js",
+          "tokens_estimated": 72,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/hooks/useIpcEvents.js",
+          "tokens_estimated": 82,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SettingsPanel.jsx",
+          "tokens_estimated": 130,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SettingsPanel.jsx",
+          "tokens_estimated": 322,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SettingsPanel.jsx",
+          "tokens_estimated": 820,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ai-summarizer.js",
+          "tokens_estimated": 132,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 19536,
+        "output_tokens_estimated": 6238,
+        "reads_count": 11,
+        "writes_count": 12,
+        "repeated_reads_blocked": 3,
+        "anatomy_lookups": 10
+      }
+    },
+    {
+      "id": "session-2026-03-29-1803",
+      "started": "2026-03-29T16:03:08.692Z",
+      "ended": "2026-03-29T16:19:01.013Z",
+      "reads": [
+        {
+          "file": "/Users/lorenzmaierhofer/.claude/plans/happy-nibbling-dongarra.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 4633,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/metadata-store.js",
+          "tokens_estimated": 1350,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 3806,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/logger.js",
+          "tokens_estimated": 1020,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ai-summarizer.js",
+          "tokens_estimated": 1181,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/config-store.js",
+          "tokens_estimated": 445,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/preload/index.js",
+          "tokens_estimated": 1042,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/hooks/useIpcEvents.js",
+          "tokens_estimated": 373,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SettingsPanel.jsx",
+          "tokens_estimated": 4809,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/tests/main/ai-summarizer.test.js",
+          "tokens_estimated": 877,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/folder-curator.js",
+          "tokens_estimated": 3777,
+          "action": "create"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ai-summarizer.js",
+          "tokens_estimated": 391,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/config-store.js",
+          "tokens_estimated": 83,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 102,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 65,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 262,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/preload/index.js",
+          "tokens_estimated": 72,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/hooks/useIpcEvents.js",
+          "tokens_estimated": 82,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SettingsPanel.jsx",
+          "tokens_estimated": 130,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SettingsPanel.jsx",
+          "tokens_estimated": 322,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SettingsPanel.jsx",
+          "tokens_estimated": 820,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ai-summarizer.js",
+          "tokens_estimated": 132,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 19536,
+        "output_tokens_estimated": 6238,
+        "reads_count": 11,
+        "writes_count": 12,
+        "repeated_reads_blocked": 3,
+        "anatomy_lookups": 10
+      }
+    },
+    {
+      "id": "session-2026-03-29-1819",
+      "started": "2026-03-29T16:19:54.056Z",
+      "ended": "2026-03-29T16:23:54.036Z",
+      "reads": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/electron-builder.yml",
+          "tokens_estimated": 378,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/package.json",
+          "tokens_estimated": 566,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 944,
+        "output_tokens_estimated": 0,
+        "reads_count": 2,
+        "writes_count": 0,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 2
+      }
+    },
+    {
+      "id": "session-2026-03-29-1834",
+      "started": "2026-03-29T16:34:28.822Z",
+      "ended": "2026-03-29T16:36:18.572Z",
+      "reads": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SettingsPanel.jsx",
+          "tokens_estimated": 6764,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SettingsPanel.jsx",
+          "tokens_estimated": 163,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SettingsPanel.jsx",
+          "tokens_estimated": 456,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SettingsPanel.jsx",
+          "tokens_estimated": 588,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SettingsPanel.jsx",
+          "tokens_estimated": 605,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 6764,
+        "output_tokens_estimated": 1812,
+        "reads_count": 1,
+        "writes_count": 4,
+        "repeated_reads_blocked": 2,
+        "anatomy_lookups": 1
+      }
+    },
+    {
+      "id": "session-2026-03-29-1834",
+      "started": "2026-03-29T16:34:28.822Z",
+      "ended": "2026-03-29T16:40:11.253Z",
+      "reads": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SettingsPanel.jsx",
+          "tokens_estimated": 6764,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SettingsPanel.jsx",
+          "tokens_estimated": 163,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SettingsPanel.jsx",
+          "tokens_estimated": 456,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SettingsPanel.jsx",
+          "tokens_estimated": 588,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SettingsPanel.jsx",
+          "tokens_estimated": 605,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 6764,
+        "output_tokens_estimated": 1812,
+        "reads_count": 1,
+        "writes_count": 4,
+        "repeated_reads_blocked": 2,
+        "anatomy_lookups": 1
+      }
+    },
+    {
+      "id": "session-2026-03-29-1840",
+      "started": "2026-03-29T16:40:12.850Z",
+      "ended": "2026-03-29T16:41:22.036Z",
+      "reads": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 2715,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryTab.jsx",
+          "tokens_estimated": 7054,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 806,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 263,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 10575,
+        "output_tokens_estimated": 263,
+        "reads_count": 3,
+        "writes_count": 1,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 3
+      }
+    },
+    {
+      "id": "session-2026-03-29-1840",
+      "started": "2026-03-29T16:40:12.850Z",
+      "ended": "2026-03-29T16:42:30.695Z",
+      "reads": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 2715,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryTab.jsx",
+          "tokens_estimated": 7054,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 806,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 263,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 10575,
+        "output_tokens_estimated": 263,
+        "reads_count": 3,
+        "writes_count": 1,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 3
+      }
+    },
+    {
+      "id": "session-2026-03-29-1842",
+      "started": "2026-03-29T16:42:30.737Z",
+      "ended": "2026-03-29T16:44:17.273Z",
+      "reads": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 2715,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryTab.jsx",
+          "tokens_estimated": 7054,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 807,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryDetailPanel.jsx",
+          "tokens_estimated": 1369,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 223,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 11945,
+        "output_tokens_estimated": 223,
+        "reads_count": 4,
+        "writes_count": 1,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 4
+      }
+    },
+    {
+      "id": "session-2026-03-29-1842",
+      "started": "2026-03-29T16:42:30.737Z",
+      "ended": "2026-03-29T16:44:41.547Z",
+      "reads": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 2715,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryTab.jsx",
+          "tokens_estimated": 7054,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/SidePanel.jsx",
+          "tokens_estimated": 807,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryDetailPanel.jsx",
+          "tokens_estimated": 1369,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 223,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 11945,
+        "output_tokens_estimated": 223,
+        "reads_count": 4,
+        "writes_count": 1,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 4
+      }
+    },
+    {
+      "id": "session-2026-03-29-1844",
+      "started": "2026-03-29T16:44:41.595Z",
+      "ended": "2026-03-29T16:47:26.745Z",
+      "reads": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ai-summarizer.js",
+          "tokens_estimated": 1227,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ai-client.js",
+          "tokens_estimated": 1399,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/metadata-store.js",
+          "tokens_estimated": 1350,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserNotesPanel.jsx",
+          "tokens_estimated": 454,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 4848,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 3806,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/docs/superpowers/specs/2026-03-28-ai-notes-summary-design.md",
+          "tokens_estimated": 3588,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 2808,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/tests/main/ai-summarizer.test.js",
+          "tokens_estimated": 877,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/BrowserTab.jsx",
+          "tokens_estimated": 546,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 209,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ai-summarizer.js",
+          "tokens_estimated": 360,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ai-summarizer.js",
+          "tokens_estimated": 26,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/tests/main/ai-summarizer.test.js",
+          "tokens_estimated": 266,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ai-summarizer.js",
+          "tokens_estimated": 29,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 20357,
+        "output_tokens_estimated": 1436,
+        "reads_count": 9,
+        "writes_count": 6,
+        "repeated_reads_blocked": 1,
+        "anatomy_lookups": 9
+      }
+    }
+  ],
+  "daemon_usage": [],
+  "waste_flags": [],
+  "optimization_report": {
+    "last_generated": null,
+    "patterns": []
+  }
+}

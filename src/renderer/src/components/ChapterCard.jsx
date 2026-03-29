@@ -10,7 +10,7 @@ function safeHostname(url) {
   }
 }
 
-export function ChapterCard({ chapter, onGenerateSummary, onUpdateBullets, onPlay }) {
+export function ChapterCard({ chapter, onGenerateSummary, onUpdateBullets }) {
   const [editingBullets, setEditingBullets] = useState(false)
   const [bulletText, setBulletText] = useState(chapter.bullets.join('\n'))
   const [summarizing, setSummarizing] = useState(false)
@@ -53,17 +53,11 @@ export function ChapterCard({ chapter, onGenerateSummary, onUpdateBullets, onPla
 
   return (
     <div className="mb-6 last:mb-0">
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex items-center gap-2 min-w-0">
+      <div className="flex items-start mb-2">
+        <div className="flex items-center gap-2">
           <ContentTypeIcon type={contentType} size={16} className="flex-shrink-0 text-gray-500" />
-          <h2 className="text-base font-semibold text-white truncate">{chapter.title}</h2>
+          <h2 className="text-base font-semibold text-white">{chapter.title}</h2>
         </div>
-        <button
-          onClick={() => onPlay(chapter.filePath)}
-          className="text-xs text-blue-400 hover:text-blue-300 whitespace-nowrap ml-4 shrink-0"
-        >
-          ▶ Play
-        </button>
       </div>
       <div className="text-xs text-gray-500 mb-3 flex gap-3">
         <span>📁 {chapter.filePath}</span>

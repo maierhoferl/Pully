@@ -26,14 +26,6 @@ export function BrowserNotesPanel() {
     }
   }
 
-  const handlePlay = async (filePath) => {
-    try {
-      await window.api.playFile(filePath)
-    } catch (error) {
-      console.error('Failed to play video:', error)
-    }
-  }
-
   if (!browserActiveChapter) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500 text-sm">
@@ -50,7 +42,6 @@ export function BrowserNotesPanel() {
         chapter={chapter}
         onUpdateBullets={handleBulletsChange}
         onGenerateSummary={handleGenerateSummary}
-        onPlay={handlePlay}
       />
     </div>
   )

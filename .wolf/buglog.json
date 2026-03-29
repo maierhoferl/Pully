@@ -1,0 +1,182 @@
+{
+  "version": 1,
+  "bugs": [
+    {
+      "id": "bug-001",
+      "timestamp": "2026-03-29T15:54:54.154Z",
+      "error_message": "Missing error handling in handleSideDragStart",
+      "file": "src/renderer/src/components/BrowserTab.jsx",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "jsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-29T15:54:54.154Z"
+    },
+    {
+      "id": "bug-002",
+      "timestamp": "2026-03-29T15:54:57.023Z",
+      "error_message": "Wrong reference: div should be onRememberSite",
+      "file": "src/renderer/src/components/BrowserTab.jsx",
+      "root_cause": "Used \"div\" instead of \"onRememberSite\"",
+      "fix": "Changed div → onRememberSite",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "jsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-29T15:54:57.023Z"
+    },
+    {
+      "id": "bug-003",
+      "timestamp": "2026-03-29T15:55:44.788Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/renderer/src/components/MediaPanel.jsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check) | Also: {videos.map((entry) => {; const libraryMatch = libraryFiles?.find((f) => f.url === (en",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "jsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-03-29T15:55:57.950Z"
+    },
+    {
+      "id": "bug-004",
+      "timestamp": "2026-03-29T15:58:01.521Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/renderer/src/components/ChapterCard.jsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "jsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-29T15:58:01.521Z"
+    },
+    {
+      "id": "bug-005",
+      "timestamp": "2026-03-29T16:07:27.833Z",
+      "error_message": "Wrong return value",
+      "file": "src/main/ipc-handlers.js",
+      "root_cause": "Was returning: /\\.(md|txt|nfo)$/i.test(fileName) || /\\.thumb(\\.[a",
+      "fix": "Now returns: (",
+      "tags": [
+        "auto-detected",
+        "return-value",
+        "js"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-29T16:07:27.833Z"
+    },
+    {
+      "id": "bug-006",
+      "timestamp": "2026-03-29T16:08:15.978Z",
+      "error_message": "Missing error handling in unknown",
+      "file": "src/renderer/src/hooks/useIpcEvents.js",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "js"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-29T16:08:15.978Z"
+    },
+    {
+      "id": "bug-007",
+      "timestamp": "2026-03-29T16:41:18.180Z",
+      "error_message": "CSS fix: hover",
+      "file": "src/renderer/src/components/SidePanel.jsx",
+      "root_cause": "hover: text-gray-900' → text-gray-300'",
+      "fix": "Changed hover: text-gray-900' → text-gray-300'",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "jsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-29T16:41:18.180Z"
+    },
+    {
+      "id": "bug-008",
+      "timestamp": "2026-03-29T16:46:17.934Z",
+      "error_message": "CSS fix: contentType",
+      "file": "src/renderer/src/components/BrowserTab.jsx",
+      "root_cause": "contentType: 'page' → 'page',",
+      "fix": "Changed contentType: 'page' → 'page',",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "jsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-29T16:46:17.934Z"
+    },
+    {
+      "id": "bug-009",
+      "timestamp": "2026-03-29T16:46:30.684Z",
+      "error_message": "Wrong reference: apiKey should be aiApiKey",
+      "file": "src/main/ai-summarizer.js",
+      "root_cause": "Used \"apiKey\" instead of \"aiApiKey\"",
+      "fix": "Changed apiKey → aiApiKey",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "js"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-03-29T16:46:43.946Z"
+    },
+    {
+      "id": "bug-010",
+      "timestamp": "2026-03-29T18:47:00.000Z",
+      "error_message": "AI summary fails to pass along page content for Gemini when a page is remembered",
+      "file": "src/main/ai-summarizer.js",
+      "root_cause": "When contentType='page' and page content was extracted from webpage, the page text was not being captured in metadata or passed to the LLM. This prevented summaries for remembered pages from using the actual page content.",
+      "fix": "1. Updated BrowserTab.jsx handleRememberSite to extract page content (h1, h2, h3, p, li elements) and pass it in metadata.page. 2. Updated ipc-handlers.js library:remember handler to accept and store the page field in metadata. 3. Updated ai-summarizer.js to include page content in the userContent sent to LLM when available, even for Gemini (fallback to text path when page content exists). 4. Added test case for Gemini + page content path.",
+      "tags": [
+        "ai-summarizer",
+        "gemini",
+        "page-content",
+        "data-flow"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-29T18:47:00.000Z"
+    },
+    {
+      "id": "bug-011",
+      "timestamp": "2026-03-29T16:49:39.037Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/renderer/src/components/ChapterCard.jsx",
+      "root_cause": "9 lines replaced/restructured",
+      "fix": "Rewrote 12→6 lines (9 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "jsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-29T16:49:39.037Z"
+    }
+  ]
+}

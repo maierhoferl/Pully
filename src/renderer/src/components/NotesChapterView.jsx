@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useAppStore } from '../store/app-store.js'
 import { ChapterCard } from './ChapterCard.jsx'
 
-export default function NotesChapterView({ folderName, activeChapter, onPlay }) {
+export default function NotesChapterView({ folderName, activeChapter }) {
   const [chapters, setChapters] = useState([])
   const [loading, setLoading] = useState(false)
   const [loadError, setLoadError] = useState(null)
@@ -36,31 +36,6 @@ export default function NotesChapterView({ folderName, activeChapter, onPlay }) 
     return folderName
       ? `${cfg.outputFolder}/${folderName}/${fileBasename}`
       : `${cfg.outputFolder}/${fileBasename}`
-  }
-
-  const handlePlay = async (fileBasename) => {
-    const files = useAppStore.getState().libraryFiles
-    const file = files.find(
-      (f) => f.name === fileBasename && (folderName ? f.folder === folderName : !f.folder)
-    )
-    if (file) {
-      onPlay?.(file)
-    } else {
-      // File not yet in store — resolve path and build a minimal file object
-      const filePath = await resolveFilePath(fileBasename)
-      onPlay?.({
-        name: fileBasename,
-        path: filePath,
-        folder: folderName ?? null,
-        videoUrl: 'pully://' + filePath,
-        title: null,
-        uploader: null,
-        description: null,
-        thumbnailUrl: null,
-        url: null,
-        downloadedAt: null
-      })
-    }
   }
 
   const handleGenerateSummary = async (fileBasename) => {
@@ -97,7 +72,6 @@ export default function NotesChapterView({ folderName, activeChapter, onPlay }) 
             chapter={chapter}
             onGenerateSummary={handleGenerateSummary}
             onUpdateBullets={handleUpdateBullets}
-            onPlay={handlePlay}
           />
         </div>
       ))}
