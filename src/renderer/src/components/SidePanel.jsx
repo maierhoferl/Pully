@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { MediaPanel } from './MediaPanel.jsx'
 import ProgressPanel from './ProgressPanel.jsx'
 import { BrowserNotesPanel } from './BrowserNotesPanel.jsx'
@@ -73,11 +73,7 @@ export default function SidePanel() {
 
         {/* Tab content */}
         <div className="flex-1 overflow-hidden">
-          {activeTab === 'notes' ? (
-            <BrowserNotesPanel />
-          ) : (
-            <ProgressPanel />
-          )}
+          {activeTab === 'notes' ? <BrowserNotesPanel /> : <ProgressPanel />}
         </div>
       </div>
     </div>
