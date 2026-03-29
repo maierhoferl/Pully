@@ -30,12 +30,14 @@ setLibrarySearch: (query) => set({ librarySearch: query }),
 Rendered inside the file-list column of `LibraryTab.jsx`, above the grouped file list.
 
 **Search input**
+
 - Placeholder: "Search title, uploader, description…"
 - Indigo border + 🔍 icon highlighted when query is non-empty
 - ✕ clear button appears when active
 - Result count ("N results") shown beside the clear button when searching
 
 **Sort button**
+
 - Displays current field + directional arrow (e.g. "Date ↓")
 - Clicking cycles through: `Date ↓ → Date ↑ → Name ↑ → Name ↓ → Folder A–Z → Folder Z–A → Date ↓`
 - Button styled with indigo highlight when not on the default (`Date ↓`)
@@ -67,11 +69,11 @@ The folder sidebar is unaffected by search/sort — it always shows all folders 
 
 Right-click on a folder name in the sidebar → custom HTML context menu (positioned absolutely, closed on outside click or Escape):
 
-| Context | Menu items |
-|---------|-----------|
-| Blank sidebar space | New Folder |
-| Named folder | New Folder · *(separator)* · Rename · Delete |
-| "All" row | New Folder only |
+| Context             | Menu items                                   |
+| ------------------- | -------------------------------------------- |
+| Blank sidebar space | New Folder                                   |
+| Named folder        | New Folder · _(separator)_ · Rename · Delete |
+| "All" row           | New Folder only                              |
 
 ### New Folder
 
@@ -87,7 +89,7 @@ Right-click on a folder name in the sidebar → custom HTML context menu (positi
 
 ### Delete
 
-- Opens a small modal dialog: *"What should happen to the N file(s) in '[Folder]'?"*
+- Opens a small modal dialog: _"What should happen to the N file(s) in '[Folder]'?"_
 - Two action buttons: **Move to Uncategorized** / **Delete files permanently**
 - Cancel button
 - Calls new `library:deleteFolder({ folder, strategy: 'unassign' | 'delete' })` IPC handler
@@ -119,14 +121,14 @@ Payload: `{ folder: string, strategy: 'unassign' | 'delete' }`
 
 ## Files to Modify / Create
 
-| File | Change |
-|------|--------|
-| `src/renderer/src/store/app-store.js` | Add `librarySort`, `librarySearch`, setters |
-| `src/renderer/src/components/LibraryTab.jsx` | Add toolbar, replace groups useMemo, add folder context menu |
-| `src/renderer/src/components/LibraryToolbar.jsx` | New component |
-| `src/main/ipc-handlers.js` | Add `library:renameFolder`, `library:deleteFolder` handlers |
-| `src/main/metadata-store.js` | Add `renameFolder(from, to)` and `deleteFolder(folder)` helpers |
-| `src/preload/index.js` | Expose `renameFolder` and `deleteFolder` on `window.api` |
+| File                                             | Change                                                          |
+| ------------------------------------------------ | --------------------------------------------------------------- |
+| `src/renderer/src/store/app-store.js`            | Add `librarySort`, `librarySearch`, setters                     |
+| `src/renderer/src/components/LibraryTab.jsx`     | Add toolbar, replace groups useMemo, add folder context menu    |
+| `src/renderer/src/components/LibraryToolbar.jsx` | New component                                                   |
+| `src/main/ipc-handlers.js`                       | Add `library:renameFolder`, `library:deleteFolder` handlers     |
+| `src/main/metadata-store.js`                     | Add `renameFolder(from, to)` and `deleteFolder(folder)` helpers |
+| `src/preload/index.js`                           | Expose `renameFolder` and `deleteFolder` on `window.api`        |
 
 ---
 

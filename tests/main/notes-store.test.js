@@ -8,7 +8,7 @@ import {
   writeSummarySection,
   writeBulletsSection,
   moveChapter,
-  getNotesPath,
+  getNotesPath
 } from '../../src/main/notes-store.js'
 
 let tmpDir
@@ -36,7 +36,11 @@ describe('getNotesPath', () => {
 describe('initChapter', () => {
   it('creates notes.md with chapter stub for a new file', () => {
     const filePath = path.join(tmpDir, 'video.mp4')
-    const metadata = { title: 'My Video', url: 'https://youtube.com/watch?v=abc', downloadedAt: '2026-03-28T00:00:00.000Z' }
+    const metadata = {
+      title: 'My Video',
+      url: 'https://youtube.com/watch?v=abc',
+      downloadedAt: '2026-03-28T00:00:00.000Z'
+    }
     initChapter(filePath, metadata, tmpDir)
     const content = fs.readFileSync(path.join(tmpDir, 'notes.md'), 'utf8')
     expect(content).toContain('## My Video')
@@ -49,7 +53,11 @@ describe('initChapter', () => {
   it('creates folder if it does not exist', () => {
     const filePath = path.join(tmpDir, 'Travel', 'trip.mp4')
     fs.mkdirSync(path.join(tmpDir, 'Travel'))
-    initChapter(filePath, { title: 'Trip', url: '', downloadedAt: '2026-03-28T00:00:00.000Z' }, tmpDir)
+    initChapter(
+      filePath,
+      { title: 'Trip', url: '', downloadedAt: '2026-03-28T00:00:00.000Z' },
+      tmpDir
+    )
     expect(fs.existsSync(path.join(tmpDir, 'Travel', 'notes.md'))).toBe(true)
   })
 
@@ -65,8 +73,16 @@ describe('initChapter', () => {
 
   it('initChapter adopts existing chapter by URL when file anchor is missing', () => {
     const notesPath = path.join(tmpDir, 'notes.md')
-    const metadata1 = { title: 'My Video', url: 'https://example.com/video', downloadedAt: '2026-03-29' }
-    const metadata2 = { title: 'My Video', url: 'https://example.com/video', downloadedAt: '2026-03-29' }
+    const metadata1 = {
+      title: 'My Video',
+      url: 'https://example.com/video',
+      downloadedAt: '2026-03-29'
+    }
+    const metadata2 = {
+      title: 'My Video',
+      url: 'https://example.com/video',
+      downloadedAt: '2026-03-29'
+    }
 
     // First call: stub with no filename (using URL as key)
     initChapter('https://example.com/video', metadata1, tmpDir)
@@ -93,7 +109,10 @@ describe('readFolderNotes', () => {
 
   it('parses chapters from existing notes.md', () => {
     const notesPath = path.join(tmpDir, 'notes.md')
-    fs.writeFileSync(notesPath, `# Library\n\n---\n\n## My Video\n<!-- pully:file:video.mp4 -->\n<!-- pully:url:https://yt.com/1 -->\n<!-- pully:downloaded:2026-03-28 -->\n\n### AI Summary\nGreat video about stuff.\n\n### My Notes\n- point one\n- point two\n\n---\n`)
+    fs.writeFileSync(
+      notesPath,
+      `# Library\n\n---\n\n## My Video\n<!-- pully:file:video.mp4 -->\n<!-- pully:url:https://yt.com/1 -->\n<!-- pully:downloaded:2026-03-28 -->\n\n### AI Summary\nGreat video about stuff.\n\n### My Notes\n- point one\n- point two\n\n---\n`
+    )
     const result = readFolderNotes(null, tmpDir)
     expect(result.chapters).toHaveLength(1)
     expect(result.chapters[0].filePath).toBe('video.mp4')
@@ -106,7 +125,11 @@ describe('readFolderNotes', () => {
 describe('writeSummarySection', () => {
   it('writes summary into the correct chapter', () => {
     const filePath = path.join(tmpDir, 'video.mp4')
-    initChapter(filePath, { title: 'Vid', url: '', downloadedAt: '2026-03-28T00:00:00.000Z' }, tmpDir)
+    initChapter(
+      filePath,
+      { title: 'Vid', url: '', downloadedAt: '2026-03-28T00:00:00.000Z' },
+      tmpDir
+    )
     writeSummarySection(filePath, 'This is the AI summary.', tmpDir)
     const content = fs.readFileSync(path.join(tmpDir, 'notes.md'), 'utf8')
     expect(content).toContain('This is the AI summary.')
@@ -114,7 +137,11 @@ describe('writeSummarySection', () => {
 
   it('replaces existing summary without touching My Notes', () => {
     const filePath = path.join(tmpDir, 'video.mp4')
-    initChapter(filePath, { title: 'Vid', url: '', downloadedAt: '2026-03-28T00:00:00.000Z' }, tmpDir)
+    initChapter(
+      filePath,
+      { title: 'Vid', url: '', downloadedAt: '2026-03-28T00:00:00.000Z' },
+      tmpDir
+    )
     writeSummarySection(filePath, 'First summary.', tmpDir)
     writeBulletsSection(filePath, ['my note'], tmpDir)
     writeSummarySection(filePath, 'Replaced summary.', tmpDir)
@@ -128,7 +155,11 @@ describe('writeSummarySection', () => {
 describe('writeBulletsSection', () => {
   it('writes bullets into the My Notes section', () => {
     const filePath = path.join(tmpDir, 'video.mp4')
-    initChapter(filePath, { title: 'Vid', url: '', downloadedAt: '2026-03-28T00:00:00.000Z' }, tmpDir)
+    initChapter(
+      filePath,
+      { title: 'Vid', url: '', downloadedAt: '2026-03-28T00:00:00.000Z' },
+      tmpDir
+    )
     writeBulletsSection(filePath, ['bullet one', 'bullet two'], tmpDir)
     const content = fs.readFileSync(path.join(tmpDir, 'notes.md'), 'utf8')
     expect(content).toContain('- bullet one')
@@ -141,7 +172,11 @@ describe('moveChapter', () => {
     fs.mkdirSync(path.join(tmpDir, 'Travel'))
     const oldPath = path.join(tmpDir, 'trip.mp4')
     const newPath = path.join(tmpDir, 'Travel', 'trip.mp4')
-    initChapter(oldPath, { title: 'Trip', url: 'https://yt.com/2', downloadedAt: '2026-03-28T00:00:00.000Z' }, tmpDir)
+    initChapter(
+      oldPath,
+      { title: 'Trip', url: 'https://yt.com/2', downloadedAt: '2026-03-28T00:00:00.000Z' },
+      tmpDir
+    )
     moveChapter(oldPath, newPath, tmpDir)
     const rootContent = fs.readFileSync(path.join(tmpDir, 'notes.md'), 'utf8')
     const travelContent = fs.readFileSync(path.join(tmpDir, 'Travel', 'notes.md'), 'utf8')

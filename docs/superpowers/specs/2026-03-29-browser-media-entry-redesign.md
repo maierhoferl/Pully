@@ -11,6 +11,7 @@ Redesign the Media Entry layout in the Browser tab's side panel to be more compa
 ## Current State
 
 The `MediaEntry` component (`src/renderer/src/components/MediaPanel.jsx`) currently displays:
+
 - Title (truncated text)
 - Quality selector dropdown (inline, limited space)
 - Remember button (gray)
@@ -63,13 +64,13 @@ Each entry is wrapped in a container matching the Library tab's file items:
 
 ### Typography & Colors
 
-| Element | Size | Weight | Color | Notes |
-|---------|------|--------|-------|-------|
-| Title | 0.875rem | font-medium | white | Truncate if too long |
-| Type indicator | 0.65rem | normal | gray-400 | Right-aligned space |
-| Quality selector | 0.7rem | normal | gray-300 bg | Accessible dropdown |
-| Remember button | 0.75rem | font-semibold | white on #16a34a | Green, always visible |
-| Download button | 0.75rem | font-semibold | white on #2563eb | Blue, always visible |
+| Element          | Size     | Weight        | Color            | Notes                 |
+| ---------------- | -------- | ------------- | ---------------- | --------------------- |
+| Title            | 0.875rem | font-medium   | white            | Truncate if too long  |
+| Type indicator   | 0.65rem  | normal        | gray-400         | Right-aligned space   |
+| Quality selector | 0.7rem   | normal        | gray-300 bg      | Accessible dropdown   |
+| Remember button  | 0.75rem  | font-semibold | white on #16a34a | Green, always visible |
+| Download button  | 0.75rem  | font-semibold | white on #2563eb | Blue, always visible  |
 
 ### Information Hierarchy
 

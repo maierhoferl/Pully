@@ -12,21 +12,22 @@
 
 ## File Map
 
-| File | Action | Purpose |
-|------|--------|---------|
-| `scripts/download-ytdlp.js` | Modify | Cross-platform binary download (macOS/Windows/Linux) |
-| `src/main/ytdlp-runner.js` | Modify | Platform-aware `getDefaultBinaryPath()` and `ensureBinary()` |
-| `src/main/index.js` | Modify | Platform-aware dest filename when copying binary to userData |
-| `electron-builder.yml` | Modify | Add Windows/Linux targets, artifact naming, per-platform extraResources, afterSign |
-| `scripts/notarize.js` | Create | macOS notarization afterSign hook |
-| `.github/workflows/release.yml` | Create | CI release workflow |
-| `README.md` | Modify | Prominent download section at top, all three platforms |
+| File                            | Action | Purpose                                                                            |
+| ------------------------------- | ------ | ---------------------------------------------------------------------------------- |
+| `scripts/download-ytdlp.js`     | Modify | Cross-platform binary download (macOS/Windows/Linux)                               |
+| `src/main/ytdlp-runner.js`      | Modify | Platform-aware `getDefaultBinaryPath()` and `ensureBinary()`                       |
+| `src/main/index.js`             | Modify | Platform-aware dest filename when copying binary to userData                       |
+| `electron-builder.yml`          | Modify | Add Windows/Linux targets, artifact naming, per-platform extraResources, afterSign |
+| `scripts/notarize.js`           | Create | macOS notarization afterSign hook                                                  |
+| `.github/workflows/release.yml` | Create | CI release workflow                                                                |
+| `README.md`                     | Modify | Prominent download section at top, all three platforms                             |
 
 ---
 
 ### Task 1: Update download-ytdlp.js for cross-platform
 
 **Files:**
+
 - Modify: `scripts/download-ytdlp.js`
 
 - [ ] **Step 1: Replace scripts/download-ytdlp.js**
@@ -71,28 +72,33 @@ if (fs.existsSync(info.dest)) {
 fs.mkdirSync(path.dirname(info.dest), { recursive: true })
 
 function download(url, dest, executable, hops = 0) {
-  if (hops > 5) { console.error('Too many redirects'); process.exit(1) }
-  https.get(url, res => {
-    if (res.statusCode === 301 || res.statusCode === 302) {
-      return download(res.headers.location, dest, executable, hops + 1)
-    }
-    if (res.statusCode < 200 || res.statusCode >= 300) {
-      res.resume()
-      console.error('Unexpected HTTP status:', res.statusCode)
-      process.exit(1)
-    }
-    const file = fs.createWriteStream(dest)
-    res.pipe(file)
-    file.on('finish', () => {
-      file.close()
-      if (executable) fs.chmodSync(dest, 0o755)
-      console.log('yt-dlp downloaded to', dest)
-    })
-  }).on('error', err => {
-    fs.unlink(dest, () => {})
-    console.error('Download failed:', err.message)
+  if (hops > 5) {
+    console.error('Too many redirects')
     process.exit(1)
-  })
+  }
+  https
+    .get(url, (res) => {
+      if (res.statusCode === 301 || res.statusCode === 302) {
+        return download(res.headers.location, dest, executable, hops + 1)
+      }
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        res.resume()
+        console.error('Unexpected HTTP status:', res.statusCode)
+        process.exit(1)
+      }
+      const file = fs.createWriteStream(dest)
+      res.pipe(file)
+      file.on('finish', () => {
+        file.close()
+        if (executable) fs.chmodSync(dest, 0o755)
+        console.log('yt-dlp downloaded to', dest)
+      })
+    })
+    .on('error', (err) => {
+      fs.unlink(dest, () => {})
+      console.error('Download failed:', err.message)
+      process.exit(1)
+    })
 }
 
 download(info.url, info.dest, info.executable)
@@ -110,6 +116,7 @@ git commit -m "feat: cross-platform yt-dlp binary download (Windows + Linux)"
 ### Task 2: Fix ytdlp-runner.js for Windows binary name and chmod
 
 **Files:**
+
 - Modify: `src/main/ytdlp-runner.js`
 - Modify: `tests/main/ytdlp-runner.test.js`
 
@@ -215,6 +222,7 @@ git commit -m "fix: platform-aware binary path and skip chmod on Windows"
 ### Task 3: Fix binary copy destination path in index.js
 
 **Files:**
+
 - Modify: `src/main/index.js`
 
 - [ ] **Step 1: Update binary dest to use .exe on Windows**
@@ -222,18 +230,18 @@ git commit -m "fix: platform-aware binary path and skip chmod on Windows"
 In `src/main/index.js`, inside `createWindow()`, replace:
 
 ```javascript
-    const src = getDefaultBinaryPath()
-    const dest = path.join(app.getPath('userData'), 'yt-dlp')
-    ensureBinary(src, dest)
+const src = getDefaultBinaryPath()
+const dest = path.join(app.getPath('userData'), 'yt-dlp')
+ensureBinary(src, dest)
 ```
 
 With:
 
 ```javascript
-    const src = getDefaultBinaryPath()
-    const binaryName = process.platform === 'win32' ? 'yt-dlp.exe' : 'yt-dlp'
-    const dest = path.join(app.getPath('userData'), binaryName)
-    ensureBinary(src, dest)
+const src = getDefaultBinaryPath()
+const binaryName = process.platform === 'win32' ? 'yt-dlp.exe' : 'yt-dlp'
+const dest = path.join(app.getPath('userData'), binaryName)
+ensureBinary(src, dest)
 ```
 
 - [ ] **Step 2: Commit**
@@ -248,6 +256,7 @@ git commit -m "fix: use correct binary filename when copying to userData on Wind
 ### Task 4: Update electron-builder.yml for all platforms
 
 **Files:**
+
 - Modify: `electron-builder.yml`
 
 - [ ] **Step 1: Replace electron-builder.yml**
@@ -260,11 +269,11 @@ productName: Pully
 directories:
   output: dist
 files:
-  - "!**/.vscode"
-  - "!src/**"
-  - "!tests/**"
-  - "!docs/**"
-  - "!scripts/**"
+  - '!**/.vscode'
+  - '!src/**'
+  - '!tests/**'
+  - '!docs/**'
+  - '!scripts/**'
 afterSign: scripts/notarize.js
 mac:
   target:
@@ -275,7 +284,7 @@ mac:
   extraResources:
     - from: resources/yt-dlp
       to: yt-dlp
-  artifactName: "${productName}-${version}-mac-${arch}.${ext}"
+  artifactName: '${productName}-${version}-mac-${arch}.${ext}'
 dmg:
   title: Pully
 win:
@@ -286,7 +295,7 @@ win:
   extraResources:
     - from: resources/yt-dlp.exe
       to: yt-dlp.exe
-  artifactName: "${productName}-${version}-win-${arch}-setup.${ext}"
+  artifactName: '${productName}-${version}-win-${arch}-setup.${ext}'
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
@@ -299,7 +308,7 @@ linux:
   extraResources:
     - from: resources/yt-dlp
       to: yt-dlp
-  artifactName: "${productName}-${version}-linux-${arch}.${ext}"
+  artifactName: '${productName}-${version}-linux-${arch}.${ext}'
 ```
 
 - [ ] **Step 2: Commit**
@@ -314,6 +323,7 @@ git commit -m "feat: add Windows NSIS and Linux AppImage targets to electron-bui
 ### Task 5: Add notarize script and @electron/notarize
 
 **Files:**
+
 - Create: `scripts/notarize.js`
 - Modify: `package.json` (via npm install)
 
@@ -350,7 +360,7 @@ exports.default = async function notarizing(context) {
     appPath,
     appleId: process.env.APPLE_ID,
     appleIdPassword: process.env.APPLE_ID_PASSWORD,
-    teamId: process.env.APPLE_TEAM_ID,
+    teamId: process.env.APPLE_TEAM_ID
   })
 }
 ```
@@ -367,6 +377,7 @@ git commit -m "feat: add macOS notarization afterSign script"
 ### Task 6: Create GitHub Actions release workflow
 
 **Files:**
+
 - Create: `.github/workflows/release.yml`
 
 - [ ] **Step 1: Create .github/workflows/release.yml**
@@ -506,13 +517,14 @@ git commit -m "feat: GitHub Actions release workflow for macOS, Windows, and Lin
 ### Task 7: Update README.md
 
 **Files:**
+
 - Modify: `README.md`
 
 - [ ] **Step 1: Replace README.md**
 
 Write the following as the complete file:
 
-```markdown
+````markdown
 # Pully
 
 A desktop app for downloading videos from YouTube and other sites. Built with Electron, React, and yt-dlp.
@@ -521,25 +533,29 @@ A desktop app for downloading videos from YouTube and other sites. Built with El
 
 Go to the **[Releases page](../../releases/latest)** to download the latest version.
 
-| Platform | File | Requirements |
-|----------|------|--------------|
-| macOS (Apple Silicon + Intel) | `Pully-{version}-mac-universal.dmg` | macOS 11+ |
-| Windows | `Pully-{version}-win-x64-setup.exe` | Windows 10+ (64-bit) |
-| Linux | `Pully-{version}-linux-x64.AppImage` | x86_64 |
+| Platform                      | File                                 | Requirements         |
+| ----------------------------- | ------------------------------------ | -------------------- |
+| macOS (Apple Silicon + Intel) | `Pully-{version}-mac-universal.dmg`  | macOS 11+            |
+| Windows                       | `Pully-{version}-win-x64-setup.exe`  | Windows 10+ (64-bit) |
+| Linux                         | `Pully-{version}-linux-x64.AppImage` | x86_64               |
 
 ### Verify your download (SHA-256)
 
 Each release includes `SHA256SUMS.txt`. To verify:
 
 **macOS / Linux:**
+
 ```bash
 sha256sum -c SHA256SUMS.txt --ignore-missing
 ```
+````
 
 **Windows (PowerShell):**
+
 ```powershell
 (Get-FileHash "Pully-*-win-x64-setup.exe" -Algorithm SHA256).Hash
 ```
+
 Compare the output against the matching line in `SHA256SUMS.txt`.
 
 ### Platform notes
@@ -547,6 +563,7 @@ Compare the output against the matching line in `SHA256SUMS.txt`.
 **macOS** — the app is signed and notarized. If macOS shows a security prompt on first launch, right-click the app → Open.
 
 **Linux** — make the AppImage executable before running:
+
 ```bash
 chmod +x Pully-*.AppImage
 ./Pully-*.AppImage
@@ -590,6 +607,7 @@ npm run format        # Prettier
 ```
 
 Run a single test file:
+
 ```bash
 npx vitest run tests/main/download-manager.test.js
 ```
@@ -598,11 +616,11 @@ npx vitest run tests/main/download-manager.test.js
 
 Pully follows Electron's standard multi-process model:
 
-| Process | Location | Role |
-|---------|----------|------|
-| Main | `src/main/` | App lifecycle, IPC handlers, download orchestration, yt-dlp management |
-| Preload | `src/preload/index.js` | Context bridge — exposes `window.api` to the renderer |
-| Renderer | `src/renderer/` | React + Tailwind UI (Browser / Downloads / Library tabs) |
+| Process  | Location               | Role                                                                   |
+| -------- | ---------------------- | ---------------------------------------------------------------------- |
+| Main     | `src/main/`            | App lifecycle, IPC handlers, download orchestration, yt-dlp management |
+| Preload  | `src/preload/index.js` | Context bridge — exposes `window.api` to the renderer                  |
+| Renderer | `src/renderer/`        | React + Tailwind UI (Browser / Downloads / Library tabs)               |
 
 **Download flow:** page loads in webview → yt-dlp scans for media → user selects format and clicks Download → `DownloadManager` queues and runs yt-dlp as a child process → progress streamed back to the UI via IPC events.
 
@@ -615,14 +633,15 @@ On first launch the output folder defaults to `~/Downloads`. Settings are persis
 ## yt-dlp
 
 The yt-dlp binary is downloaded automatically during `npm install` and stored in `resources/`. At runtime it is copied to the app's userData directory. To update yt-dlp, delete the binary and re-run `npm install`.
-```
+
+````
 
 - [ ] **Step 2: Commit**
 
 ```bash
 git add README.md
 git commit -m "docs: add prominent download section and update platform support"
-```
+````
 
 ---
 
@@ -630,14 +649,14 @@ git commit -m "docs: add prominent download section and update platform support"
 
 Configure these in **Settings → Secrets and variables → Actions**:
 
-| Secret | How to get it |
-|--------|---------------|
-| `MACOS_CERTIFICATE` | `base64 -i YourCert.p12` — export .p12 from Keychain Access |
-| `MACOS_CERTIFICATE_PASSWORD` | Password used when exporting the .p12 |
-| `KEYCHAIN_PASSWORD` | Any random string (e.g. `openssl rand -hex 16`) |
-| `APPLE_ID` | Your Apple ID email |
-| `APPLE_ID_PASSWORD` | App-specific password from appleid.apple.com |
-| `APPLE_TEAM_ID` | 10-character Team ID from developer.apple.com |
+| Secret                       | How to get it                                               |
+| ---------------------------- | ----------------------------------------------------------- |
+| `MACOS_CERTIFICATE`          | `base64 -i YourCert.p12` — export .p12 from Keychain Access |
+| `MACOS_CERTIFICATE_PASSWORD` | Password used when exporting the .p12                       |
+| `KEYCHAIN_PASSWORD`          | Any random string (e.g. `openssl rand -hex 16`)             |
+| `APPLE_ID`                   | Your Apple ID email                                         |
+| `APPLE_ID_PASSWORD`          | App-specific password from appleid.apple.com                |
+| `APPLE_TEAM_ID`              | 10-character Team ID from developer.apple.com               |
 
 ## Triggering a Release
 

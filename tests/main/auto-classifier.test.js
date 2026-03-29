@@ -7,7 +7,11 @@ vi.mock('@huggingface/transformers', () => ({
 global.fetch = vi.fn()
 
 import { pipeline } from '@huggingface/transformers'
-import { classifyVideo, _resetEmbeddingCache, fetchProviderModels } from '../../src/main/auto-classifier.js'
+import {
+  classifyVideo,
+  _resetEmbeddingCache,
+  fetchProviderModels
+} from '../../src/main/auto-classifier.js'
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -16,7 +20,11 @@ beforeEach(() => {
 
 describe('classifyVideo — Tier 1 keyword', () => {
   it('returns none when folder list is empty', async () => {
-    const result = await classifyVideo({ title: 'test', uploader: '', description: '', url: '' }, [], {})
+    const result = await classifyVideo(
+      { title: 'test', uploader: '', description: '', url: '' },
+      [],
+      {}
+    )
     expect(result).toEqual({ folder: null, tier: 'none' })
   })
 
@@ -27,7 +35,12 @@ describe('classifyVideo — Tier 1 keyword', () => {
   })
 
   it('assigns folder when multi-token folder scores >= 2', async () => {
-    const video = { title: 'Homemade cooking with fresh food', uploader: '', description: '', url: '' }
+    const video = {
+      title: 'Homemade cooking with fresh food',
+      uploader: '',
+      description: '',
+      url: ''
+    }
     const result = await classifyVideo(video, ['Cooking and Food', 'Gaming'], {})
     expect(result).toEqual({ folder: 'Cooking and Food', tier: 'keyword' })
   })
@@ -48,7 +61,12 @@ describe('classifyVideo — Tier 1 keyword', () => {
   })
 
   it('matches token in description field', async () => {
-    const video = { title: 'Weekly update', uploader: '', description: 'This week in gaming highlights', url: '' }
+    const video = {
+      title: 'Weekly update',
+      uploader: '',
+      description: 'This week in gaming highlights',
+      url: ''
+    }
     const result = await classifyVideo(video, ['Gaming', 'Music'], {})
     expect(result).toEqual({ folder: 'Gaming', tier: 'keyword' })
   })
@@ -57,9 +75,10 @@ describe('classifyVideo — Tier 1 keyword', () => {
 describe('classifyVideo — Tier 2 embedding', () => {
   it('assigns folder when cosine similarity >= 0.45', async () => {
     const mockPipe = vi.fn().mockImplementation(async (text) => ({
-      data: (text.toLowerCase().includes('anime') || text.toLowerCase().includes('attack on titan'))
-        ? new Float32Array([1, 0, 0])
-        : new Float32Array([0.3, 0.9, 0.1])
+      data:
+        text.toLowerCase().includes('anime') || text.toLowerCase().includes('attack on titan')
+          ? new Float32Array([1, 0, 0])
+          : new Float32Array([0.3, 0.9, 0.1])
     }))
     pipeline.mockResolvedValue(mockPipe)
 
@@ -107,7 +126,11 @@ describe('classifyVideo — Tier 3 LLM', () => {
     global.fetch.mockResolvedValue({
       json: async () => ({ content: [{ text: 'Cooking' }] })
     })
-    const config = { autoClassifyProvider: 'claude', autoClassifyApiKey: 'sk-test', autoClassifyModel: '' }
+    const config = {
+      autoClassifyProvider: 'claude',
+      autoClassifyApiKey: 'sk-test',
+      autoClassifyModel: ''
+    }
     const result = await classifyVideo(
       { title: 'Perfect carbonara recipe', uploader: '', description: '', url: '' },
       ['Cooking', 'Gaming'],
@@ -120,7 +143,11 @@ describe('classifyVideo — Tier 3 LLM', () => {
     global.fetch.mockResolvedValue({
       json: async () => ({ candidates: [{ content: { parts: [{ text: 'Gaming' }] } }] })
     })
-    const config = { autoClassifyProvider: 'gemini', autoClassifyApiKey: 'key-test', autoClassifyModel: '' }
+    const config = {
+      autoClassifyProvider: 'gemini',
+      autoClassifyApiKey: 'key-test',
+      autoClassifyModel: ''
+    }
     const result = await classifyVideo(
       { title: 'Speedrun world record', uploader: '', description: '', url: '' },
       ['Cooking', 'Gaming'],
@@ -133,7 +160,11 @@ describe('classifyVideo — Tier 3 LLM', () => {
     global.fetch.mockResolvedValue({
       json: async () => ({ choices: [{ message: { content: 'Cooking' } }] })
     })
-    const config = { autoClassifyProvider: 'openai', autoClassifyApiKey: 'sk-open', autoClassifyModel: 'gpt-5-nano' }
+    const config = {
+      autoClassifyProvider: 'openai',
+      autoClassifyApiKey: 'sk-open',
+      autoClassifyModel: 'gpt-5-nano'
+    }
     const result = await classifyVideo(
       { title: 'Baking bread tutorial', uploader: '', description: '', url: '' },
       ['Cooking', 'Gaming'],
@@ -144,7 +175,11 @@ describe('classifyVideo — Tier 3 LLM', () => {
 
   it('returns none when LLM responds "none"', async () => {
     global.fetch.mockResolvedValue({ json: async () => ({ content: [{ text: 'none' }] }) })
-    const config = { autoClassifyProvider: 'claude', autoClassifyApiKey: 'sk-test', autoClassifyModel: '' }
+    const config = {
+      autoClassifyProvider: 'claude',
+      autoClassifyApiKey: 'sk-test',
+      autoClassifyModel: ''
+    }
     const result = await classifyVideo(
       { title: 'Unclassifiable content', uploader: '', description: '', url: '' },
       ['Cooking', 'Gaming'],
@@ -155,7 +190,11 @@ describe('classifyVideo — Tier 3 LLM', () => {
 
   it('returns none when LLM response is not in folder list', async () => {
     global.fetch.mockResolvedValue({ json: async () => ({ content: [{ text: 'Sports' }] }) })
-    const config = { autoClassifyProvider: 'claude', autoClassifyApiKey: 'sk-test', autoClassifyModel: '' }
+    const config = {
+      autoClassifyProvider: 'claude',
+      autoClassifyApiKey: 'sk-test',
+      autoClassifyModel: ''
+    }
     const result = await classifyVideo(
       { title: 'Soccer match', uploader: '', description: '', url: '' },
       ['Cooking', 'Gaming'],
@@ -166,7 +205,11 @@ describe('classifyVideo — Tier 3 LLM', () => {
 
   it('skips LLM when provider is "local"', async () => {
     const config = { autoClassifyProvider: 'local', autoClassifyApiKey: '' }
-    await classifyVideo({ title: 'test', uploader: '', description: '', url: '' }, ['Cooking'], config)
+    await classifyVideo(
+      { title: 'test', uploader: '', description: '', url: '' },
+      ['Cooking'],
+      config
+    )
     expect(fetch).not.toHaveBeenCalled()
   })
 })

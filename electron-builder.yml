@@ -3,14 +3,14 @@ productName: Pully
 directories:
   output: dist
 files:
-  - "!**/.vscode"
-  - "!src/**"
-  - "!tests/**"
-  - "!docs/**"
-  - "!scripts/**"
+  - '!**/.vscode'
+  - '!src/**'
+  - '!tests/**'
+  - '!docs/**'
+  - '!scripts/**'
 asarUnpack:
-  - "node_modules/@huggingface/transformers/**"
-  - "node_modules/onnxruntime-node/**"
+  - 'node_modules/@huggingface/transformers/**'
+  - 'node_modules/onnxruntime-node/**'
 afterSign: scripts/notarize.js
 mac:
   target:
@@ -18,13 +18,13 @@ mac:
       arch:
         - universal
   category: public.app-category.utilities
-  x64ArchFiles: "Contents/Resources/{ffmpeg,app.asar.unpacked/node_modules/{@img/sharp-darwin-*,@img/sharp-libvips-darwin-*,onnxruntime-node/bin}/**}"
+  x64ArchFiles: 'Contents/Resources/{ffmpeg,app.asar.unpacked/node_modules/{@img/sharp-darwin-*,@img/sharp-libvips-darwin-*,onnxruntime-node/bin}/**}'
   extraResources:
     - from: resources/yt-dlp
       to: yt-dlp
     - from: resources/ffmpeg
       to: ffmpeg
-  artifactName: "${productName}-${version}-mac-${arch}.${ext}"
+  artifactName: '${productName}-${version}-mac-${arch}.${ext}'
 dmg:
   title: Pully
 win:
@@ -37,7 +37,7 @@ win:
       to: yt-dlp.exe
     - from: resources/ffmpeg.exe
       to: ffmpeg.exe
-  artifactName: "${productName}-${version}-win-${arch}-setup.${ext}"
+  artifactName: '${productName}-${version}-win-${arch}-setup.${ext}'
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
@@ -52,4 +52,4 @@ linux:
       to: yt-dlp
     - from: resources/ffmpeg
       to: ffmpeg
-  artifactName: "${productName}-${version}-linux-${arch}.${ext}"
+  artifactName: '${productName}-${version}-linux-${arch}.${ext}'

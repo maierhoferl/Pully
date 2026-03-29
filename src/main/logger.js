@@ -22,7 +22,7 @@ export function createLogger(logDir) {
       ts: new Date().toISOString(),
       level,
       category,
-      message,
+      message
     }
 
     // Only include meta if provided
@@ -112,7 +112,7 @@ export function createLogger(logDir) {
     warn,
     error,
     setWindow,
-    setDebugMode,
+    setDebugMode
   }
 }
 
@@ -129,5 +129,5 @@ export default {
   warn: (category, message, meta) => loggerInstance?.warn(category, message, meta),
   error: (category, message, meta) => loggerInstance?.error(category, message, meta),
   setWindow: (window) => loggerInstance?.setWindow(window),
-  setDebugMode: (enabled) => loggerInstance?.setDebugMode(enabled),
+  setDebugMode: (enabled) => loggerInstance?.setDebugMode(enabled)
 }

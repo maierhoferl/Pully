@@ -17,17 +17,21 @@ Add thumbnail previews and a slide-in detail panel to the Library tab. Embed met
 ### Download Pipeline Changes
 
 **`src/main/ytdlp-runner.js`**
+
 - Add `--embed-thumbnail`, `--embed-metadata`, and `--ffmpeg-location <path>` to the download command
 
 **`src/renderer/src/components/MediaPanel.jsx`** + **`src/preload/index.js`**
+
 - When the user clicks Download, include the already-fetched metadata (title, uploader, description, thumbnailUrl) in the `download:add` IPC payload — this data is available in renderer state from the prior `--dump-json` extraction
 
 **`src/main/download-manager.js`**
+
 - Accept metadata in the download job object
 - On download completion, write a metadata entry to `metadata-index.json` in userData (via `metadata-store.js`)
 - Entry keyed by absolute file path
 
 **`src/main/metadata-store.js`** _(new)_
+
 - Thin wrapper around a JSON file in `app.getPath('userData')/metadata-index.json`
 - Methods: `set(filePath, metadata)`, `get(filePath)`, `getAll()`
 - Shape per entry:
@@ -44,25 +48,30 @@ Add thumbnail previews and a slide-in detail panel to the Library tab. Embed met
 ### ffmpeg Bundling
 
 **`scripts/download-ytdlp.js`**
+
 - Add a second download step for the platform-appropriate ffmpeg static binary
 - Save to `resources/ffmpeg` (same directory as `resources/yt-dlp`)
 
 **`src/main/ytdlp-runner.js`**
+
 - Resolve ffmpeg binary path the same way yt-dlp is resolved (resourcesPath in prod, `resources/` in dev)
 - Pass to yt-dlp via `--ffmpeg-location`
 
 ### IPC
 
 **`src/main/ipc-handlers.js`**
+
 - Replace `library:list` handler with `library:list` returning merged data: filesystem stats + metadata index entry per file
 - Response shape per item: `{ name, path, size, mtime, title, uploader, description, thumbnailUrl, downloadedAt }` — metadata fields are `null` if not found (graceful fallback)
 
 **`src/preload/index.js`**
+
 - No change needed if `listLibrary` already maps to `library:list`
 
 ### Renderer State
 
 **`src/renderer/src/store/app-store.js`**
+
 - `libraryFiles` entries gain nullable fields: `title`, `uploader`, `description`, `thumbnailUrl`, `downloadedAt`
 
 ---
@@ -72,6 +81,7 @@ Add thumbnail previews and a slide-in detail panel to the Library tab. Embed met
 ### Library Tab (`src/renderer/src/components/LibraryTab.jsx`)
 
 Replace the current grid with a **list view**:
+
 - Each row: small thumbnail (16:9, ~64px wide, grey placeholder if no URL), video title (fallback: filename without extension), author (fallback: `—`)
 - Clicking a row highlights it and slides in the detail panel; clicking again closes it
 - The list width shrinks when the panel is open
@@ -79,6 +89,7 @@ Replace the current grid with a **list view**:
 ### Detail Panel (`src/renderer/src/components/LibraryDetailPanel.jsx`) _(new)_
 
 Layout (option B — title first):
+
 1. **Title** (bold, full text)
 2. **Subtitle line**: `Author · Mar 27, 2026 · 14:32` (fallback: `— · date`)
 3. **Thumbnail** with `▶ PLAY` button overlaid in center — `shell.openPath(filePath)` on click
@@ -86,6 +97,7 @@ Layout (option B — title first):
 5. **X / close button** in top-right corner
 
 Graceful fallback for pre-existing downloads (no metadata entry):
+
 - Title: filename without extension
 - Author, description: `—`
 - Thumbnail: grey placeholder

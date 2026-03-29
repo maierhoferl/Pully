@@ -5,7 +5,7 @@ import os from 'os'
 
 vi.mock('../../src/main/ai-client.js', () => ({
   callLLM: vi.fn(async () => 'text summary'),
-  callLLMWithVideo: vi.fn(async () => 'video summary'),
+  callLLMWithVideo: vi.fn(async () => 'video summary')
 }))
 
 const { callLLM, callLLMWithVideo } = await import('../../src/main/ai-client.js')
@@ -22,29 +22,53 @@ const baseConfig = {
   aiProvider: 'gemini',
   aiApiKey: 'key',
   aiModel: '',
-  defaultSummaryPrompt: 'Summarize this.',
+  defaultSummaryPrompt: 'Summarize this.'
 }
 
 describe('generateSummary', () => {
   it('uses callLLMWithVideo for Gemini + YouTube URL', async () => {
     const filePath = path.join(tmpDir, 'video.mp4')
-    const metadata = { title: 'Vid', url: 'https://youtube.com/watch?v=abc', description: 'desc', uploader: 'Chan' }
+    const metadata = {
+      title: 'Vid',
+      url: 'https://youtube.com/watch?v=abc',
+      description: 'desc',
+      uploader: 'Chan'
+    }
     const result = await generateSummary(filePath, metadata, baseConfig)
-    expect(callLLMWithVideo).toHaveBeenCalledWith('gemini', 'key', '', 'Summarize this.', 'https://youtube.com/watch?v=abc')
+    expect(callLLMWithVideo).toHaveBeenCalledWith(
+      'gemini',
+      'key',
+      '',
+      'Summarize this.',
+      'https://youtube.com/watch?v=abc'
+    )
     expect(result).toBe('video summary')
   })
 
   it('uses callLLM for Claude (text path)', async () => {
     const filePath = path.join(tmpDir, 'video.mp4')
-    const metadata = { title: 'Vid', url: 'https://youtube.com/watch?v=abc', description: 'desc', uploader: 'Chan' }
-    const result = await generateSummary(filePath, metadata, { ...baseConfig, aiProvider: 'claude' })
+    const metadata = {
+      title: 'Vid',
+      url: 'https://youtube.com/watch?v=abc',
+      description: 'desc',
+      uploader: 'Chan'
+    }
+    const result = await generateSummary(filePath, metadata, {
+      ...baseConfig,
+      aiProvider: 'claude'
+    })
     expect(callLLM).toHaveBeenCalled()
     expect(result).toBe('text summary')
   })
 
   it('uses callLLM for Gemini with non-YouTube URL', async () => {
     const filePath = path.join(tmpDir, 'video.mp4')
-    const metadata = { title: 'Vid', url: 'https://vimeo.com/123', description: 'desc', uploader: 'Chan' }
+    const metadata = {
+      title: 'Vid',
+      url: 'https://vimeo.com/123',
+      description: 'desc',
+      uploader: 'Chan'
+    }
     await generateSummary(filePath, metadata, baseConfig)
     expect(callLLM).toHaveBeenCalled()
     expect(callLLMWithVideo).not.toHaveBeenCalled()

@@ -36,14 +36,14 @@ Run a single test file: `npx vitest run tests/main/download-manager.test.js`
 
 ### Key Modules
 
-| File | Responsibility |
-|------|---------------|
-| `src/main/download-manager.js` | Queue management, concurrency control |
-| `src/main/ytdlp-runner.js` | Spawn yt-dlp processes, parse output, manage binary path |
-| `src/main/ipc-handlers.js` | Register all IPC handlers |
-| `src/main/config-store.js` | Persist config to userData folder |
-| `src/renderer/src/store/app-store.js` | Zustand global state (downloads, UI, library) |
-| `src/renderer/src/hooks/useIpcEvents.js` | Subscribe to IPC progress/completion events |
+| File                                     | Responsibility                                           |
+| ---------------------------------------- | -------------------------------------------------------- |
+| `src/main/download-manager.js`           | Queue management, concurrency control                    |
+| `src/main/ytdlp-runner.js`               | Spawn yt-dlp processes, parse output, manage binary path |
+| `src/main/ipc-handlers.js`               | Register all IPC handlers                                |
+| `src/main/config-store.js`               | Persist config to userData folder                        |
+| `src/renderer/src/store/app-store.js`    | Zustand global state (downloads, UI, library)            |
+| `src/renderer/src/hooks/useIpcEvents.js` | Subscribe to IPC progress/completion events              |
 
 ### State Management
 

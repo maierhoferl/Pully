@@ -13,6 +13,7 @@
 ## File Structure
 
 **Backend (Main Process):**
+
 - `src/main/notes-store.js` — Add adopt-by-URL logic, emit `notes:chapter-updated` event
 - `src/main/download-manager.js` — Call `initChapter` at queue-add time
 - `src/main/auto-classifier.js` — Emit `notes:chapter-updated` after file move
@@ -20,6 +21,7 @@
 - `src/main/ipc-handlers.js` — Ensure event emission on Remember
 
 **Frontend (Renderer):**
+
 - `src/renderer/src/store/app-store.js` — Add `browserActiveChapter` slice
 - `src/renderer/src/hooks/useIpcEvents.js` — Subscribe to `notes:chapter-updated`
 - `src/renderer/src/components/ChapterCard.jsx` — Extracted component (shared edit UX)
@@ -32,6 +34,7 @@
 ## Task 1: Update notes-store.js — Add adopt-by-URL logic
 
 **Files:**
+
 - Modify: `src/main/notes-store.js`
 - Test: `tests/main/notes-store.test.js` (existing)
 
@@ -47,24 +50,32 @@ In `tests/main/notes-store.test.js`, add:
 
 ```js
 test('initChapter adopts existing chapter by URL when file anchor is missing', () => {
-  const notesPath = path.join(tmpDir, 'notes.md');
-  const metadata1 = { title: 'My Video', url: 'https://example.com/video', downloadedAt: '2026-03-29' };
-  const metadata2 = { title: 'My Video', url: 'https://example.com/video', downloadedAt: '2026-03-29' };
+  const notesPath = path.join(tmpDir, 'notes.md')
+  const metadata1 = {
+    title: 'My Video',
+    url: 'https://example.com/video',
+    downloadedAt: '2026-03-29'
+  }
+  const metadata2 = {
+    title: 'My Video',
+    url: 'https://example.com/video',
+    downloadedAt: '2026-03-29'
+  }
 
   // First call: stub with no filename
-  initChapter('https://example.com/video', metadata1, tmpDir);
-  let content = fs.readFileSync(notesPath, 'utf8');
-  expect(content).toContain('<!-- pully:url:https://example.com/video -->');
-  expect(content).not.toContain('<!-- pully:file:');
+  initChapter('https://example.com/video', metadata1, tmpDir)
+  let content = fs.readFileSync(notesPath, 'utf8')
+  expect(content).toContain('<!-- pully:url:https://example.com/video -->')
+  expect(content).not.toContain('<!-- pully:file:')
 
   // Second call: real filename, should update the existing chapter
-  initChapter('path/to/video.mp4', metadata2, tmpDir);
-  content = fs.readFileSync(notesPath, 'utf8');
-  expect(content).toContain('<!-- pully:file:video.mp4 -->');
-  expect(content).toContain('<!-- pully:url:https://example.com/video -->');
+  initChapter('path/to/video.mp4', metadata2, tmpDir)
+  content = fs.readFileSync(notesPath, 'utf8')
+  expect(content).toContain('<!-- pully:file:video.mp4 -->')
+  expect(content).toContain('<!-- pully:url:https://example.com/video -->')
   // Should have only one chapter, not two
-  expect((content.match(/^## /gm) || []).length).toBe(1);
-});
+  expect((content.match(/^## /gm) || []).length).toBe(1)
+})
 ```
 
 - [ ] **Step 3: Run test to verify it fails**
@@ -81,41 +92,41 @@ In `notes-store.js`, update the function:
 
 ```js
 export function initChapter(filePath, metadata = {}, outputFolder = '') {
-  const notesPath = getNotesPath(filePath, outputFolder);
+  const notesPath = getNotesPath(filePath, outputFolder)
 
   // Ensure directory exists
-  const dir = path.dirname(notesPath);
+  const dir = path.dirname(notesPath)
   if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+    fs.mkdirSync(dir, { recursive: true })
   }
 
-  const { chapters } = readFolderNotes(notesPath);
-  const basename = path.basename(filePath);
+  const { chapters } = readFolderNotes(notesPath)
+  const basename = path.basename(filePath)
 
   // Try to find existing chapter by file basename
-  let existingChapter = chapters.find(ch => ch.filePath === basename);
+  let existingChapter = chapters.find((ch) => ch.filePath === basename)
 
   // If not found and filePath looks like a key (not a full path), try URL-based lookup
   if (!existingChapter && metadata.url && !filePath.includes('/')) {
-    existingChapter = chapters.find(ch => ch.url === metadata.url);
+    existingChapter = chapters.find((ch) => ch.url === metadata.url)
   }
 
   // If chapter exists, don't rewrite — just update the file anchor if needed
   if (existingChapter) {
     if (filePath.includes('/') && filePath !== existingChapter.filePath) {
       // Update the pully:file anchor to the real filename
-      updateChapterAnchor(notesPath, existingChapter.url, 'file', basename);
+      updateChapterAnchor(notesPath, existingChapter.url, 'file', basename)
     }
-    return { isNew: false, filePath: notesPath, chapterId: existingChapter.title };
+    return { isNew: false, filePath: notesPath, chapterId: existingChapter.title }
   }
 
   // Create new chapter
-  const title = metadata.title || path.parse(basename).name || 'Untitled';
-  const url = metadata.url || '';
-  const downloadedAt = metadata.downloadedAt || new Date().toISOString().split('T')[0];
+  const title = metadata.title || path.parse(basename).name || 'Untitled'
+  const url = metadata.url || ''
+  const downloadedAt = metadata.downloadedAt || new Date().toISOString().split('T')[0]
 
-  const fileAnchor = filePath.includes('/') ? `<!-- pully:file:${basename} -->` : '';
-  const urlAnchor = url ? `<!-- pully:url:${url} -->` : '';
+  const fileAnchor = filePath.includes('/') ? `<!-- pully:file:${basename} -->` : ''
+  const urlAnchor = url ? `<!-- pully:url:${url} -->` : ''
 
   const chapter = `## ${title}
 ${fileAnchor}
@@ -128,42 +139,42 @@ ${urlAnchor}
 
 ### My Notes
 
-`;
+`
 
   if (fs.existsSync(notesPath)) {
-    fs.appendFileSync(notesPath, '\n---\n\n' + chapter);
+    fs.appendFileSync(notesPath, '\n---\n\n' + chapter)
   } else {
-    const header = `# ${path.basename(path.dirname(notesPath)) || 'Notes'}\n\n---\n\n`;
-    fs.writeFileSync(notesPath, header + chapter);
+    const header = `# ${path.basename(path.dirname(notesPath)) || 'Notes'}\n\n---\n\n`
+    fs.writeFileSync(notesPath, header + chapter)
   }
 
-  return { isNew: true, filePath: notesPath, chapterId: title };
+  return { isNew: true, filePath: notesPath, chapterId: title }
 }
 
 function updateChapterAnchor(notesPath, chapterKey, anchorType, newValue) {
-  const content = fs.readFileSync(notesPath, 'utf8');
-  const lines = content.split('\n');
+  const content = fs.readFileSync(notesPath, 'utf8')
+  const lines = content.split('\n')
 
-  let inChapter = false;
+  let inChapter = false
   for (let i = 0; i < lines.length; i++) {
-    if (lines[i].startsWith(`## `) && inChapter) break; // Hit next chapter
+    if (lines[i].startsWith(`## `) && inChapter) break // Hit next chapter
 
     if (lines[i].includes(`<!-- pully:url:${chapterKey} -->`)) {
-      inChapter = true;
+      inChapter = true
     }
 
     if (inChapter && lines[i].startsWith(`<!-- pully:${anchorType}:`)) {
-      lines[i] = `<!-- pully:${anchorType}:${newValue} -->`;
-      break;
+      lines[i] = `<!-- pully:${anchorType}:${newValue} -->`
+      break
     }
 
     if (inChapter && !lines[i].includes('pully:') && lines[i].trim()) {
       // Hit non-anchor content, stop searching
-      break;
+      break
     }
   }
 
-  fs.writeFileSync(notesPath, lines.join('\n'));
+  fs.writeFileSync(notesPath, lines.join('\n'))
 }
 ```
 
@@ -191,6 +202,7 @@ Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
 ## Task 2: Update notes-store.js — Emit notes:chapter-updated event
 
 **Files:**
+
 - Modify: `src/main/notes-store.js`
 - Modify: `src/main/ipc-handlers.js` (add event broadcaster)
 
@@ -201,15 +213,15 @@ Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
 At the top of `src/main/notes-store.js`, add:
 
 ```js
-let eventEmitter = null;
+let eventEmitter = null
 
 export function setNotesEventEmitter(emitter) {
-  eventEmitter = emitter;
+  eventEmitter = emitter
 }
 
 function emitChapterUpdated(notesPath, chapter) {
   if (eventEmitter) {
-    eventEmitter.emit('notes:chapter-updated', { notesPath, chapter });
+    eventEmitter.emit('notes:chapter-updated', { notesPath, chapter })
   }
 }
 ```
@@ -219,14 +231,14 @@ function emitChapterUpdated(notesPath, chapter) {
 At the end of `initChapter`, after file write:
 
 ```js
-  // At the end of initChapter, after all writes:
-  const { chapters } = readFolderNotes(notesPath);
-  const chapter = chapters.find(ch => ch.title === title || ch.url === url);
-  if (chapter) {
-    emitChapterUpdated(notesPath, chapter);
-  }
+// At the end of initChapter, after all writes:
+const { chapters } = readFolderNotes(notesPath)
+const chapter = chapters.find((ch) => ch.title === title || ch.url === url)
+if (chapter) {
+  emitChapterUpdated(notesPath, chapter)
+}
 
-  return { isNew: true, filePath: notesPath, chapterId: title };
+return { isNew: true, filePath: notesPath, chapterId: title }
 ```
 
 - [ ] **Step 3: Emit event after other chapter modifications**
@@ -234,12 +246,12 @@ At the end of `initChapter`, after file write:
 In existing functions `writeSummarySection`, `updateBullets`, and `moveChapter`, add the same emission pattern at the end:
 
 ```js
-  // After the write operation completes:
-  const { chapters } = readFolderNotes(targetNotesPath);
-  const chapter = chapters.find(ch => ch.filePath === basename); // or by URL if needed
-  if (chapter) {
-    emitChapterUpdated(targetNotesPath, chapter);
-  }
+// After the write operation completes:
+const { chapters } = readFolderNotes(targetNotesPath)
+const chapter = chapters.find((ch) => ch.filePath === basename) // or by URL if needed
+if (chapter) {
+  emitChapterUpdated(targetNotesPath, chapter)
+}
 ```
 
 - [ ] **Step 4: Wire emitter in ipc-handlers.js**
@@ -289,6 +301,7 @@ Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
 ## Task 3: Update download-manager.js — Immediate stub creation
 
 **Files:**
+
 - Modify: `src/main/download-manager.js`
 - Test: `tests/main/download-manager.test.js`
 
@@ -304,25 +317,23 @@ In `tests/main/download-manager.test.js`, add:
 
 ```js
 test('add() creates a notes stub immediately with URL as key', async () => {
-  const manager = new DownloadManager(config);
-  const mockInitChapter = jest.spyOn(notesStore, 'initChapter');
+  const manager = new DownloadManager(config)
+  const mockInitChapter = jest.spyOn(notesStore, 'initChapter')
 
-  const downloadId = manager.add(
-    'https://example.com/video',
-    'best',
-    'My Video',
-    { url: 'https://example.com/video', title: 'My Video' }
-  );
+  const downloadId = manager.add('https://example.com/video', 'best', 'My Video', {
+    url: 'https://example.com/video',
+    title: 'My Video'
+  })
 
   // Should be called immediately with URL key
   expect(mockInitChapter).toHaveBeenCalledWith(
     'https://example.com/video',
     expect.objectContaining({ url: 'https://example.com/video', title: 'My Video' }),
     expect.any(String)
-  );
+  )
 
-  mockInitChapter.mockRestore();
-});
+  mockInitChapter.mockRestore()
+})
 ```
 
 - [ ] **Step 3: Run test to verify it fails**
@@ -361,14 +372,18 @@ When the download completes successfully and the real filename is known, call `i
 
 ```js
 // On completion (in the process success handler):
-const realFilePath = path.join(outputFolder, downloadedFilename);
-const basename = path.basename(realFilePath);
+const realFilePath = path.join(outputFolder, downloadedFilename)
+const basename = path.basename(realFilePath)
 
-initChapter(realFilePath, {
-  url: sourceUrl,
-  title: metadata.title || title,
-  downloadedAt: new Date().toISOString().split('T')[0]
-}, outputFolder);
+initChapter(
+  realFilePath,
+  {
+    url: sourceUrl,
+    title: metadata.title || title,
+    downloadedAt: new Date().toISOString().split('T')[0]
+  },
+  outputFolder
+)
 ```
 
 - [ ] **Step 6: Run test to verify it passes**
@@ -395,6 +410,7 @@ Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
 ## Task 4: Update auto-classifier.js — Emit event after move
 
 **Files:**
+
 - Modify: `src/main/auto-classifier.js`
 
 **Context:** After `moveChapter` completes, emit `notes:chapter-updated` so the renderer reflects the new folder/path.
@@ -407,11 +423,11 @@ Locate where classification completes and `moveChapter(...)` is invoked.
 
 ```js
 // After moveChapter completes:
-const targetNotesPath = getNotesPath(newFilePath, config.outputFolder);
-const { chapters } = readFolderNotes(targetNotesPath);
-const chapter = chapters.find(ch => ch.filePath === path.basename(newFilePath));
+const targetNotesPath = getNotesPath(newFilePath, config.outputFolder)
+const { chapters } = readFolderNotes(targetNotesPath)
+const chapter = chapters.find((ch) => ch.filePath === path.basename(newFilePath))
 if (chapter) {
-  emitChapterUpdated(targetNotesPath, chapter);
+  emitChapterUpdated(targetNotesPath, chapter)
 }
 ```
 
@@ -437,6 +453,7 @@ Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
 ## Task 5: Update ai-summarizer.js — Emit event after summary
 
 **Files:**
+
 - Modify: `src/main/ai-summarizer.js`
 
 **Context:** After `writeSummarySection` completes, emit `notes:chapter-updated` so the renderer reflects the new summary.
@@ -449,10 +466,10 @@ Locate where the summary text is written to notes.md.
 
 ```js
 // After writeSummarySection completes:
-const { chapters } = readFolderNotes(notesPath);
-const chapter = chapters.find(ch => ch.url === sourceUrl || ch.filePath === basename);
+const { chapters } = readFolderNotes(notesPath)
+const chapter = chapters.find((ch) => ch.url === sourceUrl || ch.filePath === basename)
 if (chapter) {
-  emitChapterUpdated(notesPath, chapter);
+  emitChapterUpdated(notesPath, chapter)
 }
 ```
 
@@ -476,6 +493,7 @@ Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
 ## Task 6: Add browserActiveChapter to Zustand store
 
 **Files:**
+
 - Modify: `src/renderer/src/store/app-store.js`
 - Test: `tests/renderer/app-store.test.js` (existing)
 
@@ -505,8 +523,8 @@ export const useAppStore = create((set) => ({
   // ... existing state and setters
 
   browserActiveChapter: null,
-  setBrowserActiveChapter: (data) => set({ browserActiveChapter: data }),
-}));
+  setBrowserActiveChapter: (data) => set({ browserActiveChapter: data })
+}))
 ```
 
 - [ ] **Step 3: Write test for browserActiveChapter setter**
@@ -515,7 +533,7 @@ In `tests/renderer/app-store.test.js`, add:
 
 ```js
 test('setBrowserActiveChapter updates state', () => {
-  const { result } = renderHook(() => useAppStore());
+  const { result } = renderHook(() => useAppStore())
 
   const chapter = {
     notesPath: '/path/to/notes.md',
@@ -527,14 +545,14 @@ test('setBrowserActiveChapter updates state', () => {
       summary: 'Summary here',
       bullets: ['bullet 1', 'bullet 2']
     }
-  };
+  }
 
   act(() => {
-    result.current.setBrowserActiveChapter(chapter);
-  });
+    result.current.setBrowserActiveChapter(chapter)
+  })
 
-  expect(result.current.browserActiveChapter).toEqual(chapter);
-});
+  expect(result.current.browserActiveChapter).toEqual(chapter)
+})
 ```
 
 - [ ] **Step 4: Run test**
@@ -561,6 +579,7 @@ Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
 ## Task 7: Update useIpcEvents.js — Subscribe to notes:chapter-updated
 
 **Files:**
+
 - Modify: `src/renderer/src/hooks/useIpcEvents.js`
 - Test: `tests/renderer/useIpcEvents.test.js` (existing)
 
@@ -579,15 +598,15 @@ useEffect(() => {
   // ... existing subscriptions
 
   const handleChapterUpdated = (data) => {
-    setBrowserActiveChapter(data);
-  };
+    setBrowserActiveChapter(data)
+  }
 
-  window.api.on('notes:chapter-updated', handleChapterUpdated);
+  window.api.on('notes:chapter-updated', handleChapterUpdated)
 
   return () => {
-    window.api.off('notes:chapter-updated', handleChapterUpdated);
-  };
-}, [setBrowserActiveChapter]);
+    window.api.off('notes:chapter-updated', handleChapterUpdated)
+  }
+}, [setBrowserActiveChapter])
 ```
 
 - [ ] **Step 3: Write test**
@@ -596,14 +615,14 @@ In `tests/renderer/useIpcEvents.test.js`, add:
 
 ```js
 test('subscribes to notes:chapter-updated and updates store', () => {
-  const mockOn = jest.fn();
-  const mockOff = jest.fn();
-  window.api = { on: mockOn, off: mockOff };
+  const mockOn = jest.fn()
+  const mockOff = jest.fn()
+  window.api = { on: mockOn, off: mockOff }
 
-  renderHook(() => useIpcEvents());
+  renderHook(() => useIpcEvents())
 
-  expect(mockOn).toHaveBeenCalledWith('notes:chapter-updated', expect.any(Function));
-});
+  expect(mockOn).toHaveBeenCalledWith('notes:chapter-updated', expect.any(Function))
+})
 ```
 
 - [ ] **Step 4: Run test**
@@ -630,6 +649,7 @@ Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
 ## Task 8: Extract ChapterCard from NotesChapterView.jsx
 
 **Files:**
+
 - Create: `src/renderer/src/components/ChapterCard.jsx`
 - Modify: `src/renderer/src/components/NotesChapterView.jsx`
 - Test: `tests/renderer/ChapterCard.test.js` (new)
@@ -643,41 +663,41 @@ Find the component or section that renders a single chapter (title, AI Summary, 
 - [ ] **Step 2: Create ChapterCard.jsx**
 
 ```js
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 
 export function ChapterCard({ chapter, onBulletsChange, onGenerateSummary }) {
-  const [editingBullets, setEditingBullets] = useState(false);
-  const [localBullets, setLocalBullets] = useState(chapter.bullets.join('\n'));
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [editingBullets, setEditingBullets] = useState(false)
+  const [localBullets, setLocalBullets] = useState(chapter.bullets.join('\n'))
+  const [isGenerating, setIsGenerating] = useState(false)
 
   const handleEditToggle = () => {
     if (editingBullets) {
-      setEditingBullets(false);
-      setLocalBullets(chapter.bullets.join('\n'));
+      setEditingBullets(false)
+      setLocalBullets(chapter.bullets.join('\n'))
     } else {
-      setEditingBullets(true);
+      setEditingBullets(true)
     }
-  };
+  }
 
   const handleSaveBullets = async () => {
     const bullets = localBullets
       .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.length > 0);
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
 
     if (onBulletsChange) {
-      await onBulletsChange(chapter.filePath, bullets);
+      await onBulletsChange(chapter.filePath, bullets)
     }
-    setEditingBullets(false);
-  };
+    setEditingBullets(false)
+  }
 
   const handleGenerateSummary = async () => {
-    setIsGenerating(true);
+    setIsGenerating(true)
     if (onGenerateSummary) {
-      await onGenerateSummary(chapter.filePath);
+      await onGenerateSummary(chapter.filePath)
     }
-    setIsGenerating(false);
-  };
+    setIsGenerating(false)
+  }
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -710,10 +730,7 @@ export function ChapterCard({ chapter, onBulletsChange, onGenerateSummary }) {
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
           <h4 className="text-sm font-medium text-gray-700">My Notes</h4>
-          <button
-            onClick={handleEditToggle}
-            className="text-xs text-blue-500 hover:text-blue-700"
-          >
+          <button onClick={handleEditToggle} className="text-xs text-blue-500 hover:text-blue-700">
             {editingBullets ? 'Done' : 'Edit'}
           </button>
         </div>
@@ -749,7 +766,7 @@ export function ChapterCard({ chapter, onBulletsChange, onGenerateSummary }) {
         )}
       </div>
     </div>
-  );
+  )
 }
 ```
 
@@ -758,7 +775,7 @@ export function ChapterCard({ chapter, onBulletsChange, onGenerateSummary }) {
 Replace the inline chapter rendering with:
 
 ```js
-import { ChapterCard } from './ChapterCard';
+import { ChapterCard } from './ChapterCard'
 
 export function NotesChapterView() {
   // ... existing code
@@ -774,7 +791,7 @@ export function NotesChapterView() {
         />
       ))}
     </div>
-  );
+  )
 }
 ```
 
@@ -783,8 +800,8 @@ export function NotesChapterView() {
 In `tests/renderer/ChapterCard.test.js`:
 
 ```js
-import { render, screen, fireEvent } from '@testing-library/react';
-import { ChapterCard } from '../src/renderer/src/components/ChapterCard';
+import { render, screen, fireEvent } from '@testing-library/react'
+import { ChapterCard } from '../src/renderer/src/components/ChapterCard'
 
 describe('ChapterCard', () => {
   const mockChapter = {
@@ -793,7 +810,7 @@ describe('ChapterCard', () => {
     url: 'https://example.com/video',
     summary: 'This is a summary',
     bullets: ['bullet 1', 'bullet 2']
-  };
+  }
 
   test('renders chapter title and URL', () => {
     render(
@@ -802,11 +819,11 @@ describe('ChapterCard', () => {
         onBulletsChange={jest.fn()}
         onGenerateSummary={jest.fn()}
       />
-    );
+    )
 
-    expect(screen.getByText('My Video')).toBeInTheDocument();
-    expect(screen.getByText('https://example.com/video')).toBeInTheDocument();
-  });
+    expect(screen.getByText('My Video')).toBeInTheDocument()
+    expect(screen.getByText('https://example.com/video')).toBeInTheDocument()
+  })
 
   test('renders summary and bullets', () => {
     render(
@@ -815,12 +832,12 @@ describe('ChapterCard', () => {
         onBulletsChange={jest.fn()}
         onGenerateSummary={jest.fn()}
       />
-    );
+    )
 
-    expect(screen.getByText('This is a summary')).toBeInTheDocument();
-    expect(screen.getByText('bullet 1')).toBeInTheDocument();
-    expect(screen.getByText('bullet 2')).toBeInTheDocument();
-  });
+    expect(screen.getByText('This is a summary')).toBeInTheDocument()
+    expect(screen.getByText('bullet 1')).toBeInTheDocument()
+    expect(screen.getByText('bullet 2')).toBeInTheDocument()
+  })
 
   test('toggles edit mode on Edit button click', () => {
     render(
@@ -829,33 +846,33 @@ describe('ChapterCard', () => {
         onBulletsChange={jest.fn()}
         onGenerateSummary={jest.fn()}
       />
-    );
+    )
 
-    const editButton = screen.getByText('Edit');
-    fireEvent.click(editButton);
+    const editButton = screen.getByText('Edit')
+    fireEvent.click(editButton)
 
-    expect(screen.getByDisplayValue('bullet 1\nbullet 2')).toBeInTheDocument();
-    expect(screen.getByText('Done')).toBeInTheDocument();
-  });
+    expect(screen.getByDisplayValue('bullet 1\nbullet 2')).toBeInTheDocument()
+    expect(screen.getByText('Done')).toBeInTheDocument()
+  })
 
   test('saves bullets on Save button click', async () => {
-    const mockOnBulletsChange = jest.fn().mockResolvedValue(undefined);
+    const mockOnBulletsChange = jest.fn().mockResolvedValue(undefined)
     render(
       <ChapterCard
         chapter={mockChapter}
         onBulletsChange={mockOnBulletsChange}
         onGenerateSummary={jest.fn()}
       />
-    );
+    )
 
-    fireEvent.click(screen.getByText('Edit'));
-    const textarea = screen.getByDisplayValue('bullet 1\nbullet 2');
-    fireEvent.change(textarea, { target: { value: 'new bullet\nanother bullet' } });
-    fireEvent.click(screen.getByText('Save'));
+    fireEvent.click(screen.getByText('Edit'))
+    const textarea = screen.getByDisplayValue('bullet 1\nbullet 2')
+    fireEvent.change(textarea, { target: { value: 'new bullet\nanother bullet' } })
+    fireEvent.click(screen.getByText('Save'))
 
-    expect(mockOnBulletsChange).toHaveBeenCalledWith('video.mp4', ['new bullet', 'another bullet']);
-  });
-});
+    expect(mockOnBulletsChange).toHaveBeenCalledWith('video.mp4', ['new bullet', 'another bullet'])
+  })
+})
 ```
 
 - [ ] **Step 5: Run tests**
@@ -890,6 +907,7 @@ Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
 ## Task 9: Create BrowserNotesPanel.jsx
 
 **Files:**
+
 - Create: `src/renderer/src/components/BrowserNotesPanel.jsx`
 - Test: `tests/renderer/BrowserNotesPanel.test.js` (new)
 
@@ -898,41 +916,41 @@ Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
 - [ ] **Step 1: Create BrowserNotesPanel.jsx**
 
 ```js
-import React from 'react';
-import { useAppStore } from '../store/app-store';
-import { ChapterCard } from './ChapterCard';
+import React from 'react'
+import { useAppStore } from '../store/app-store'
+import { ChapterCard } from './ChapterCard'
 
 export function BrowserNotesPanel() {
-  const browserActiveChapter = useAppStore((state) => state.browserActiveChapter);
-  const setBrowserActiveChapter = useAppStore((state) => state.setBrowserActiveChapter);
+  const browserActiveChapter = useAppStore((state) => state.browserActiveChapter)
+  const setBrowserActiveChapter = useAppStore((state) => state.setBrowserActiveChapter)
 
   const handleBulletsChange = async (filePath, bullets) => {
     try {
-      await window.api.updateBullets(filePath, bullets);
+      await window.api.updateBullets(filePath, bullets)
       // Chapter state will be updated via IPC event, no need to manually update
     } catch (error) {
-      console.error('Failed to save bullets:', error);
+      console.error('Failed to save bullets:', error)
     }
-  };
+  }
 
   const handleGenerateSummary = async (filePath) => {
     try {
-      await window.api.generateSummary(filePath);
+      await window.api.generateSummary(filePath)
       // Summary state will be updated via IPC event
     } catch (error) {
-      console.error('Failed to generate summary:', error);
+      console.error('Failed to generate summary:', error)
     }
-  };
+  }
 
   if (!browserActiveChapter) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500 text-sm">
         Click Remember or Download to start notes
       </div>
-    );
+    )
   }
 
-  const { chapter } = browserActiveChapter;
+  const { chapter } = browserActiveChapter
 
   return (
     <div className="overflow-y-auto h-full p-4">
@@ -942,7 +960,7 @@ export function BrowserNotesPanel() {
         onGenerateSummary={handleGenerateSummary}
       />
     </div>
-  );
+  )
 }
 ```
 
@@ -951,26 +969,26 @@ export function BrowserNotesPanel() {
 In `tests/renderer/BrowserNotesPanel.test.js`:
 
 ```js
-import { render, screen } from '@testing-library/react';
-import { BrowserNotesPanel } from '../src/renderer/src/components/BrowserNotesPanel';
-import { useAppStore } from '../src/renderer/src/store/app-store';
+import { render, screen } from '@testing-library/react'
+import { BrowserNotesPanel } from '../src/renderer/src/components/BrowserNotesPanel'
+import { useAppStore } from '../src/renderer/src/store/app-store'
 
-jest.mock('../src/renderer/src/store/app-store');
+jest.mock('../src/renderer/src/store/app-store')
 jest.mock('../src/renderer/src/components/ChapterCard', () => ({
   ChapterCard: ({ chapter }) => <div>Mock ChapterCard: {chapter.title}</div>
-}));
+}))
 
 describe('BrowserNotesPanel', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-  });
+    jest.clearAllMocks()
+  })
 
   test('renders empty state when no chapter is active', () => {
-    useAppStore.mockReturnValue(null);
-    render(<BrowserNotesPanel />);
+    useAppStore.mockReturnValue(null)
+    render(<BrowserNotesPanel />)
 
-    expect(screen.getByText(/Click Remember or Download to start notes/)).toBeInTheDocument();
-  });
+    expect(screen.getByText(/Click Remember or Download to start notes/)).toBeInTheDocument()
+  })
 
   test('renders ChapterCard when chapter is active', () => {
     const mockChapter = {
@@ -982,14 +1000,14 @@ describe('BrowserNotesPanel', () => {
         summary: 'Summary',
         bullets: []
       }
-    };
+    }
 
-    useAppStore.mockReturnValue(mockChapter);
-    render(<BrowserNotesPanel />);
+    useAppStore.mockReturnValue(mockChapter)
+    render(<BrowserNotesPanel />)
 
-    expect(screen.getByText('Mock ChapterCard: My Video')).toBeInTheDocument();
-  });
-});
+    expect(screen.getByText('Mock ChapterCard: My Video')).toBeInTheDocument()
+  })
+})
 ```
 
 - [ ] **Step 3: Run tests**
@@ -1016,6 +1034,7 @@ Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
 ## Task 10: Update SidePanel.jsx — Add tabs and conditional rendering
 
 **Files:**
+
 - Modify: `src/renderer/src/components/SidePanel.jsx`
 - Test: `tests/renderer/SidePanel.test.js` (existing)
 
@@ -1030,7 +1049,7 @@ Find where `ProgressPanel` is rendered.
 At the top of the component:
 
 ```js
-const [activeTab, setActiveTab] = useState('notes'); // 'notes' | 'progress'
+const [activeTab, setActiveTab] = useState('notes') // 'notes' | 'progress'
 ```
 
 - [ ] **Step 3: Add tab bar UI**
@@ -1065,11 +1084,7 @@ Replace the bottom pane with a tabbed layout:
 
   {/* Tab content */}
   <div className="flex-1 overflow-hidden">
-    {activeTab === 'notes' ? (
-      <BrowserNotesPanel />
-    ) : (
-      <ProgressPanel />
-    )}
+    {activeTab === 'notes' ? <BrowserNotesPanel /> : <ProgressPanel />}
   </div>
 </div>
 ```
@@ -1079,7 +1094,7 @@ Replace the bottom pane with a tabbed layout:
 At the top of `SidePanel.jsx`, add:
 
 ```js
-import { BrowserNotesPanel } from './BrowserNotesPanel';
+import { BrowserNotesPanel } from './BrowserNotesPanel'
 ```
 
 - [ ] **Step 5: Write test**
@@ -1088,23 +1103,23 @@ In `tests/renderer/SidePanel.test.js`, add:
 
 ```js
 test('renders Notes and Progress tabs with Notes as default', () => {
-  render(<SidePanel />);
+  render(<SidePanel />)
 
-  expect(screen.getByText('Notes')).toBeInTheDocument();
-  expect(screen.getByText('Progress')).toBeInTheDocument();
+  expect(screen.getByText('Notes')).toBeInTheDocument()
+  expect(screen.getByText('Progress')).toBeInTheDocument()
 
   // Notes should be default (no specific assertion needed, just that component renders)
-});
+})
 
 test('switches to Progress tab on click', () => {
-  const { rerender } = render(<SidePanel />);
+  const { rerender } = render(<SidePanel />)
 
-  const progressTab = screen.getByText('Progress');
-  fireEvent.click(progressTab);
+  const progressTab = screen.getByText('Progress')
+  fireEvent.click(progressTab)
 
   // After click, Progress content should be visible (inspect via class or role)
   // This depends on how ProgressPanel is structured
-});
+})
 ```
 
 - [ ] **Step 6: Run tests**
@@ -1131,6 +1146,7 @@ Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
 ## Task 11: Integration test — Full flow from click to display
 
 **Files:**
+
 - Test: `tests/integration/browser-notes-flow.test.js` (new)
 
 **Context:** End-to-end test verifying the entire flow: click Download → notes stub created → Notes panel shows → real filename resolved → Notes updated.
@@ -1140,15 +1156,15 @@ Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
 In `tests/integration/browser-notes-flow.test.js`:
 
 ```js
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { BrowserTab } from '../../src/renderer/src/components/BrowserTab';
-import { useAppStore } from '../../src/renderer/src/store/app-store';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { BrowserTab } from '../../src/renderer/src/components/BrowserTab'
+import { useAppStore } from '../../src/renderer/src/store/app-store'
 
 describe('Browser Notes Flow', () => {
   beforeEach(() => {
     // Reset store and mocks
-    jest.clearAllMocks();
-  });
+    jest.clearAllMocks()
+  })
 
   test('Click Download creates stub, shows in Notes panel, and updates on completion', async () => {
     // Setup mocks
@@ -1165,19 +1181,19 @@ describe('Browser Notes Flow', () => {
       on: jest.fn(),
       off: jest.fn(),
       listLibrary: jest.fn().mockResolvedValue([])
-    };
+    }
 
     // Mock IPC to simulate notes:chapter-updated event
-    const mockIpcListeners = {};
+    const mockIpcListeners = {}
     global.window.api.on = jest.fn((event, handler) => {
-      mockIpcListeners[event] = handler;
-    });
+      mockIpcListeners[event] = handler
+    })
 
-    render(<BrowserTab />);
+    render(<BrowserTab />)
 
     // Simulate Download button click
-    const downloadButton = await screen.findByText('Download');
-    fireEvent.click(downloadButton);
+    const downloadButton = await screen.findByText('Download')
+    fireEvent.click(downloadButton)
 
     // Verify initChapter was called
     expect(global.window.api.addDownload).toHaveBeenCalledWith(
@@ -1185,7 +1201,7 @@ describe('Browser Notes Flow', () => {
       expect.any(String),
       'Test Video',
       expect.any(Object)
-    );
+    )
 
     // Simulate IPC event for stub creation
     const stubChapter = {
@@ -1198,16 +1214,16 @@ describe('Browser Notes Flow', () => {
         summary: '',
         bullets: []
       }
-    };
+    }
 
     act(() => {
-      mockIpcListeners['notes:chapter-updated'](stubChapter);
-    });
+      mockIpcListeners['notes:chapter-updated'](stubChapter)
+    })
 
     // Verify Notes panel now shows the chapter
     await waitFor(() => {
-      expect(screen.getByText('Test Video')).toBeInTheDocument();
-    });
+      expect(screen.getByText('Test Video')).toBeInTheDocument()
+    })
 
     // Simulate completion with real filename
     const completedChapter = {
@@ -1220,22 +1236,22 @@ describe('Browser Notes Flow', () => {
         summary: '',
         bullets: []
       }
-    };
+    }
 
     act(() => {
-      mockIpcListeners['notes:chapter-updated'](completedChapter);
-    });
+      mockIpcListeners['notes:chapter-updated'](completedChapter)
+    })
 
     // Verify filename is now visible
     await waitFor(() => {
-      expect(screen.getByText(/test-video\.mp4/)).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText(/test-video\.mp4/)).toBeInTheDocument()
+    })
+  })
 
   test('User edits bullets while classification is running — no conflict', async () => {
     // Similar test for conflict prevention: start typing, trigger summary, textarea not replaced
-  });
-});
+  })
+})
 ```
 
 - [ ] **Step 2: Run integration test**
@@ -1262,6 +1278,7 @@ Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
 ## Task 12: Manual verification and demo
 
 **Files:**
+
 - (No code changes)
 
 **Context:** Manually test the feature end-to-end to ensure it works as intended.

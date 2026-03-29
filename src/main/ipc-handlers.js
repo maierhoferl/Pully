@@ -3,9 +3,25 @@ import { EventEmitter } from 'events'
 import { readConfig, writeConfig } from './config-store.js'
 import { enableAdblock, disableAdblock } from './adblock-manager.js'
 import { extractInfo, getDefaultBinaryPath } from './ytdlp-runner.js'
-import { readMetadataIndex, deleteMetadataEntry, moveMetadataEntry, moveThumbnailSidecar, toPullyUrl, downloadAndStoreThumbnail, renameFolderInIndex, deleteFolderFromIndex, createReferenceFile } from './metadata-store.js'
+import {
+  readMetadataIndex,
+  deleteMetadataEntry,
+  moveMetadataEntry,
+  moveThumbnailSidecar,
+  toPullyUrl,
+  downloadAndStoreThumbnail,
+  renameFolderInIndex,
+  deleteFolderFromIndex,
+  createReferenceFile
+} from './metadata-store.js'
 import { classifyVideo } from './auto-classifier.js'
-import { initChapter, moveChapter, readFolderNotes, writeBulletsSection, setNotesEventEmitter } from './notes-store.js'
+import {
+  initChapter,
+  moveChapter,
+  readFolderNotes,
+  writeBulletsSection,
+  setNotesEventEmitter
+} from './notes-store.js'
 import { generateSummary } from './ai-summarizer.js'
 import fs from 'fs'
 import path from 'path'
@@ -41,72 +57,102 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
   })
 
   ipcMain.handle('dialog:openFolder', async () => {
-    const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, { properties: ['openDirectory'] })
+    const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openDirectory']
+    })
     return canceled ? null : filePaths[0]
   })
 
   ipcMain.handle('ytdlp:extractInfo', (_, url) => extractInfo(url))
 
-  ipcMain.handle('download:add', (_, { url, formatId, title, metadata }) => downloadManager.add(url, formatId, title, metadata))
+  ipcMain.handle('download:add', (_, { url, formatId, title, metadata }) =>
+    downloadManager.add(url, formatId, title, metadata)
+  )
   ipcMain.handle('download:retry', (_, id) => downloadManager.retry(id))
   ipcMain.handle('download:cancel', (_, id) => downloadManager.cancel(id))
   ipcMain.handle('download:getAll', () => downloadManager.getAll())
 
-  ipcMain.handle('library:remember', async (_, { title, uploader, description, thumbnailUrl, url }) => {
-    const cfg = readConfig()
-    const { outputFolder } = cfg
-    if (!outputFolder || !fs.existsSync(outputFolder)) throw new Error('No output folder configured')
-    const index = readMetadataIndex()
-    const existing = Object.entries(index).find(([, m]) => m.isReference && m.url === url)
-    if (existing) return { refPath: existing[0], alreadyExists: true }
-    const metadata = { title, uploader, description, thumbnailUrl, url, downloadedAt: new Date().toISOString() }
-    const refPath = await createReferenceFile(outputFolder, { title, uploader, description, thumbnailUrl, url })
+  ipcMain.handle(
+    'library:remember',
+    async (_, { title, uploader, description, thumbnailUrl, url }) => {
+      const cfg = readConfig()
+      const { outputFolder } = cfg
+      if (!outputFolder || !fs.existsSync(outputFolder))
+        throw new Error('No output folder configured')
+      const index = readMetadataIndex()
+      const existing = Object.entries(index).find(([, m]) => m.isReference && m.url === url)
+      if (existing) return { refPath: existing[0], alreadyExists: true }
+      const metadata = {
+        title,
+        uploader,
+        description,
+        thumbnailUrl,
+        url,
+        downloadedAt: new Date().toISOString()
+      }
+      const refPath = await createReferenceFile(outputFolder, {
+        title,
+        uploader,
+        description,
+        thumbnailUrl,
+        url
+      })
 
-    // Notes: init chapter stub
-    try {
-      initChapter(refPath, metadata, outputFolder)
-    } catch { /* don't block on notes errors */ }
-
-    // Classify + summarize pipeline (mirrors download completion)
-    if (cfg.autoClassifyEnabled) {
+      // Notes: init chapter stub
       try {
-        const folderNames = fs.readdirSync(outputFolder)
-          .filter(f => !f.startsWith('.') && fs.statSync(path.join(outputFolder, f)).isDirectory())
-        if (folderNames.length > 0) {
-          classifyVideo({ title, uploader, description, url }, folderNames, cfg).then(({ folder }) => {
-            let finalPath = refPath
-            if (folder) {
-              const base = path.basename(refPath)
-              const ext = path.extname(base)
-              const stem = path.basename(base, ext)
-              let newPath = path.join(outputFolder, folder, base)
-              let counter = 1
-              while (fs.existsSync(newPath)) {
-                newPath = path.join(outputFolder, folder, `${stem} (${counter})${ext}`)
-                counter++
-              }
-              try {
-                fs.renameSync(refPath, newPath)
-                moveMetadataEntry(refPath, newPath)
-                moveThumbnailSidecar(refPath, newPath)
-                moveChapter(refPath, newPath, outputFolder)
-                finalPath = newPath
-              } catch { /* skip if move fails */ }
-            }
-            if (cfg.autoSummarizeEnabled && cfg.aiApiKey) {
-              generateSummary(finalPath, { ...metadata, url }, cfg)
-                .catch(() => {})
-            }
-          }).catch(() => {})
-        }
-      } catch { /* don't block on classify errors */ }
-    } else if (cfg.autoSummarizeEnabled && cfg.aiApiKey) {
-      generateSummary(refPath, { ...metadata, url }, cfg)
-        .catch(() => {})
-    }
+        initChapter(refPath, metadata, outputFolder)
+      } catch {
+        /* don't block on notes errors */
+      }
 
-    return { refPath, alreadyExists: false }
-  })
+      // Classify + summarize pipeline (mirrors download completion)
+      if (cfg.autoClassifyEnabled) {
+        try {
+          const folderNames = fs
+            .readdirSync(outputFolder)
+            .filter(
+              (f) => !f.startsWith('.') && fs.statSync(path.join(outputFolder, f)).isDirectory()
+            )
+          if (folderNames.length > 0) {
+            classifyVideo({ title, uploader, description, url }, folderNames, cfg)
+              .then(({ folder }) => {
+                let finalPath = refPath
+                if (folder) {
+                  const base = path.basename(refPath)
+                  const ext = path.extname(base)
+                  const stem = path.basename(base, ext)
+                  let newPath = path.join(outputFolder, folder, base)
+                  let counter = 1
+                  while (fs.existsSync(newPath)) {
+                    newPath = path.join(outputFolder, folder, `${stem} (${counter})${ext}`)
+                    counter++
+                  }
+                  try {
+                    fs.renameSync(refPath, newPath)
+                    moveMetadataEntry(refPath, newPath)
+                    moveThumbnailSidecar(refPath, newPath)
+                    moveChapter(refPath, newPath, outputFolder)
+                    finalPath = newPath
+                  } catch {
+                    /* skip if move fails */
+                  }
+                }
+                if (cfg.autoSummarizeEnabled && cfg.aiApiKey) {
+                  generateSummary(finalPath, { ...metadata, url }, cfg).catch(() => {})
+                }
+              })
+              .catch(() => {})
+          }
+        } catch {
+          /* don't block on classify errors */
+        }
+      } else if (cfg.autoSummarizeEnabled && cfg.aiApiKey) {
+        generateSummary(refPath, { ...metadata, url }, cfg).catch(() => {})
+      }
+
+      return { refPath, alreadyExists: false }
+    }
+  )
 
   ipcMain.handle('library:list', () => {
     const { outputFolder } = readConfig()
@@ -120,15 +166,18 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
 
     function makeEntry(fileName, fullPath, stat, meta, folder) {
       return {
-        name: fileName, path: fullPath, folder,
-        size: stat.size, mtime: stat.mtime.toISOString(),
+        name: fileName,
+        path: fullPath,
+        folder,
+        size: stat.size,
+        mtime: stat.mtime.toISOString(),
         title: meta.title || null,
         uploader: meta.uploader || null,
         description: meta.description || null,
         thumbnailUrl: thumbnailSrc(fullPath) || meta.thumbnailUrl || null,
         videoUrl: toPullyUrl(fullPath),
         url: meta.url || null,
-        downloadedAt: meta.downloadedAt || null,
+        downloadedAt: meta.downloadedAt || null
       }
     }
 
@@ -187,8 +236,9 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
     const { outputFolder } = readConfig()
     if (!outputFolder || !fs.existsSync(outputFolder)) return []
     try {
-      return fs.readdirSync(outputFolder)
-        .filter(f => {
+      return fs
+        .readdirSync(outputFolder)
+        .filter((f) => {
           if (f.startsWith('.')) return false
           try {
             return fs.statSync(path.join(outputFolder, f)).isDirectory()
@@ -224,8 +274,8 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
     const { outputFolder } = readConfig()
     const dirPath = path.join(outputFolder, folder)
     if (!fs.existsSync(dirPath)) return null
-    const fileNames = fs.readdirSync(dirPath).filter(f => !f.startsWith('.'))
-    const filePaths = fileNames.map(f => path.join(dirPath, f))
+    const fileNames = fs.readdirSync(dirPath).filter((f) => !f.startsWith('.'))
+    const filePaths = fileNames.map((f) => path.join(dirPath, f))
     if (strategy === 'unassign') {
       for (const fp of filePaths) {
         // Skip sidecar files — moveThumbnailSidecar will relocate them alongside the video
@@ -282,13 +332,15 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
     const { outputFolder } = config
     if (!outputFolder || !fs.existsSync(outputFolder)) return { moved: [], skipped: 0 }
 
-    const folderNames = fs.readdirSync(outputFolder)
-      .filter(f => !f.startsWith('.') && fs.statSync(path.join(outputFolder, f)).isDirectory())
+    const folderNames = fs
+      .readdirSync(outputFolder)
+      .filter((f) => !f.startsWith('.') && fs.statSync(path.join(outputFolder, f)).isDirectory())
     if (folderNames.length === 0) return { moved: [], skipped: 0 }
 
     const index = readMetadataIndex()
-    const rootFiles = fs.readdirSync(outputFolder)
-      .filter(f => !f.startsWith('.') && !fs.statSync(path.join(outputFolder, f)).isDirectory())
+    const rootFiles = fs
+      .readdirSync(outputFolder)
+      .filter((f) => !f.startsWith('.') && !fs.statSync(path.join(outputFolder, f)).isDirectory())
 
     const moved = []
     let skipped = 0
@@ -297,7 +349,12 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
       const filePath = path.join(outputFolder, file)
       const meta = index[filePath] || {}
       const { folder } = await classifyVideo(
-        { title: meta.title, uploader: meta.uploader, description: meta.description, url: meta.url },
+        {
+          title: meta.title,
+          uploader: meta.uploader,
+          description: meta.description,
+          url: meta.url
+        },
         folderNames,
         config
       )
@@ -373,8 +430,10 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
     return new Promise((resolve, reject) => {
       const proc = spawn(getDefaultBinaryPath(), ['--get-url', '--no-warnings', url])
       let out = ''
-      proc.stdout.on('data', d => { out += d.toString() })
-      proc.on('close', code => {
+      proc.stdout.on('data', (d) => {
+        out += d.toString()
+      })
+      proc.on('close', (code) => {
         if (code === 0) resolve(out.trim().split('\n')[0])
         else reject(new Error(`yt-dlp exited with code ${code}`))
       })
@@ -390,10 +449,12 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
   })
 
   // Forward download manager events to renderer
-  downloadManager.on('queue-updated', q => mainWindow.webContents.send('download:queue-updated', q))
-  downloadManager.on('progress', d => mainWindow.webContents.send('download:progress', d))
-  downloadManager.on('completed', d => mainWindow.webContents.send('download:completed', d))
-  downloadManager.on('failed', d => mainWindow.webContents.send('download:failed', d))
+  downloadManager.on('queue-updated', (q) =>
+    mainWindow.webContents.send('download:queue-updated', q)
+  )
+  downloadManager.on('progress', (d) => mainWindow.webContents.send('download:progress', d))
+  downloadManager.on('completed', (d) => mainWindow.webContents.send('download:completed', d))
+  downloadManager.on('failed', (d) => mainWindow.webContents.send('download:failed', d))
 
   // Log entries are pushed to renderer via mainWindow.webContents.send('log:entry', entry)
   // No handler needed — logger.js handles sending when debugMode is enabled

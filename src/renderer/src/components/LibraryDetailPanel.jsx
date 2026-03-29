@@ -15,11 +15,13 @@ export default function LibraryDetailPanel({ file, onClose, onDelete, style }) {
   const [isPlaying, setIsPlaying] = useState(false)
 
   // Reset player when the selected file changes
-  useEffect(() => { setIsPlaying(false) }, [file?.path])
+  useEffect(() => {
+    setIsPlaying(false)
+  }, [file?.path])
 
-  const setActiveTab = useAppStore(s => s.setActiveTab)
-  const setActiveNotesFolder = useAppStore(s => s.setActiveNotesFolder)
-  const setActiveNotesChapter = useAppStore(s => s.setActiveNotesChapter)
+  const setActiveTab = useAppStore((s) => s.setActiveTab)
+  const setActiveNotesFolder = useAppStore((s) => s.setActiveNotesFolder)
+  const setActiveNotesChapter = useAppStore((s) => s.setActiveNotesChapter)
 
   const handleViewNotes = () => {
     setActiveNotesFolder(file.folder ?? null)
@@ -31,11 +33,18 @@ export default function LibraryDetailPanel({ file, onClose, onDelete, style }) {
   const title = file.title || file.name.replace(/\.[^/.]+$/, '')
   const uploader = file.uploader || '—'
   const description = file.description || '—'
-  const dateStr = file.downloadedAt ? fmtDateTime(file.downloadedAt) : file.mtime ? fmtDateTime(file.mtime) : '—'
+  const dateStr = file.downloadedAt
+    ? fmtDateTime(file.downloadedAt)
+    : file.mtime
+      ? fmtDateTime(file.mtime)
+      : '—'
   const subtitle = `${uploader} · ${dateStr}`
 
   return (
-    <div className="flex-shrink-0 bg-gray-900 border-l border-gray-700 flex flex-col h-full overflow-hidden" style={style}>
+    <div
+      className="flex-shrink-0 bg-gray-900 border-l border-gray-700 flex flex-col h-full overflow-hidden"
+      style={style}
+    >
       <div className="flex items-start justify-between gap-2 p-4 flex-shrink-0">
         <div className="min-w-0">
           <h2 className="text-sm font-bold text-white leading-snug">{title}</h2>
@@ -80,10 +89,7 @@ export default function LibraryDetailPanel({ file, onClose, onDelete, style }) {
             </button>
           </div>
         ) : isPlaying ? (
-          <VideoPlayer
-            src={file.videoUrl}
-            onClose={() => setIsPlaying(false)}
-          />
+          <VideoPlayer src={file.videoUrl} onClose={() => setIsPlaying(false)} />
         ) : (
           <div className="relative aspect-video bg-gray-700 rounded overflow-hidden">
             <button
@@ -102,7 +108,10 @@ export default function LibraryDetailPanel({ file, onClose, onDelete, style }) {
         <div className="px-4 mb-3 flex-shrink-0">
           <a
             href={file.url}
-            onClick={e => { e.preventDefault(); window.api.openUrl(file.url) }}
+            onClick={(e) => {
+              e.preventDefault()
+              window.api.openUrl(file.url)
+            }}
             className="text-xs text-indigo-400 hover:text-indigo-300 truncate block"
             title={file.url}
           >

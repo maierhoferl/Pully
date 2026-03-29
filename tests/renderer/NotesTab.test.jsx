@@ -12,25 +12,30 @@ const mockState = vi.hoisted(() => ({
   setActiveNotesFolder: mockSetActiveNotesFolder,
   setActiveNotesChapter: vi.fn(),
   setActiveTab: vi.fn(),
-  setLibrarySelectedFile: vi.fn(),
+  setLibrarySelectedFile: vi.fn()
 }))
 
 vi.mock('@renderer/store/app-store.js', () => ({
-  useAppStore: vi.fn(selector => selector ? selector(mockState) : mockState),
+  useAppStore: vi.fn((selector) => (selector ? selector(mockState) : mockState))
 }))
 
 const mockApi = {
   listFolders: vi.fn(async () => ['Travel', 'Cooking']),
   readNotes: vi.fn(async () => ({
     title: 'Library',
-    chapters: [{
-      filePath: 'video.mp4', url: 'https://youtube.com/watch?v=1',
-      downloadedAt: '2026-03-28', title: 'My Video',
-      summary: 'Great content.', bullets: ['key point'],
-    }]
+    chapters: [
+      {
+        filePath: 'video.mp4',
+        url: 'https://youtube.com/watch?v=1',
+        downloadedAt: '2026-03-28',
+        title: 'My Video',
+        summary: 'Great content.',
+        bullets: ['key point']
+      }
+    ]
   })),
   generateSummary: vi.fn(async () => ({ summary: 'New summary' })),
-  updateBullets: vi.fn(),
+  updateBullets: vi.fn()
 }
 window.api = mockApi
 

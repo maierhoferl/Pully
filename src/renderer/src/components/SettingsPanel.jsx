@@ -4,13 +4,13 @@ import { useAppStore } from '../store/app-store.js'
 const DEFAULT_MODELS = {
   gemini: 'gemini-2.0-flash',
   claude: 'claude-haiku-4-6',
-  openai: 'gpt-4o-mini',
+  openai: 'gpt-4o-mini'
 }
 
 const PROVIDERS = {
   gemini: { name: 'Google', label: 'Gemini' },
   claude: { name: 'Anthropic', label: 'Claude' },
-  openai: { name: 'OpenAI', label: 'GPT' },
+  openai: { name: 'OpenAI', label: 'GPT' }
 }
 
 export function SettingsPanel() {
@@ -24,7 +24,10 @@ export function SettingsPanel() {
 
   async function handleBrowse() {
     const folder = await window.api.openFolder()
-    if (folder) { setLocal(c => ({ ...c, outputFolder: folder })); setFolderError('') }
+    if (folder) {
+      setLocal((c) => ({ ...c, outputFolder: folder }))
+      setFolderError('')
+    }
   }
 
   async function handleFetchModels() {
@@ -37,7 +40,7 @@ export function SettingsPanel() {
       setAvailableModels(models)
       if (models.length > 0 && !local.autoClassifyModel) {
         const def = DEFAULT_MODELS[provider]
-        setLocal(c => ({ ...c, autoClassifyModel: models.includes(def) ? def : models[0] }))
+        setLocal((c) => ({ ...c, autoClassifyModel: models.includes(def) ? def : models[0] }))
       }
     } catch {
       setAvailableModels([])
@@ -47,7 +50,10 @@ export function SettingsPanel() {
   }
 
   async function handleSave() {
-    if (!local.outputFolder) { setFolderError('Please select an output folder.'); return }
+    if (!local.outputFolder) {
+      setFolderError('Please select an output folder.')
+      return
+    }
     const saved = await window.api.writeConfig(local)
     setConfig(saved)
     setSettingsOpen(false)
@@ -101,14 +107,22 @@ export function SettingsPanel() {
           {activeTab === 'general' && (
             <div className="space-y-5">
               <div>
-                <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Download Folder</label>
+                <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                  Download Folder
+                </label>
                 <div className="flex gap-2">
-                  <input readOnly value={local.outputFolder || ''} placeholder="No folder selected"
+                  <input
+                    readOnly
+                    value={local.outputFolder || ''}
+                    placeholder="No folder selected"
                     className={`flex-1 bg-gray-800 text-sm text-white px-3 py-2 rounded border cursor-default ${
                       folderError ? 'border-red-500' : 'border-gray-700'
-                    }`} />
-                  <button onClick={handleBrowse}
-                    className="bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm px-3 py-2 rounded border border-gray-700 whitespace-nowrap">
+                    }`}
+                  />
+                  <button
+                    onClick={handleBrowse}
+                    className="bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm px-3 py-2 rounded border border-gray-700 whitespace-nowrap"
+                  >
                     Browse…
                   </button>
                 </div>
@@ -116,11 +130,23 @@ export function SettingsPanel() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Max Concurrent Downloads</label>
+                <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                  Max Concurrent Downloads
+                </label>
                 <div className="flex items-center gap-3">
-                  <input type="number" min={1} max={5} value={local.maxConcurrent}
-                    onChange={e => setLocal(c => ({ ...c, maxConcurrent: Math.max(1, parseInt(e.target.value) || 1) }))}
-                    className="w-16 bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-700 focus:outline-none focus:border-indigo-600" />
+                  <input
+                    type="number"
+                    min={1}
+                    max={5}
+                    value={local.maxConcurrent}
+                    onChange={(e) =>
+                      setLocal((c) => ({
+                        ...c,
+                        maxConcurrent: Math.max(1, parseInt(e.target.value) || 1)
+                      }))
+                    }
+                    className="w-16 bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-700 focus:outline-none focus:border-indigo-600"
+                  />
                   <span className="text-xs text-gray-500">Between 1 and 5</span>
                 </div>
               </div>
@@ -129,17 +155,21 @@ export function SettingsPanel() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-sm font-medium text-white">Debug Mode</div>
-                    <div className="text-xs text-gray-500 mt-1">Shows Debug tab and writes logs to disk</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Shows Debug tab and writes logs to disk
+                    </div>
                   </div>
                   <button
-                    onClick={() => setLocal(c => ({ ...c, debugMode: !c.debugMode }))}
+                    onClick={() => setLocal((c) => ({ ...c, debugMode: !c.debugMode }))}
                     className={`relative w-10 h-6 rounded-full transition-colors flex-shrink-0 ${
                       local.debugMode ? 'bg-indigo-600' : 'bg-gray-700'
                     }`}
                   >
-                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                      local.debugMode ? 'translate-x-4' : 'translate-x-0'
-                    }`} />
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                        local.debugMode ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
                   </button>
                 </div>
               </div>
@@ -154,30 +184,40 @@ export function SettingsPanel() {
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <div className="text-sm font-semibold text-white">Auto-Classify</div>
-                    <div className="text-xs text-gray-400 mt-1">Auto-assign downloads to library folders</div>
+                    <div className="text-xs text-gray-400 mt-1">
+                      Auto-assign downloads to library folders
+                    </div>
                   </div>
                   <button
-                    onClick={() => setLocal(c => ({ ...c, autoClassifyEnabled: !c.autoClassifyEnabled }))}
+                    onClick={() =>
+                      setLocal((c) => ({ ...c, autoClassifyEnabled: !c.autoClassifyEnabled }))
+                    }
                     className={`relative w-10 h-6 rounded-full transition-colors flex-shrink-0 ${
                       local.autoClassifyEnabled ? 'bg-indigo-600' : 'bg-gray-700'
                     }`}
                   >
-                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                      local.autoClassifyEnabled ? 'translate-x-4' : 'translate-x-0'
-                    }`} />
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                        local.autoClassifyEnabled ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
                   </button>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Model Override</label>
+                  <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                    Model Override
+                  </label>
                   <input
                     type="text"
                     value={local.autoClassifyModel || ''}
-                    onChange={e => setLocal(c => ({ ...c, autoClassifyModel: e.target.value }))}
+                    onChange={(e) => setLocal((c) => ({ ...c, autoClassifyModel: e.target.value }))}
                     placeholder="Using AI tab default"
                     className="w-full bg-gray-700 text-white text-sm px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-indigo-600"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Leave blank to use the model configured in the AI tab</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Leave blank to use the model configured in the AI tab
+                  </p>
                 </div>
               </div>
 
@@ -186,41 +226,57 @@ export function SettingsPanel() {
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <div className="text-sm font-semibold text-white">Auto-Summarize</div>
-                    <div className="text-xs text-gray-400 mt-1">Generate notes summary after download</div>
+                    <div className="text-xs text-gray-400 mt-1">
+                      Generate notes summary after download
+                    </div>
                   </div>
                   <button
-                    onClick={() => setLocal(c => ({ ...c, autoSummarizeEnabled: !c.autoSummarizeEnabled }))}
+                    onClick={() =>
+                      setLocal((c) => ({ ...c, autoSummarizeEnabled: !c.autoSummarizeEnabled }))
+                    }
                     className={`relative w-10 h-6 rounded-full transition-colors flex-shrink-0 ${
                       local.autoSummarizeEnabled ? 'bg-indigo-600' : 'bg-gray-700'
                     }`}
                   >
-                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                      local.autoSummarizeEnabled ? 'translate-x-4' : 'translate-x-0'
-                    }`} />
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                        local.autoSummarizeEnabled ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
                   </button>
                 </div>
 
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Model Override</label>
+                    <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                      Model Override
+                    </label>
                     <input
                       type="text"
                       value={local.autoSummarizeModel || ''}
-                      onChange={e => setLocal(c => ({ ...c, autoSummarizeModel: e.target.value }))}
+                      onChange={(e) =>
+                        setLocal((c) => ({ ...c, autoSummarizeModel: e.target.value }))
+                      }
                       placeholder="Using AI tab default"
                       className="w-full bg-gray-700 text-white text-sm px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-indigo-600"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Default Prompt</label>
+                    <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                      Default Prompt
+                    </label>
                     <textarea
                       value={local.defaultSummaryPrompt || ''}
-                      onChange={e => setLocal(c => ({ ...c, defaultSummaryPrompt: e.target.value }))}
+                      onChange={(e) =>
+                        setLocal((c) => ({ ...c, defaultSummaryPrompt: e.target.value }))
+                      }
                       rows={3}
                       className="w-full bg-gray-700 text-white text-xs px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-indigo-600 resize-none"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Can be overridden per-folder via summary-prompt.md</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Can be overridden per-folder via summary-prompt.md
+                    </p>
                   </div>
                 </div>
               </div>
@@ -230,16 +286,21 @@ export function SettingsPanel() {
           {/* AI Tab */}
           {activeTab === 'ai' && (
             <div className="space-y-5">
-              <p className="text-xs text-gray-400">Configure the AI provider used by all AI features. Each feature can override the model in the Knowledge Management tab.</p>
+              <p className="text-xs text-gray-400">
+                Configure the AI provider used by all AI features. Each feature can override the
+                model in the Knowledge Management tab.
+              </p>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider">Provider</label>
+                <label className="block text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider">
+                  Provider
+                </label>
                 <div className="grid grid-cols-3 gap-2">
-                  {['gemini', 'openai', 'claude'].map(provider => (
+                  {['gemini', 'openai', 'claude'].map((provider) => (
                     <button
                       key={provider}
                       onClick={() => {
-                        setLocal(c => ({ ...c, aiProvider: provider, aiModel: '' }))
+                        setLocal((c) => ({ ...c, aiProvider: provider, aiModel: '' }))
                         setAiModels([])
                       }}
                       className={`p-3 rounded-lg border-2 transition-colors text-center ${
@@ -248,14 +309,22 @@ export function SettingsPanel() {
                           : 'bg-gray-800 border-gray-700 hover:border-gray-600'
                       }`}
                     >
-                      <div className={`text-sm font-semibold ${
-                        local.aiProvider === provider ? 'text-indigo-300' : 'text-gray-300'
-                      }`}>
-                        {provider === 'gemini' ? 'Google' : provider === 'claude' ? 'Anthropic' : 'OpenAI'}
+                      <div
+                        className={`text-sm font-semibold ${
+                          local.aiProvider === provider ? 'text-indigo-300' : 'text-gray-300'
+                        }`}
+                      >
+                        {provider === 'gemini'
+                          ? 'Google'
+                          : provider === 'claude'
+                            ? 'Anthropic'
+                            : 'OpenAI'}
                       </div>
-                      <div className={`text-xs mt-1 ${
-                        local.aiProvider === provider ? 'text-indigo-400' : 'text-gray-500'
-                      }`}>
+                      <div
+                        className={`text-xs mt-1 ${
+                          local.aiProvider === provider ? 'text-indigo-400' : 'text-gray-500'
+                        }`}
+                      >
                         {PROVIDERS[provider].label}
                       </div>
                     </button>
@@ -264,11 +333,13 @@ export function SettingsPanel() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">API Key</label>
+                <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                  API Key
+                </label>
                 <input
                   type="password"
                   value={local.aiApiKey || ''}
-                  onChange={e => setLocal(c => ({ ...c, aiApiKey: e.target.value }))}
+                  onChange={(e) => setLocal((c) => ({ ...c, aiApiKey: e.target.value }))}
                   placeholder="Enter API key…"
                   className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-700 focus:outline-none focus:border-indigo-600 font-mono text-xs"
                 />
@@ -289,17 +360,21 @@ export function SettingsPanel() {
                 {aiModels.length > 0 ? (
                   <select
                     value={local.aiModel || ''}
-                    onChange={e => setLocal(c => ({ ...c, aiModel: e.target.value }))}
+                    onChange={(e) => setLocal((c) => ({ ...c, aiModel: e.target.value }))}
                     className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-700 focus:outline-none focus:border-indigo-600"
                   >
                     <option value="">Default ({DEFAULT_MODELS[local.aiProvider]})</option>
-                    {aiModels.map(m => <option key={m} value={m}>{m}</option>)}
+                    {aiModels.map((m) => (
+                      <option key={m} value={m}>
+                        {m}
+                      </option>
+                    ))}
                   </select>
                 ) : (
                   <input
                     type="text"
                     value={local.aiModel || ''}
-                    onChange={e => setLocal(c => ({ ...c, aiModel: e.target.value }))}
+                    onChange={(e) => setLocal((c) => ({ ...c, aiModel: e.target.value }))}
                     placeholder={`Default: ${DEFAULT_MODELS[local.aiProvider]}`}
                     className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-700 focus:outline-none focus:border-indigo-600"
                   />
@@ -311,12 +386,16 @@ export function SettingsPanel() {
 
         {/* Footer */}
         <div className="border-t border-gray-700 px-6 py-3 flex justify-end gap-2 bg-gray-900">
-          <button onClick={() => setSettingsOpen(false)}
-            className="text-sm text-gray-400 hover:text-gray-300 px-4 py-2 rounded hover:bg-gray-800 transition-colors">
+          <button
+            onClick={() => setSettingsOpen(false)}
+            className="text-sm text-gray-400 hover:text-gray-300 px-4 py-2 rounded hover:bg-gray-800 transition-colors"
+          >
             Cancel
           </button>
-          <button onClick={handleSave}
-            className="text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded font-medium transition-colors">
+          <button
+            onClick={handleSave}
+            className="text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded font-medium transition-colors"
+          >
             Save
           </button>
         </div>

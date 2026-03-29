@@ -151,9 +151,7 @@ export function DebugTab() {
       {/* Log Table */}
       <div className="flex-1 overflow-auto">
         {filtered.length === 0 ? (
-          <div className="text-center text-gray-500 py-8">
-            No log entries
-          </div>
+          <div className="text-center text-gray-500 py-8">No log entries</div>
         ) : (
           <table className="w-full border-collapse">
             <thead className="bg-gray-200 sticky top-0">

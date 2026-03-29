@@ -16,24 +16,30 @@ export default function BrowserTab() {
   const scanDebounceRef = useRef(null)
   const currentUrlRef = useRef(null)
 
-  const scanPage = useCallback(async pageUrl => {
-    try {
-      const results = await window.api.extractInfo(pageUrl)
-      setMediaScanResults(results)
-    } catch {
-      setMediaScanResults([])
-    }
-  }, [setMediaScanResults])
+  const scanPage = useCallback(
+    async (pageUrl) => {
+      try {
+        const results = await window.api.extractInfo(pageUrl)
+        setMediaScanResults(results)
+      } catch {
+        setMediaScanResults([])
+      }
+    },
+    [setMediaScanResults]
+  )
 
-  const debouncedScan = useCallback((url) => {
-    clearTimeout(scanDebounceRef.current)
-    scanDebounceRef.current = setTimeout(() => {
-      currentUrlRef.current = url
-      setCurrentBrowserUrl(url)
-      startMediaScan()
-      scanPage(url)
-    }, 500)
-  }, [scanPage, startMediaScan, setCurrentBrowserUrl])
+  const debouncedScan = useCallback(
+    (url) => {
+      clearTimeout(scanDebounceRef.current)
+      scanDebounceRef.current = setTimeout(() => {
+        currentUrlRef.current = url
+        setCurrentBrowserUrl(url)
+        startMediaScan()
+        scanPage(url)
+      }, 500)
+    },
+    [scanPage, startMediaScan, setCurrentBrowserUrl]
+  )
 
   useEffect(() => {
     const wv = webviewRef.current
@@ -45,7 +51,9 @@ export default function BrowserTab() {
       setCanGoForward(wv.canGoForward())
     }
 
-    const onNavigate = () => { updateNav() }
+    const onNavigate = () => {
+      updateNav()
+    }
 
     const onInPageNavigate = () => {
       const url = wv.getURL()
@@ -74,13 +82,15 @@ export default function BrowserTab() {
         ).catch(() => {})
       }
       // Suppress native context menu on video elements — Pully's custom menu will show instead
-      wv.executeJavaScript(`
+      wv.executeJavaScript(
+        `
         document.addEventListener('contextmenu', (e) => {
           if (e.target.tagName === 'VIDEO' || e.target.closest('video')) {
             e.preventDefault()
           }
         }, true)
-      `).catch(() => {})
+      `
+      ).catch(() => {})
     }
 
     const onContextMenu = (e) => {
@@ -123,7 +133,11 @@ export default function BrowserTab() {
 
   function handleContextDownload(srcURL) {
     let title
-    try { title = new URL(srcURL).hostname } catch { title = 'video' }
+    try {
+      title = new URL(srcURL).hostname
+    } catch {
+      title = 'video'
+    }
     window.api.addDownload(srcURL, 'best', title, { url: srcURL })
     setContextMenu(null)
   }
@@ -133,7 +147,9 @@ export default function BrowserTab() {
     if (!wv) return
     let url = raw
     if (!url.match(/^https?:\/\//)) {
-      url = url.includes('.') ? `https://${url}` : `https://www.google.com/search?q=${encodeURIComponent(url)}`
+      url = url.includes('.')
+        ? `https://${url}`
+        : `https://www.google.com/search?q=${encodeURIComponent(url)}`
     }
     wv.loadURL(url)
   }
@@ -162,7 +178,7 @@ export default function BrowserTab() {
         <div
           className="fixed z-50 bg-gray-800 border border-gray-600 rounded shadow-xl py-1 min-w-[160px] text-sm"
           style={{ left: contextMenu.x, top: contextMenu.y }}
-          onMouseDown={e => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
         >
           <button
             className="w-full text-left px-3 py-1.5 font-bold text-white hover:bg-blue-600"
@@ -173,26 +189,55 @@ export default function BrowserTab() {
           <hr className="border-gray-600 my-1" />
           <button
             className="w-full text-left px-3 py-1.5 text-gray-300 hover:bg-gray-700"
-            onClick={() => { navigator.clipboard.writeText(contextMenu.srcURL); setContextMenu(null) }}
+            onClick={() => {
+              navigator.clipboard.writeText(contextMenu.srcURL)
+              setContextMenu(null)
+            }}
           >
             Copy Video URL
           </button>
         </div>
       )}
       <div className="flex items-center gap-1 px-2 py-1 bg-gray-900 border-b border-gray-700">
-        <button onClick={() => webviewRef.current?.goBack()} disabled={!canGoBack}
-          className="p-1 rounded text-gray-400 hover:text-white disabled:opacity-30 hover:bg-gray-700">←</button>
-        <button onClick={() => webviewRef.current?.goForward()} disabled={!canGoForward}
-          className="p-1 rounded text-gray-400 hover:text-white disabled:opacity-30 hover:bg-gray-700">→</button>
-        <form onSubmit={e => { e.preventDefault(); navigate(inputUrl) }} className="flex-1">
-          <input type="text" value={inputUrl} onChange={e => setInputUrl(e.target.value)}
-            onFocus={e => e.target.select()}
+        <button
+          onClick={() => webviewRef.current?.goBack()}
+          disabled={!canGoBack}
+          className="p-1 rounded text-gray-400 hover:text-white disabled:opacity-30 hover:bg-gray-700"
+        >
+          ←
+        </button>
+        <button
+          onClick={() => webviewRef.current?.goForward()}
+          disabled={!canGoForward}
+          className="p-1 rounded text-gray-400 hover:text-white disabled:opacity-30 hover:bg-gray-700"
+        >
+          →
+        </button>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            navigate(inputUrl)
+          }}
+          className="flex-1"
+        >
+          <input
+            type="text"
+            value={inputUrl}
+            onChange={(e) => setInputUrl(e.target.value)}
+            onFocus={(e) => e.target.select()}
             className="w-full bg-gray-800 text-white text-sm px-3 py-1 rounded border border-gray-600 focus:outline-none focus:border-blue-500"
-            placeholder="Enter URL or search…" />
+            placeholder="Enter URL or search…"
+          />
         </form>
       </div>
       <div className="flex flex-1 min-h-0">
-        <webview ref={webviewRef} src={HOME} className="flex-1 min-w-0" style={{ height: '100%' }} allowpopups="true" />
+        <webview
+          ref={webviewRef}
+          src={HOME}
+          className="flex-1 min-w-0"
+          style={{ height: '100%' }}
+          allowpopups="true"
+        />
         <div
           role="separator"
           className="w-1 bg-gray-800 hover:bg-blue-600 cursor-col-resize flex-shrink-0 flex items-center justify-center transition-colors"

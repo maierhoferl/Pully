@@ -68,7 +68,7 @@ describe('Logger', () => {
     const today = new Date().toISOString().split('T')[0]
     const logFile = path.join(tempDir, `${today}.log`)
     const lines = fs.readFileSync(logFile, 'utf-8').trim().split('\n')
-    const parsed = lines.map(l => JSON.parse(l))
+    const parsed = lines.map((l) => JSON.parse(l))
 
     expect(parsed[0].level).toBe('info')
     expect(parsed[1].level).toBe('warn')

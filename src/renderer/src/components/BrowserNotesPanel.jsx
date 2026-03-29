@@ -28,7 +28,7 @@ export function BrowserNotesPanel() {
 
   const handlePlay = async (filePath) => {
     try {
-      await window.api.playVideo(filePath)
+      await window.api.playFile(filePath)
     } catch (error) {
       console.error('Failed to play video:', error)
     }

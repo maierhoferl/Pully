@@ -12,6 +12,6 @@ export default defineConfig({
     setupFiles: ['./tests/setup.js'],
     globals: true,
     include: ['src/renderer/**/*.test.{js,jsx}', 'tests/renderer/**/*.test.{js,jsx}'],
-    passWithNoTests: true,
+    passWithNoTests: true
   }
 })

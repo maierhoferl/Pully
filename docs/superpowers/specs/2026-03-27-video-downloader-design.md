@@ -40,6 +40,7 @@ All download queue state is owned by the main process. The renderer derives its 
 ### Config Persistence
 
 A JSON config file in Electron `userData` stores:
+
 - `outputFolder` — absolute path to download directory
 - `maxConcurrent` — number of simultaneous downloads (1–5, default 3)
 
@@ -83,31 +84,31 @@ A JSON config file in Electron `userData` stores:
 
 ## Error Handling
 
-| Scenario | Behavior |
-|---|---|
-| yt-dlp can't extract from URL | Panel hidden (no results, no loading) — no error dialog |
-| extractInfo throws | Panel resets to empty — no error dialog |
-| Download fails | Red "Failed" badge; error detail on expand; Retry button |
-| yt-dlp binary missing/corrupt | Error logged to console on startup |
-| Output folder not set / inaccessible | Library tab shows "configure folder" prompt; downloads blocked until valid path set |
-| webview navigation error (404, offline) | Standard browser error page inside webview — no special handling |
+| Scenario                                | Behavior                                                                            |
+| --------------------------------------- | ----------------------------------------------------------------------------------- |
+| yt-dlp can't extract from URL           | Panel hidden (no results, no loading) — no error dialog                             |
+| extractInfo throws                      | Panel resets to empty — no error dialog                                             |
+| Download fails                          | Red "Failed" badge; error detail on expand; Retry button                            |
+| yt-dlp binary missing/corrupt           | Error logged to console on startup                                                  |
+| Output folder not set / inaccessible    | Library tab shows "configure folder" prompt; downloads blocked until valid path set |
+| webview navigation error (404, offline) | Standard browser error page inside webview — no special handling                    |
 
 ---
 
 ## Tech Stack
 
-| Layer | Choice |
-|---|---|
-| App shell | Electron (latest stable) |
-| UI framework | React 18 |
-| Build tool | electron-vite |
-| Styling | Tailwind CSS 3 |
-| State management | Zustand 4 |
-| IPC | Electron ipcMain / ipcRenderer (contextBridge) |
-| Download engine | yt-dlp (bundled prebuilt binary) |
-| Config storage | JSON file in `app.getPath('userData')` |
-| Testing | Vitest (separate configs for main/renderer) |
-| Packaging | electron-builder (macOS universal DMG) |
+| Layer            | Choice                                         |
+| ---------------- | ---------------------------------------------- |
+| App shell        | Electron (latest stable)                       |
+| UI framework     | React 18                                       |
+| Build tool       | electron-vite                                  |
+| Styling          | Tailwind CSS 3                                 |
+| State management | Zustand 4                                      |
+| IPC              | Electron ipcMain / ipcRenderer (contextBridge) |
+| Download engine  | yt-dlp (bundled prebuilt binary)               |
+| Config storage   | JSON file in `app.getPath('userData')`         |
+| Testing          | Vitest (separate configs for main/renderer)    |
+| Packaging        | electron-builder (macOS universal DMG)         |
 
 ---
 

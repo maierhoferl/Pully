@@ -13,10 +13,12 @@
 ## File Structure
 
 **New Files:**
+
 - `src/main/logger.js` — Logger singleton with file I/O and cleanup
 - `src/renderer/src/components/DebugTab.jsx` — Debug tab UI with filtering and expand/collapse
 
 **Modified Files:**
+
 - `src/main/config-store.js` — Add `debugMode` default
 - `src/main/index.js` — Initialize logger, replace console.error calls
 - `src/main/ipc-handlers.js` — Register `log:entry` push, call `logger.setDebugMode` on config writes
@@ -37,6 +39,7 @@
 ## Task 1: Create Logger Module
 
 **Files:**
+
 - Create: `src/main/logger.js`
 - Test: `tests/main/logger.test.js`
 
@@ -138,7 +141,7 @@ function createLogger(logDir) {
     const threeDaysMs = 3 * 24 * 60 * 60 * 1000
     const files = fs.readdirSync(logDir)
 
-    files.forEach(file => {
+    files.forEach((file) => {
       const filePath = path.join(logDir, file)
       const stat = fs.statSync(filePath)
       if (now - stat.mtimeMs > threeDaysMs) {
@@ -210,6 +213,7 @@ git commit -m "feat: add logger module with file I/O and cleanup"
 ## Task 2: Update Config Store
 
 **Files:**
+
 - Modify: `src/main/config-store.js`
 
 - [ ] **Step 1: Read current config-store.js**
@@ -238,7 +242,7 @@ export function getDefaults() {
     aiModel: '',
     autoSummarizeEnabled: false,
     defaultSummaryPrompt: 'Summarize this video in 3-5 sentences...',
-    debugMode: false,  // ADD THIS LINE
+    debugMode: false // ADD THIS LINE
   }
 }
 ```
@@ -255,6 +259,7 @@ git commit -m "feat: add debugMode config default"
 ## Task 3: Initialize Logger in Main Process
 
 **Files:**
+
 - Modify: `src/main/index.js`
 - Modify: `src/main/ipc-handlers.js`
 
@@ -294,6 +299,7 @@ logger.setWindow(mainWindow)
 Find both `console.error` calls in `index.js` (around lines 43 and 94) and replace them:
 
 First one (binary copy error):
+
 ```javascript
 // Old: console.error('Failed to initialize binaries:', err)
 // New:
@@ -301,6 +307,7 @@ logger.error('app', 'Failed to initialize binaries', { error: err.message })
 ```
 
 Second one (adblock init error):
+
 ```javascript
 // Old: .catch(err => console.error('Adblock init failed:', err))
 // New:
@@ -327,6 +334,7 @@ git commit -m "feat: initialize logger and replace console.error calls"
 ## Task 4: Wire Logger to Config Updates
 
 **Files:**
+
 - Modify: `src/main/ipc-handlers.js`
 
 - [ ] **Step 1: Find config:write handler**
@@ -386,6 +394,7 @@ git commit -m "feat: sync logger debug mode on config updates"
 ## Task 5: Add Zustand State for Log Entries
 
 **Files:**
+
 - Modify: `src/renderer/src/store/app-store.js`
 
 - [ ] **Step 1: Read app-store.js structure**
@@ -432,6 +441,7 @@ git commit -m "feat: add logEntries state to Zustand store"
 ## Task 6: Set Up IPC Log Entry Push
 
 **Files:**
+
 - Modify: `src/main/ipc-handlers.js`
 - Modify: `src/preload/index.js`
 
@@ -464,6 +474,7 @@ git commit -m "feat: expose onLogEntry IPC channel to renderer"
 ## Task 7: Subscribe to Log Events in Renderer
 
 **Files:**
+
 - Modify: `src/renderer/src/hooks/useIpcEvents.js`
 
 - [ ] **Step 1: Read useIpcEvents structure**
@@ -508,6 +519,7 @@ git commit -m "feat: subscribe to log entry events in renderer"
 ## Task 8: Add Conditional Debug Tab to Tab Bar
 
 **Files:**
+
 - Modify: `src/renderer/src/components/TabBar.jsx`
 
 - [ ] **Step 1: Read TabBar.jsx structure**
@@ -522,13 +534,11 @@ Modify the render logic to conditionally add Debug tab:
 const TABS = [
   { id: 'browser', label: 'Browser' },
   { id: 'library', label: 'Library' },
-  { id: 'notes', label: 'Notes' },
+  { id: 'notes', label: 'Notes' }
 ]
 
 // In render, add conditionally:
-const visibleTabs = config.debugMode
-  ? [...TABS, { id: 'debug', label: 'Debug' }]
-  : TABS
+const visibleTabs = config.debugMode ? [...TABS, { id: 'debug', label: 'Debug' }] : TABS
 
 // Then map over visibleTabs instead of TABS
 ```
@@ -545,6 +555,7 @@ git commit -m "feat: conditionally show Debug tab when debugMode enabled"
 ## Task 9: Add Debug Mode Toggle to Settings
 
 **Files:**
+
 - Modify: `src/renderer/src/components/SettingsPanel.jsx`
 
 - [ ] **Step 1: Read SettingsPanel.jsx structure**
@@ -556,8 +567,10 @@ Find where settings toggles are rendered (e.g., `autoClassifyEnabled`, `autoSumm
 After the existing toggle for `autoSummarizeEnabled`, add:
 
 ```jsx
-{/* Debug Mode */}
-<div className="mb-6">
+{
+  /* Debug Mode */
+}
+;<div className="mb-6">
   <div className="flex items-center justify-between">
     <label htmlFor="debugMode" className="text-sm font-medium">
       Debug Mode
@@ -566,15 +579,11 @@ After the existing toggle for `autoSummarizeEnabled`, add:
       id="debugMode"
       type="checkbox"
       checked={local.debugMode || false}
-      onChange={(e) =>
-        setLocal({ ...local, debugMode: e.target.checked })
-      }
+      onChange={(e) => setLocal({ ...local, debugMode: e.target.checked })}
       className="rounded"
     />
   </div>
-  <p className="text-xs text-gray-400 mt-1">
-    Show Debug tab and write logs to disk
-  </p>
+  <p className="text-xs text-gray-400 mt-1">Show Debug tab and write logs to disk</p>
 </div>
 ```
 
@@ -590,6 +599,7 @@ git commit -m "feat: add debugMode toggle to Settings panel"
 ## Task 10: Create Debug Tab Component
 
 **Files:**
+
 - Create: `src/renderer/src/components/DebugTab.jsx`
 
 - [ ] **Step 1: Write DebugTab component**
@@ -619,11 +629,9 @@ export function DebugTab() {
 
   const filtered = logEntries.filter((entry) => {
     const catMatch =
-      categoryFilter === 'All' ||
-      entry.category.toLowerCase() === categoryFilter.toLowerCase()
+      categoryFilter === 'All' || entry.category.toLowerCase() === categoryFilter.toLowerCase()
     const levelMatch =
-      levelFilter === 'All' ||
-      entry.level.toLowerCase() === levelFilter.toLowerCase()
+      levelFilter === 'All' || entry.level.toLowerCase() === levelFilter.toLowerCase()
     return catMatch && levelMatch
   })
 
@@ -731,9 +739,7 @@ export function DebugTab() {
       {/* Log List */}
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {filtered.length === 0 ? (
-          <div className="text-center text-gray-500 py-8">
-            No log entries
-          </div>
+          <div className="text-center text-gray-500 py-8">No log entries</div>
         ) : (
           filtered.map((entry, idx) => (
             <div
@@ -791,6 +797,7 @@ git commit -m "feat: create DebugTab component with filtering and expand"
 ## Task 11: Add DebugTab to App Shell
 
 **Files:**
+
 - Modify: `src/renderer/src/App.jsx`
 
 - [ ] **Step 1: Read App.jsx structure**
@@ -802,7 +809,9 @@ Find where other tabs are lazily imported and rendered.
 At the top with other lazy imports, add:
 
 ```javascript
-const DebugTab = React.lazy(() => import('./components/DebugTab').then(m => ({ default: m.DebugTab })))
+const DebugTab = React.lazy(() =>
+  import('./components/DebugTab').then((m) => ({ default: m.DebugTab }))
+)
 ```
 
 - [ ] **Step 3: Add DebugTab render conditional**
@@ -827,6 +836,7 @@ git commit -m "feat: add lazy-loaded DebugTab to app shell"
 ## Task 12: Add Logging to Download Manager
 
 **Files:**
+
 - Modify: `src/main/download-manager.js`
 
 - [ ] **Step 1: Import logger at top of file**
@@ -837,7 +847,7 @@ import { logger } from './logger.js' // assumes singleton export from logger.js
 
 Or if using createLogger pattern, you'll need to pass it in or get it from global. For now, assume a singleton.
 
-- [ ] **Step 2: Add logging to _start() method**
+- [ ] **Step 2: Add logging to \_start() method**
 
 In the `_start()` method, around where a download begins:
 
@@ -870,7 +880,7 @@ In the progress callback from ytdlp-runner, log at 25/50/75/100%:
 
 ```javascript
 const percent = (currentSize / totalSize) * 100
-if ([25, 50, 75, 100].some(p => Math.abs(percent - p) < 1)) {
+if ([25, 50, 75, 100].some((p) => Math.abs(percent - p) < 1)) {
   logger.info('download', `Progress: ${item.filename} ${Math.round(percent)}%`, {
     url: item.url,
     percent: Math.round(percent)
@@ -890,6 +900,7 @@ git commit -m "feat: add logging to download manager"
 ## Task 13: Add Logging to yt-dlp Runner
 
 **Files:**
+
 - Modify: `src/main/ytdlp-runner.js`
 
 - [ ] **Step 1: Import logger**
@@ -938,6 +949,7 @@ git commit -m "feat: add logging to yt-dlp runner"
 ## Task 14: Add Logging to Auto Classifier
 
 **Files:**
+
 - Modify: `src/main/auto-classifier.js`
 
 - [ ] **Step 1: Import logger**
@@ -1003,6 +1015,7 @@ git commit -m "feat: add logging to auto-classifier"
 ## Task 15: Add Logging to AI Summarizer
 
 **Files:**
+
 - Modify: `src/main/ai-summarizer.js`
 
 - [ ] **Step 1: Import logger**
@@ -1061,6 +1074,7 @@ git commit -m "feat: add logging to AI summarizer"
 ## Task 16: Add Logging to Notes Store
 
 **Files:**
+
 - Modify: `src/main/notes-store.js`
 
 - [ ] **Step 1: Import logger**
@@ -1124,13 +1138,15 @@ git commit -m "feat: add logging to notes store"
 ## Task 17: Fix Import Issues and Test End-to-End
 
 **Files:**
+
 - All previous modules (fix any import issues)
 
 - [ ] **Step 1: Fix logger singleton/import pattern**
 
 Ensure `logger.js` is either:
-  1. A singleton exported once and re-imported everywhere, OR
-  2. Created once in `index.js` and passed to all modules
+
+1. A singleton exported once and re-imported everywhere, OR
+2. Created once in `index.js` and passed to all modules
 
 Option 1 (singleton) is simplest. Make sure `logger.js` exports a default instance:
 
@@ -1180,6 +1196,7 @@ git commit -m "fix: finalize logger integration across all modules"
 ## Task 18: Test Cleanup and Edge Cases
 
 **Files:**
+
 - Test files for cleanup behavior
 
 - [ ] **Step 1: Write test for auto-cleanup**

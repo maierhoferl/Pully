@@ -14,7 +14,11 @@ async function getHfPipelineFn() {
 // --- Tier 1: Keyword matching ---
 
 function tokenize(str) {
-  return str.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(t => t.length > 1)
+  return str
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter((t) => t.length > 1)
 }
 
 function classifyByKeyword(videoEntry, folderNames) {
@@ -23,10 +27,15 @@ function classifyByKeyword(videoEntry, folderNames) {
     videoEntry.uploader || '',
     videoEntry.description || '',
     videoEntry.url || ''
-  ].join(' ').toLowerCase()
+  ]
+    .join(' ')
+    .toLowerCase()
 
   const scores = folderNames
-    .map(name => ({ folder: name, score: tokenize(name).filter(token => blob.includes(token)).length }))
+    .map((name) => ({
+      folder: name,
+      score: tokenize(name).filter((token) => blob.includes(token)).length
+    }))
     .sort((a, b) => b.score - a.score)
 
   if (!scores.length) {
@@ -41,7 +50,10 @@ function classifyByKeyword(videoEntry, folderNames) {
   // Log all candidate scores for debugging
   logger.info('classify', `Tier 1 (keyword) scores`, {
     tier: 'keyword',
-    candidates: scores.slice(0, 5).map(s => `${s.folder}:${s.score}`).join(', ')
+    candidates: scores
+      .slice(0, 5)
+      .map((s) => `${s.folder}:${s.score}`)
+      .join(', ')
   })
 
   if (best.score >= 2) {
@@ -75,7 +87,9 @@ function classifyByKeyword(videoEntry, folderNames) {
 // --- Tier 2: Embedding similarity ---
 
 function cosineSimilarity(a, b) {
-  let dot = 0, magA = 0, magB = 0
+  let dot = 0,
+    magA = 0,
+    magB = 0
   for (let i = 0; i < a.length; i++) {
     dot += a[i] * b[i]
     magA += a[i] * a[i]
@@ -88,7 +102,9 @@ function cosineSimilarity(a, b) {
 async function getEmbeddingPipeline() {
   if (!embeddingPipeline) {
     const pipelineFn = await getHfPipelineFn()
-    embeddingPipeline = await pipelineFn('feature-extraction', 'Xenova/all-MiniLM-L6-v2', { device: 'cpu' })
+    embeddingPipeline = await pipelineFn('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
+      device: 'cpu'
+    })
   }
   return embeddingPipeline
 }
@@ -106,14 +122,20 @@ async function classifyByEmbedding(videoEntry, folderNames) {
     const out = await pipe(folder, { pooling: 'mean', normalize: true })
     const sim = cosineSimilarity(videoVec, Array.from(out.data))
     similarities.push({ folder, similarity: sim })
-    if (sim > bestSim) { bestSim = sim; bestFolder = folder }
+    if (sim > bestSim) {
+      bestSim = sim
+      bestFolder = folder
+    }
   }
 
   // Log similarity scores
   similarities.sort((a, b) => b.similarity - a.similarity)
   logger.info('classify', `Tier 2 (embedding) scores`, {
     tier: 'embedding',
-    topScores: similarities.slice(0, 3).map(s => `${s.folder}:${s.similarity.toFixed(3)}`).join(', ')
+    topScores: similarities
+      .slice(0, 3)
+      .map((s) => `${s.folder}:${s.similarity.toFixed(3)}`)
+      .join(', ')
   })
 
   if (bestSim >= 0.45) {
@@ -139,7 +161,7 @@ async function classifyByEmbedding(videoEntry, folderNames) {
 const DEFAULT_MODELS = {
   claude: 'claude-haiku-4-6',
   gemini: 'gemini-3.1-flash-lite',
-  openai: 'gpt-5-nano',
+  openai: 'gpt-5-nano'
 }
 
 function buildLLMPrompt(videoEntry, folderNames) {
@@ -163,24 +185,42 @@ async function classifyByLLM(videoEntry, folderNames, config) {
     if (autoClassifyProvider === 'claude') {
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': autoClassifyApiKey, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model, max_tokens: 50, messages: [{ role: 'user', content: prompt }] })
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': autoClassifyApiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 50,
+          messages: [{ role: 'user', content: prompt }]
+        })
       })
       const data = await resp.json()
       raw = data.content?.[0]?.text?.trim() || null
     } else if (autoClassifyProvider === 'gemini') {
-      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${autoClassifyApiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-      })
+      const resp = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${autoClassifyApiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        }
+      )
       const data = await resp.json()
       raw = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null
     } else if (autoClassifyProvider === 'openai') {
       const resp = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${autoClassifyApiKey}` },
-        body: JSON.stringify({ model, max_tokens: 50, messages: [{ role: 'user', content: prompt }] })
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${autoClassifyApiKey}`
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 50,
+          messages: [{ role: 'user', content: prompt }]
+        })
       })
       const data = await resp.json()
       raw = data.choices?.[0]?.message?.content?.trim() || null
@@ -200,7 +240,7 @@ async function classifyByLLM(videoEntry, folderNames, config) {
       })
       return null
     }
-    const matched = folderNames.find(f => f.toLowerCase() === raw.toLowerCase())
+    const matched = folderNames.find((f) => f.toLowerCase() === raw.toLowerCase())
     if (matched) {
       logger.info('classify', `Tier 3 (LLM) match`, {
         tier: 'llm',
@@ -270,7 +310,11 @@ export async function classifyVideo(videoEntry, folderNames, config = {}) {
     })
   }
 
-  if (config.autoClassifyProvider && config.autoClassifyProvider !== 'local' && config.autoClassifyApiKey) {
+  if (
+    config.autoClassifyProvider &&
+    config.autoClassifyProvider !== 'local' &&
+    config.autoClassifyApiKey
+  ) {
     try {
       const llm = await classifyByLLM(videoEntry, folderNames, config)
       if (llm) {
@@ -303,7 +347,9 @@ export async function classifyVideo(videoEntry, folderNames, config = {}) {
 }
 
 // Allows tests to reset the cached pipeline between test suites
-export function _resetEmbeddingCache() { embeddingPipeline = null }
+export function _resetEmbeddingCache() {
+  embeddingPipeline = null
+}
 
 export async function fetchProviderModels(provider, apiKey) {
   try {
@@ -312,20 +358,24 @@ export async function fetchProviderModels(provider, apiKey) {
         headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' }
       })
       const data = await resp.json()
-      return (data.data || []).map(m => m.id)
+      return (data.data || []).map((m) => m.id)
     }
     if (provider === 'gemini') {
-      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`)
+      const resp = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`
+      )
       const data = await resp.json()
-      return (data.models || []).map(m => m.name.replace('models/', ''))
+      return (data.models || []).map((m) => m.name.replace('models/', ''))
     }
     if (provider === 'openai') {
       const resp = await fetch('https://api.openai.com/v1/models', {
-        headers: { 'Authorization': `Bearer ${apiKey}` }
+        headers: { Authorization: `Bearer ${apiKey}` }
       })
       const data = await resp.json()
-      return (data.data || []).map(m => m.id).sort()
+      return (data.data || []).map((m) => m.id).sort()
     }
-  } catch { /* network error */ }
+  } catch {
+    /* network error */
+  }
   return []
 }

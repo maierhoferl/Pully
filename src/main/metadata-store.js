@@ -48,7 +48,11 @@ export function moveThumbnailSidecar(oldVideoPath, newVideoPath) {
   const oldThumb = oldVideoPath.replace(/\.[^.]+$/, '.thumb.jpg')
   const newThumb = newVideoPath.replace(/\.[^.]+$/, '.thumb.jpg')
   if (oldThumb !== newThumb && fs.existsSync(oldThumb)) {
-    try { fs.renameSync(oldThumb, newThumb) } catch { /* best-effort */ }
+    try {
+      fs.renameSync(oldThumb, newThumb)
+    } catch {
+      /* best-effort */
+    }
   }
 }
 
@@ -67,7 +71,8 @@ export function renameFolderInIndex(oldDirPath, newDirPath, indexPath) {
     if (fp.startsWith(prefix)) {
       const newMeta = { ...meta }
       if (newMeta.thumbnailLocalPath && newMeta.thumbnailLocalPath.startsWith(prefix)) {
-        newMeta.thumbnailLocalPath = newDirPath + sep + newMeta.thumbnailLocalPath.slice(prefix.length)
+        newMeta.thumbnailLocalPath =
+          newDirPath + sep + newMeta.thumbnailLocalPath.slice(prefix.length)
       }
       updated[newDirPath + sep + fp.slice(prefix.length)] = newMeta
     } else {
@@ -89,11 +94,15 @@ export function deleteFolderFromIndex(dirPath, indexPath) {
 
 // Creates a .ref stub file representing a remembered (not downloaded) online video.
 // Writes metadata to the index and fire-and-forgets the thumbnail sidecar download.
-export async function createReferenceFile(outputFolder, { title, uploader, description, thumbnailUrl, url }) {
-  const safe = (title || 'Untitled')
-    .replace(/[/\\:*?"<>|]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim() || 'Untitled'
+export async function createReferenceFile(
+  outputFolder,
+  { title, uploader, description, thumbnailUrl, url }
+) {
+  const safe =
+    (title || 'Untitled')
+      .replace(/[/\\:*?"<>|]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim() || 'Untitled'
   let refPath = path.join(outputFolder, `${safe}.ref`)
   let counter = 1
   while (fs.existsSync(refPath)) {
@@ -102,7 +111,15 @@ export async function createReferenceFile(outputFolder, { title, uploader, descr
   }
   const downloadedAt = new Date().toISOString()
   fs.writeFileSync(refPath, JSON.stringify({ type: 'reference', url }))
-  writeMetadataEntry(refPath, { title, uploader, description, thumbnailUrl, url, downloadedAt, isReference: true })
+  writeMetadataEntry(refPath, {
+    title,
+    uploader,
+    description,
+    thumbnailUrl,
+    url,
+    downloadedAt,
+    isReference: true
+  })
   if (thumbnailUrl) {
     downloadAndStoreThumbnail(thumbnailUrl, refPath).catch(() => {})
   }

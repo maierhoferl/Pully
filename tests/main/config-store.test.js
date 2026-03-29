@@ -5,8 +5,12 @@ import path from 'path'
 import { readConfig, writeConfig } from '../../src/main/config-store.js'
 
 let tmp
-beforeEach(() => { tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vd-')) })
-afterEach(() => { fs.rmSync(tmp, { recursive: true }) })
+beforeEach(() => {
+  tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vd-'))
+})
+afterEach(() => {
+  fs.rmSync(tmp, { recursive: true })
+})
 
 describe('readConfig', () => {
   it('returns defaults when no file exists', () => {

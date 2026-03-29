@@ -24,10 +24,10 @@ export default function NotesTab() {
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
   }
-  const activeNotesFolder = useAppStore(s => s.activeNotesFolder)
-  const activeNotesChapter = useAppStore(s => s.activeNotesChapter)
-  const setActiveNotesFolder = useAppStore(s => s.setActiveNotesFolder)
-  const activeTab = useAppStore(s => s.activeTab)
+  const activeNotesFolder = useAppStore((s) => s.activeNotesFolder)
+  const activeNotesChapter = useAppStore((s) => s.activeNotesChapter)
+  const setActiveNotesFolder = useAppStore((s) => s.setActiveNotesFolder)
+  const activeTab = useAppStore((s) => s.activeTab)
 
   useEffect(() => {
     window.api.listFolders().then(setFolders)
@@ -43,7 +43,9 @@ export default function NotesTab() {
     <div className="flex h-full overflow-hidden">
       {/* Left sidebar — folder list */}
       <div className="w-44 shrink-0 border-r border-gray-700 overflow-y-auto">
-        <div className="px-3 pt-3 pb-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">Folders</div>
+        <div className="px-3 pt-3 pb-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          Folders
+        </div>
         <NotesFolderList
           folders={folders}
           activeFolder={activeNotesFolder}
@@ -77,7 +79,10 @@ export default function NotesTab() {
           style={{ width: sideWidth }}
         />
       ) : (
-        <div style={{ width: sideWidth }} className="flex-shrink-0 bg-gray-900 border-l border-gray-700 flex items-center justify-center h-full">
+        <div
+          style={{ width: sideWidth }}
+          className="flex-shrink-0 bg-gray-900 border-l border-gray-700 flex items-center justify-center h-full"
+        >
           <p className="text-sm text-gray-600">Select a file to view details</p>
         </div>
       )}

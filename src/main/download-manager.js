@@ -3,7 +3,12 @@ import fs from 'fs'
 import path from 'path'
 import { startDownload } from './ytdlp-runner.js'
 import { readConfig } from './config-store.js'
-import { writeMetadataEntry, downloadAndStoreThumbnail, moveMetadataEntry, moveThumbnailSidecar } from './metadata-store.js'
+import {
+  writeMetadataEntry,
+  downloadAndStoreThumbnail,
+  moveMetadataEntry,
+  moveThumbnailSidecar
+} from './metadata-store.js'
 import { classifyVideo } from './auto-classifier.js'
 import { initChapter, moveChapter } from './notes-store.js'
 import { generateSummary } from './ai-summarizer.js'
@@ -18,17 +23,34 @@ export class DownloadManager extends EventEmitter {
 
   add(url, formatId, title, metadata = null) {
     const id = crypto.randomUUID()
-    this.queue.push({ id, url, formatId, title, metadata, status: 'queued', percent: 0, speed: '', eta: '', error: undefined })
+    this.queue.push({
+      id,
+      url,
+      formatId,
+      title,
+      metadata,
+      status: 'queued',
+      percent: 0,
+      speed: '',
+      eta: '',
+      error: undefined
+    })
 
     // Create notes stub immediately with URL as key so Notes panel displays right away
     const cfg = readConfig()
     if (metadata) {
       try {
-        initChapter(url, {
-          ...metadata,
-          downloadedAt: new Date().toISOString().split('T')[0]
-        }, cfg.outputFolder)
-      } catch { /* don't block on notes errors */ }
+        initChapter(
+          url,
+          {
+            ...metadata,
+            downloadedAt: new Date().toISOString().split('T')[0]
+          },
+          cfg.outputFolder
+        )
+      } catch {
+        /* don't block on notes errors */
+      }
     }
 
     this.emit('queue-updated', this.getAll())
@@ -37,7 +59,7 @@ export class DownloadManager extends EventEmitter {
   }
 
   retry(id) {
-    const item = this.queue.find(d => d.id === id)
+    const item = this.queue.find((d) => d.id === id)
     if (!item || item.status !== 'failed') return
     item.status = 'queued'
     item.percent = 0
@@ -47,7 +69,7 @@ export class DownloadManager extends EventEmitter {
   }
 
   cancel(id) {
-    const idx = this.queue.findIndex(d => d.id === id)
+    const idx = this.queue.findIndex((d) => d.id === id)
     if (idx === -1) return
     const item = this.queue[idx]
     if (item.status !== 'queued' && item.status !== 'downloading') return
@@ -61,13 +83,13 @@ export class DownloadManager extends EventEmitter {
   }
 
   getAll() {
-    return this.queue.map(d => ({ ...d }))
+    return this.queue.map((d) => ({ ...d }))
   }
 
   _tick() {
     const { maxConcurrent, outputFolder } = readConfig()
     const slots = Math.max(0, maxConcurrent - this.active.size)
-    const queued = this.queue.filter(d => d.status === 'queued')
+    const queued = this.queue.filter((d) => d.status === 'queued')
     for (const item of queued.slice(0, slots)) {
       this._start(item, outputFolder)
     }
@@ -85,8 +107,10 @@ export class DownloadManager extends EventEmitter {
     })
 
     const proc = startDownload(
-      item.url, item.formatId, outputFolder,
-      progress => {
+      item.url,
+      item.formatId,
+      outputFolder,
+      (progress) => {
         Object.assign(item, progress)
         this.emit('progress', { id: item.id, ...progress })
 
@@ -137,56 +161,81 @@ export class DownloadManager extends EventEmitter {
         // Notes: init chapter stub
         if (actualPath && item.metadata) {
           try {
-            initChapter(actualPath, { ...item.metadata, downloadedAt: new Date().toISOString() }, cfg.outputFolder)
-          } catch { /* don't block on notes errors */ }
+            initChapter(
+              actualPath,
+              { ...item.metadata, downloadedAt: new Date().toISOString() },
+              cfg.outputFolder
+            )
+          } catch {
+            /* don't block on notes errors */
+          }
         }
 
         // Classify + summarize pipeline
         if (cfg.autoClassifyEnabled && actualPath && item.metadata) {
           try {
-            const folderNames = fs.readdirSync(cfg.outputFolder)
-              .filter(f => !f.startsWith('.') && fs.statSync(path.join(cfg.outputFolder, f)).isDirectory())
+            const folderNames = fs
+              .readdirSync(cfg.outputFolder)
+              .filter(
+                (f) =>
+                  !f.startsWith('.') && fs.statSync(path.join(cfg.outputFolder, f)).isDirectory()
+              )
             if (folderNames.length > 0) {
               classifyVideo(
-                { title: item.metadata.title, uploader: item.metadata.uploader, description: item.metadata.description, url: item.metadata.url },
+                {
+                  title: item.metadata.title,
+                  uploader: item.metadata.uploader,
+                  description: item.metadata.description,
+                  url: item.metadata.url
+                },
                 folderNames,
                 cfg
-              ).then(({ folder }) => {
-                let finalPath = actualPath
-                if (folder) {
-                  const base = path.basename(actualPath)
-                  const ext = path.extname(base)
-                  const stem = path.basename(base, ext)
-                  let newPath = path.join(cfg.outputFolder, folder, base)
-                  let counter = 1
-                  while (fs.existsSync(newPath)) {
-                    newPath = path.join(cfg.outputFolder, folder, `${stem} (${counter})${ext}`)
-                    counter++
+              )
+                .then(({ folder }) => {
+                  let finalPath = actualPath
+                  if (folder) {
+                    const base = path.basename(actualPath)
+                    const ext = path.extname(base)
+                    const stem = path.basename(base, ext)
+                    let newPath = path.join(cfg.outputFolder, folder, base)
+                    let counter = 1
+                    while (fs.existsSync(newPath)) {
+                      newPath = path.join(cfg.outputFolder, folder, `${stem} (${counter})${ext}`)
+                      counter++
+                    }
+                    try {
+                      fs.renameSync(actualPath, newPath)
+                      moveMetadataEntry(actualPath, newPath)
+                      moveThumbnailSidecar(actualPath, newPath)
+                      moveChapter(actualPath, newPath, cfg.outputFolder)
+                      finalPath = newPath
+                    } catch {
+                      /* skip if move fails */
+                    }
                   }
-                  try {
-                    fs.renameSync(actualPath, newPath)
-                    moveMetadataEntry(actualPath, newPath)
-                    moveThumbnailSidecar(actualPath, newPath)
-                    moveChapter(actualPath, newPath, cfg.outputFolder)
-                    finalPath = newPath
-                  } catch { /* skip if move fails */ }
-                }
-                if (cfg.autoSummarizeEnabled && cfg.aiApiKey && item.metadata) {
-                  generateSummary(finalPath, { ...item.metadata, url: item.metadata.url }, cfg)
-                    .catch(() => {})
-                }
-              }).catch(() => {})
+                  if (cfg.autoSummarizeEnabled && cfg.aiApiKey && item.metadata) {
+                    generateSummary(
+                      finalPath,
+                      { ...item.metadata, url: item.metadata.url },
+                      cfg
+                    ).catch(() => {})
+                  }
+                })
+                .catch(() => {})
             }
-          } catch { /* don't block completion on classify errors */ }
+          } catch {
+            /* don't block completion on classify errors */
+          }
         } else if (cfg.autoSummarizeEnabled && cfg.aiApiKey && actualPath && item.metadata) {
-          generateSummary(actualPath, { ...item.metadata, url: item.metadata.url }, cfg)
-            .catch(() => {})
+          generateSummary(actualPath, { ...item.metadata, url: item.metadata.url }, cfg).catch(
+            () => {}
+          )
         }
         this.emit('completed', { id: item.id })
         this.emit('queue-updated', this.getAll())
         this._tick()
       },
-      err => {
+      (err) => {
         item.status = 'failed'
         item.error = err.message
         this.active.delete(item.id)

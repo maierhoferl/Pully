@@ -5,7 +5,9 @@ const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2]
 function fmt(secs) {
   if (!isFinite(secs)) return '0:00'
   const m = Math.floor(secs / 60)
-  const s = Math.floor(secs % 60).toString().padStart(2, '0')
+  const s = Math.floor(secs % 60)
+    .toString()
+    .padStart(2, '0')
   return `${m}:${s}`
 }
 
@@ -57,11 +59,21 @@ export default function VideoPlayer({ src, onClose }) {
   useEffect(() => {
     const v = videoRef.current
     if (!v) return
-    const onPlay = () => { setPlaying(true); resetHideTimer() }
-    const onPause = () => { setPlaying(false); setShowControls(true); clearTimeout(hideTimer.current) }
+    const onPlay = () => {
+      setPlaying(true)
+      resetHideTimer()
+    }
+    const onPause = () => {
+      setPlaying(false)
+      setShowControls(true)
+      clearTimeout(hideTimer.current)
+    }
     const onTimeUpdate = () => setCurrentTime(v.currentTime)
     const onDurationChange = () => setDuration(v.duration)
-    const onVolumeChange = () => { setVolume(v.volume); setMuted(v.muted) }
+    const onVolumeChange = () => {
+      setVolume(v.volume)
+      setMuted(v.muted)
+    }
     const onRateChange = () => setPlaybackRate(v.playbackRate)
     const onError = () => {
       const err = v.error
@@ -69,7 +81,11 @@ export default function VideoPlayer({ src, onClose }) {
       window.api.logError?.('video-player', `Video playback failed: ${src}`, meta)
       setError('Could not play this file.')
     }
-    const onEnded = () => { setPlaying(false); setShowControls(true); clearTimeout(hideTimer.current) }
+    const onEnded = () => {
+      setPlaying(false)
+      setShowControls(true)
+      clearTimeout(hideTimer.current)
+    }
     v.addEventListener('play', onPlay)
     v.addEventListener('pause', onPause)
     v.addEventListener('timeupdate', onTimeUpdate)
@@ -116,14 +132,26 @@ export default function VideoPlayer({ src, onClose }) {
     const onKey = (e) => {
       const tag = document.activeElement?.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA') return
-      if (!containerRef.current?.contains(document.activeElement) && document.activeElement !== document.body) return
+      if (
+        !containerRef.current?.contains(document.activeElement) &&
+        document.activeElement !== document.body
+      )
+        return
       const v = videoRef.current
       if (!v) return
-      if (e.code === 'Space') { e.preventDefault(); playing ? v.pause() : v.play() }
-      else if (e.code === 'ArrowLeft') { e.preventDefault(); v.currentTime = Math.max(0, v.currentTime - 5) }
-      else if (e.code === 'ArrowRight') { e.preventDefault(); v.currentTime = Math.min(v.duration, v.currentTime + 5) }
-      else if (e.key === 'f') toggleFullscreen()
-      else if (e.key === 'm') { v.muted = !v.muted }
+      if (e.code === 'Space') {
+        e.preventDefault()
+        playing ? v.pause() : v.play()
+      } else if (e.code === 'ArrowLeft') {
+        e.preventDefault()
+        v.currentTime = Math.max(0, v.currentTime - 5)
+      } else if (e.code === 'ArrowRight') {
+        e.preventDefault()
+        v.currentTime = Math.min(v.duration, v.currentTime + 5)
+      } else if (e.key === 'f') toggleFullscreen()
+      else if (e.key === 'm') {
+        v.muted = !v.muted
+      }
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
@@ -219,7 +247,9 @@ export default function VideoPlayer({ src, onClose }) {
       ref={containerRef}
       className="relative w-full aspect-video bg-black rounded overflow-hidden group"
       onMouseMove={resetHideTimer}
-      onMouseLeave={() => { if (playing) setShowControls(false) }}
+      onMouseLeave={() => {
+        if (playing) setShowControls(false)
+      }}
     >
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
       <video
@@ -250,12 +280,18 @@ export default function VideoPlayer({ src, onClose }) {
         {/* Bottom controls row */}
         <div className="flex items-center gap-2 px-3 pb-2.5 pt-1">
           {/* Play/Pause */}
-          <button onClick={togglePlay} className="text-white hover:text-indigo-300 transition-colors w-6 text-center">
+          <button
+            onClick={togglePlay}
+            className="text-white hover:text-indigo-300 transition-colors w-6 text-center"
+          >
             {playing ? '⏸' : '▶'}
           </button>
 
           {/* Volume */}
-          <button onClick={toggleMute} className="text-white hover:text-indigo-300 transition-colors w-5 text-center text-xs">
+          <button
+            onClick={toggleMute}
+            className="text-white hover:text-indigo-300 transition-colors w-5 text-center text-xs"
+          >
             {muted || volume === 0 ? '🔇' : volume < 0.5 ? '🔉' : '🔊'}
           </button>
           <input
@@ -278,14 +314,14 @@ export default function VideoPlayer({ src, onClose }) {
           {/* Speed */}
           <div className="relative">
             <button
-              onClick={() => setShowSpeedMenu(p => !p)}
+              onClick={() => setShowSpeedMenu((p) => !p)}
               className="text-xs text-gray-300 hover:text-white transition-colors px-1.5 py-0.5 rounded bg-gray-700/60 hover:bg-gray-600/80 tabular-nums"
             >
               {playbackRate}×
             </button>
             {showSpeedMenu && (
               <div className="absolute bottom-full right-0 mb-1 bg-gray-800 border border-gray-600 rounded shadow-lg overflow-hidden">
-                {SPEEDS.map(s => (
+                {SPEEDS.map((s) => (
                   <button
                     key={s}
                     onClick={() => setSpeed(s)}

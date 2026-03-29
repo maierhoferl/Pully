@@ -30,7 +30,10 @@ if (process.defaultMaxListeners < 20) {
 // regardless of whether the page is served from file:// or http://localhost.
 // Must be called before app.ready.
 protocol.registerSchemesAsPrivileged([
-  { scheme: 'pully', privileges: { standard: true, secure: true, corsEnabled: true, bypassCSP: true } }
+  {
+    scheme: 'pully',
+    privileges: { standard: true, secure: true, corsEnabled: true, bypassCSP: true }
+  }
 ])
 
 app.setName('Pully')
@@ -53,7 +56,7 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
-      webviewTag: true,
+      webviewTag: true
     }
   })
 
@@ -86,15 +89,22 @@ app.whenReady().then(() => {
   // Serve local files via pully:// — replaces file:// which is blocked
   // from http://localhost origins in dev mode.
   // Supports range requests so HTML5 <video> can seek/stream video files.
-  protocol.handle('pully', req => {
+  protocol.handle('pully', (req) => {
     const filePath = fileURLToPath(req.url.replace(/^pully:/, 'file:'))
     try {
       const stat = fs.statSync(filePath)
       const ext = path.extname(filePath).toLowerCase().slice(1)
       const mimeTypes = {
-        jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', png: 'image/png',
-        mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime',
-        mkv: 'video/x-matroska', m4v: 'video/mp4', avi: 'video/x-msvideo'
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+        webp: 'image/webp',
+        png: 'image/png',
+        mp4: 'video/mp4',
+        webm: 'video/webm',
+        mov: 'video/quicktime',
+        mkv: 'video/x-matroska',
+        m4v: 'video/mp4',
+        avi: 'video/x-msvideo'
       }
       const contentType = mimeTypes[ext] || 'application/octet-stream'
 
@@ -152,7 +162,7 @@ app.whenReady().then(() => {
       }
       startBackgroundUpdates(session.defaultSession)
     })
-    .catch(err => logger.error('app', 'Adblock init failed', { error: err.message }))
+    .catch((err) => logger.error('app', 'Adblock init failed', { error: err.message }))
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

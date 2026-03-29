@@ -13,6 +13,7 @@
 ### Task 1: Write failing tests for MediaEntry
 
 **Files:**
+
 - Create: `tests/renderer/MediaPanel.test.jsx`
 
 - [ ] **Step 1: Create the test file**
@@ -29,16 +30,16 @@ const mockState = vi.hoisted(() => ({
   currentBrowserUrl: 'https://example.com',
   startMediaScan: vi.fn(),
   setMediaScanResults: vi.fn(),
-  downloads: [],
+  downloads: []
 }))
 
 vi.mock('@renderer/store/app-store.js', () => ({
-  useAppStore: vi.fn(selector => selector ? selector(mockState) : mockState),
+  useAppStore: vi.fn((selector) => (selector ? selector(mockState) : mockState))
 }))
 
 window.api = {
   addDownload: vi.fn(async () => 'dl-1'),
-  rememberMedia: vi.fn(async () => ({ alreadyExists: false })),
+  rememberMedia: vi.fn(async () => ({ alreadyExists: false }))
 }
 
 import { MediaPanel } from '@renderer/components/MediaPanel.jsx'
@@ -50,8 +51,8 @@ const baseEntry = {
   webpage_url: 'https://example.com/vid1',
   formats: [
     { format_id: 'f1', height: 1080, ext: 'mp4', filesize: null },
-    { format_id: 'f2', height: 720, ext: 'mp4', filesize: null },
-  ],
+    { format_id: 'f2', height: 720, ext: 'mp4', filesize: null }
+  ]
 }
 
 beforeEach(() => vi.clearAllMocks())
@@ -64,7 +65,9 @@ describe('MediaEntry type indicator', () => {
   })
 
   it('shows "Playlist" when playlist_id is present', () => {
-    mockState.mediaScanResults = [{ ...baseEntry, playlist_id: 'PL123', playlist_title: 'My Playlist' }]
+    mockState.mediaScanResults = [
+      { ...baseEntry, playlist_id: 'PL123', playlist_title: 'My Playlist' }
+    ]
     render(<MediaPanel />)
     expect(screen.getByText('Playlist')).toBeTruthy()
   })
@@ -106,6 +109,7 @@ git commit -m "test: add failing tests for MediaEntry type indicator and layout"
 ### Task 2: Implement the new MediaEntry layout
 
 **Files:**
+
 - Modify: `src/renderer/src/components/MediaPanel.jsx`
 
 - [ ] **Step 1: Update `DownloadButton` to compact sizing**
@@ -114,8 +118,8 @@ Find the `DownloadButton` component (lines 33–59) and change the button's clas
 
 ```jsx
 function DownloadButton({ downloadId }) {
-  const downloads = useAppStore(s => s.downloads)
-  const dl = downloads.find(d => d.id === downloadId)
+  const downloads = useAppStore((s) => s.downloads)
+  const dl = downloads.find((d) => d.id === downloadId)
 
   if (!dl) return null
 
@@ -135,7 +139,10 @@ function DownloadButton({ downloadId }) {
   }
 
   return (
-    <button disabled className={`text-xs font-semibold px-2 py-1 rounded flex-shrink-0 transition-colors text-center ${style}`}>
+    <button
+      disabled
+      className={`text-xs font-semibold px-2 py-1 rounded flex-shrink-0 transition-colors text-center ${style}`}
+    >
       {label}
     </button>
   )
@@ -152,7 +159,7 @@ const rememberStyle = {
   pending: 'bg-gray-600 text-gray-400 cursor-not-allowed',
   done: 'bg-purple-800 text-purple-200 cursor-default',
   exists: 'bg-gray-700 text-gray-400 cursor-default',
-  error: 'bg-red-800 text-red-200 cursor-default',
+  error: 'bg-red-800 text-red-200 cursor-default'
 }[rememberState]
 ```
 
@@ -161,61 +168,68 @@ const rememberStyle = {
 Replace the entire `return (...)` block in `MediaEntry` (lines 111–144) with:
 
 ```jsx
-  const isPlaylist = Boolean(entry.playlist_id)
+const isPlaylist = Boolean(entry.playlist_id)
 
-  return (
-    <div className="bg-gray-800 hover:bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 transition-colors">
-      {/* Title */}
-      <p className="text-sm font-medium text-white truncate leading-snug" title={entry.title}>
-        {entry.title || entry.id}
-      </p>
-      {/* Metadata line: type indicator + quality selector */}
-      <div className="flex items-center gap-3 mt-0.5">
-        <span className="text-[0.65rem] text-gray-400 flex-shrink-0">
-          {isPlaylist ? 'Playlist' : 'Single video'}
-        </span>
-        <select
-          value={selected}
-          onChange={e => setSelected(e.target.value)}
-          className="text-[0.7rem] bg-gray-700 border border-gray-600 rounded px-1.5 py-0.5 text-gray-300"
-        >
-          {formats.map(f => <option key={f.format_id} value={f.format_id}>{f.label}</option>)}
-        </select>
-      </div>
-      {/* Thumbnail + action buttons */}
-      <div className="flex gap-3 mt-2">
-        {entry.thumbnail && (
-          <img
-            src={entry.thumbnail}
-            alt=""
-            className="w-24 h-14 object-cover rounded-md flex-shrink-0 shadow"
-            onError={e => { e.target.style.display = 'none' }}
-          />
-        )}
-        <div className="flex flex-col gap-1.5">
-          <button
-            onClick={handleRemember}
-            disabled={rememberState !== 'idle'}
-            title={rememberState === 'exists' ? 'Already in library' : 'Save reference without downloading'}
-            className={`text-xs font-semibold px-2 py-1 rounded flex-shrink-0 transition-colors ${rememberStyle}`}
-          >
-            {rememberLabel}
-          </button>
-          {downloadId
-            ? <DownloadButton downloadId={downloadId} />
-            : (
-              <button
-                onClick={handleDownload}
-                className="text-xs font-semibold bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white px-2 py-1 rounded flex-shrink-0 transition-colors"
-              >
-                Download
-              </button>
-            )
+return (
+  <div className="bg-gray-800 hover:bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 transition-colors">
+    {/* Title */}
+    <p className="text-sm font-medium text-white truncate leading-snug" title={entry.title}>
+      {entry.title || entry.id}
+    </p>
+    {/* Metadata line: type indicator + quality selector */}
+    <div className="flex items-center gap-3 mt-0.5">
+      <span className="text-[0.65rem] text-gray-400 flex-shrink-0">
+        {isPlaylist ? 'Playlist' : 'Single video'}
+      </span>
+      <select
+        value={selected}
+        onChange={(e) => setSelected(e.target.value)}
+        className="text-[0.7rem] bg-gray-700 border border-gray-600 rounded px-1.5 py-0.5 text-gray-300"
+      >
+        {formats.map((f) => (
+          <option key={f.format_id} value={f.format_id}>
+            {f.label}
+          </option>
+        ))}
+      </select>
+    </div>
+    {/* Thumbnail + action buttons */}
+    <div className="flex gap-3 mt-2">
+      {entry.thumbnail && (
+        <img
+          src={entry.thumbnail}
+          alt=""
+          className="w-24 h-14 object-cover rounded-md flex-shrink-0 shadow"
+          onError={(e) => {
+            e.target.style.display = 'none'
+          }}
+        />
+      )}
+      <div className="flex flex-col gap-1.5">
+        <button
+          onClick={handleRemember}
+          disabled={rememberState !== 'idle'}
+          title={
+            rememberState === 'exists' ? 'Already in library' : 'Save reference without downloading'
           }
-        </div>
+          className={`text-xs font-semibold px-2 py-1 rounded flex-shrink-0 transition-colors ${rememberStyle}`}
+        >
+          {rememberLabel}
+        </button>
+        {downloadId ? (
+          <DownloadButton downloadId={downloadId} />
+        ) : (
+          <button
+            onClick={handleDownload}
+            className="text-xs font-semibold bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white px-2 py-1 rounded flex-shrink-0 transition-colors"
+          >
+            Download
+          </button>
+        )}
       </div>
     </div>
-  )
+  </div>
+)
 ```
 
 Note: add `const isPlaylist = Boolean(entry.playlist_id)` just before the `return` statement, inside `MediaEntry`.
@@ -252,6 +266,7 @@ npm run dev
 Open e.g. `https://www.youtube.com/watch?v=dQw4w9WgXcQ`
 
 Expected:
+
 - Side panel shows the entry with Library-style border (`rounded-lg`, dark background, gray border)
 - Title on first line, "Single video" + quality selector on second line (same row)
 - Thumbnail on left, green Remember button above blue Download button on right
@@ -262,6 +277,7 @@ Expected:
 Open e.g. `https://www.youtube.com/playlist?list=PLbpi6ZahtOH6Ar_3GPy3workspaceVid`
 
 Expected:
+
 - Each entry shows "Playlist" instead of "Single video" on the metadata line
 
 - [ ] **Step 4: Run the full test suite to check for regressions**

@@ -5,7 +5,7 @@ import ProgressPanel from './ProgressPanel.jsx'
 
 // Mock DownloadRow to avoid complex rendering
 vi.mock('./DownloadRow.jsx', () => ({
-  DownloadRow: ({ item }) => <div data-testid="download-row">{item.title}</div>,
+  DownloadRow: ({ item }) => <div data-testid="download-row">{item.title}</div>
 }))
 
 afterEach(() => {
@@ -28,8 +28,8 @@ test('renders download rows for all downloads', () => {
   useAppStore.setState({
     downloads: [
       { id: '1', title: 'Video A', status: 'downloading', percent: 50 },
-      { id: '2', title: 'Video B', status: 'done' },
-    ],
+      { id: '2', title: 'Video B', status: 'done' }
+    ]
   })
   render(<ProgressPanel />)
   const rows = screen.getAllByTestId('download-row')
@@ -40,8 +40,8 @@ test('renders active downloads before completed ones', () => {
   useAppStore.setState({
     downloads: [
       { id: '1', title: 'Done Video', status: 'done' },
-      { id: '2', title: 'Active Video', status: 'downloading', percent: 40 },
-    ],
+      { id: '2', title: 'Active Video', status: 'downloading', percent: 40 }
+    ]
   })
   render(<ProgressPanel />)
   const rows = screen.getAllByTestId('download-row')
@@ -53,8 +53,8 @@ test('renders cancelling downloads as active (before done)', () => {
   useAppStore.setState({
     downloads: [
       { id: '1', title: 'Done Video', status: 'done' },
-      { id: '2', title: 'Cancelling Video', status: 'cancelling' },
-    ],
+      { id: '2', title: 'Cancelling Video', status: 'cancelling' }
+    ]
   })
   render(<ProgressPanel />)
   const rows = screen.getAllByTestId('download-row')

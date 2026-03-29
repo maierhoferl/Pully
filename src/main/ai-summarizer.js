@@ -21,7 +21,9 @@ export async function generateSummary(filePath, metadata, config) {
     const folderPath = path.dirname(filePath)
     const customPromptPath = path.join(folderPath, 'summary-prompt.md')
 
-    let prompt = defaultSummaryPrompt || 'Summarize the key topics and insights in concise bullet points. Cover the what, why, how and the implications. Use concise language of an expert. Never go beyond what is covered.'
+    let prompt =
+      defaultSummaryPrompt ||
+      'Summarize the key topics and insights in concise bullet points. Cover the what, why, how and the implications. Use concise language of an expert. Never go beyond what is covered.'
     let promptSource = 'default'
     if (fs.existsSync(customPromptPath)) {
       const custom = fs.readFileSync(customPromptPath, 'utf8').trim()

@@ -20,6 +20,6 @@ exports.default = async function notarizing(context) {
     appPath,
     appleId: process.env.APPLE_ID,
     appleIdPassword: process.env.APPLE_ID_PASSWORD,
-    teamId: process.env.APPLE_TEAM_ID,
+    teamId: process.env.APPLE_TEAM_ID
   })
 }

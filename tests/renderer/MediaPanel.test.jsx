@@ -9,16 +9,16 @@ const mockState = vi.hoisted(() => ({
   currentBrowserUrl: 'https://example.com',
   startMediaScan: vi.fn(),
   setMediaScanResults: vi.fn(),
-  downloads: [],
+  downloads: []
 }))
 
 vi.mock('@renderer/store/app-store.js', () => ({
-  useAppStore: vi.fn(selector => selector ? selector(mockState) : mockState),
+  useAppStore: vi.fn((selector) => (selector ? selector(mockState) : mockState))
 }))
 
 window.api = {
   addDownload: vi.fn(async () => 'dl-1'),
-  rememberMedia: vi.fn(async () => ({ alreadyExists: false })),
+  rememberMedia: vi.fn(async () => ({ alreadyExists: false }))
 }
 
 import { MediaPanel } from '@renderer/components/MediaPanel.jsx'
@@ -30,8 +30,8 @@ const baseEntry = {
   webpage_url: 'https://example.com/vid1',
   formats: [
     { format_id: 'f1', height: 1080, ext: 'mp4', filesize: null },
-    { format_id: 'f2', height: 720, ext: 'mp4', filesize: null },
-  ],
+    { format_id: 'f2', height: 720, ext: 'mp4', filesize: null }
+  ]
 }
 
 beforeEach(() => {
@@ -49,7 +49,9 @@ describe('MediaEntry type indicator', () => {
   })
 
   it('shows "Playlist" when playlist_id is present', () => {
-    mockState.mediaScanResults = [{ ...baseEntry, playlist_id: 'PL123', playlist_title: 'My Playlist' }]
+    mockState.mediaScanResults = [
+      { ...baseEntry, playlist_id: 'PL123', playlist_title: 'My Playlist' }
+    ]
     render(<MediaPanel />)
     expect(screen.getByText('Playlist')).toBeTruthy()
   })

@@ -12,45 +12,49 @@
 
 ## File Map
 
-| Action | Path |
-|--------|------|
-| Create | `src/main/auto-classifier.js` |
-| Create | `tests/main/auto-classifier.test.js` |
-| Modify | `src/main/config-store.js` |
-| Modify | `tests/main/config-store.test.js` |
-| Modify | `src/main/ipc-handlers.js` |
-| Modify | `src/main/download-manager.js` |
-| Modify | `tests/main/download-manager.test.js` |
-| Modify | `src/preload/index.js` |
-| Modify | `src/renderer/src/components/SettingsPanel.jsx` |
+| Action | Path                                             |
+| ------ | ------------------------------------------------ |
+| Create | `src/main/auto-classifier.js`                    |
+| Create | `tests/main/auto-classifier.test.js`             |
+| Modify | `src/main/config-store.js`                       |
+| Modify | `tests/main/config-store.test.js`                |
+| Modify | `src/main/ipc-handlers.js`                       |
+| Modify | `src/main/download-manager.js`                   |
+| Modify | `tests/main/download-manager.test.js`            |
+| Modify | `src/preload/index.js`                           |
+| Modify | `src/renderer/src/components/SettingsPanel.jsx`  |
 | Modify | `src/renderer/src/components/LibraryToolbar.jsx` |
-| Modify | `src/renderer/src/components/LibraryTab.jsx` |
-| Modify | `electron-builder.yml` |
-| Modify | `package.json` |
+| Modify | `src/renderer/src/components/LibraryTab.jsx`     |
+| Modify | `electron-builder.yml`                           |
+| Modify | `package.json`                                   |
 
 ---
 
 ## Task 1: Install `@huggingface/transformers`
 
 **Files:**
+
 - Modify: `package.json`
 - Modify: `electron-builder.yml`
 
 - [ ] **Step 1: Add dependency and install**
 
 Run:
+
 ```bash
 npm install @huggingface/transformers
 ```
+
 Expected: package added to `dependencies` in `package.json`, `node_modules/@huggingface/transformers` exists.
 
 - [ ] **Step 2: Add asarUnpack for onnx native binaries**
 
 In `electron-builder.yml`, add after the `files:` block:
+
 ```yaml
 asarUnpack:
-  - "node_modules/@huggingface/transformers/**"
-  - "node_modules/onnxruntime-node/**"
+  - 'node_modules/@huggingface/transformers/**'
+  - 'node_modules/onnxruntime-node/**'
 ```
 
 - [ ] **Step 3: Commit**
@@ -65,12 +69,14 @@ git commit -m "chore: add @huggingface/transformers for local video classificati
 ## Task 2: `auto-classifier.js` — Tier 1 keyword matching
 
 **Files:**
+
 - Create: `src/main/auto-classifier.js`
 - Create: `tests/main/auto-classifier.test.js`
 
 - [ ] **Step 1: Write failing tests for keyword tier**
 
 Create `tests/main/auto-classifier.test.js`:
+
 ```javascript
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
@@ -87,7 +93,11 @@ beforeEach(() => vi.clearAllMocks())
 
 describe('classifyVideo — Tier 1 keyword', () => {
   it('returns none when folder list is empty', async () => {
-    const result = await classifyVideo({ title: 'test', uploader: '', description: '', url: '' }, [], {})
+    const result = await classifyVideo(
+      { title: 'test', uploader: '', description: '', url: '' },
+      [],
+      {}
+    )
     expect(result).toEqual({ folder: null, tier: 'none' })
   })
 
@@ -100,7 +110,12 @@ describe('classifyVideo — Tier 1 keyword', () => {
 
   it('assigns folder when multi-token folder scores >= 2', async () => {
     // "Cooking and Food" → tokens ["cooking","food"] both match title
-    const video = { title: 'Homemade cooking with fresh food', uploader: '', description: '', url: '' }
+    const video = {
+      title: 'Homemade cooking with fresh food',
+      uploader: '',
+      description: '',
+      url: ''
+    }
     const result = await classifyVideo(video, ['Cooking and Food', 'Gaming'], {})
     expect(result).toEqual({ folder: 'Cooking and Food', tier: 'keyword' })
   })
@@ -124,7 +139,12 @@ describe('classifyVideo — Tier 1 keyword', () => {
   })
 
   it('matches token in description field', async () => {
-    const video = { title: 'Weekly update', uploader: '', description: 'This week in gaming highlights', url: '' }
+    const video = {
+      title: 'Weekly update',
+      uploader: '',
+      description: 'This week in gaming highlights',
+      url: ''
+    }
     const result = await classifyVideo(video, ['Gaming', 'Music'], {})
     expect(result).toEqual({ folder: 'Gaming', tier: 'keyword' })
   })
@@ -136,6 +156,7 @@ describe('classifyVideo — Tier 1 keyword', () => {
 ```bash
 npx vitest run tests/main/auto-classifier.test.js
 ```
+
 Expected: FAIL — `Cannot find module '../../src/main/auto-classifier.js'`
 
 - [ ] **Step 3: Create `src/main/auto-classifier.js` with Tier 1 only**
@@ -149,7 +170,11 @@ let embeddingPipeline = null
 // --- Tier 1: Keyword matching ---
 
 function tokenize(str) {
-  return str.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(t => t.length > 1)
+  return str
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter((t) => t.length > 1)
 }
 
 function classifyByKeyword(videoEntry, folderNames) {
@@ -158,16 +183,22 @@ function classifyByKeyword(videoEntry, folderNames) {
     videoEntry.uploader || '',
     (videoEntry.description || '').slice(0, 300),
     videoEntry.url || ''
-  ].join(' ').toLowerCase()
+  ]
+    .join(' ')
+    .toLowerCase()
 
   const scores = folderNames
-    .map(name => ({ folder: name, score: tokenize(name).filter(token => blob.includes(token)).length }))
+    .map((name) => ({
+      folder: name,
+      score: tokenize(name).filter((token) => blob.includes(token)).length
+    }))
     .sort((a, b) => b.score - a.score)
 
   if (!scores.length) return null
   const [best, second] = scores
   if (best.score >= 2) return best.folder
-  if (best.score >= 1 && (!second || second.score === 0 || best.score >= second.score * 2)) return best.folder
+  if (best.score >= 1 && (!second || second.score === 0 || best.score >= second.score * 2))
+    return best.folder
   return null
 }
 
@@ -194,13 +225,21 @@ export async function classifyVideo(videoEntry, folderNames, config = {}) {
   try {
     const embedding = await classifyByEmbedding(videoEntry, folderNames)
     if (embedding) return { folder: embedding, tier: 'embedding' }
-  } catch { /* fall through */ }
+  } catch {
+    /* fall through */
+  }
 
-  if (config.autoClassifyProvider && config.autoClassifyProvider !== 'local' && config.autoClassifyApiKey) {
+  if (
+    config.autoClassifyProvider &&
+    config.autoClassifyProvider !== 'local' &&
+    config.autoClassifyApiKey
+  ) {
     try {
       const llm = await classifyByLLM(videoEntry, folderNames, config)
       if (llm) return { folder: llm, tier: 'llm' }
-    } catch { /* fall through */ }
+    } catch {
+      /* fall through */
+    }
   }
 
   return { folder: null, tier: 'none' }
@@ -216,6 +255,7 @@ export async function fetchProviderModels(provider, apiKey) {
 ```bash
 npx vitest run tests/main/auto-classifier.test.js
 ```
+
 Expected: All 6 keyword tests PASS.
 
 - [ ] **Step 5: Commit**
@@ -230,12 +270,14 @@ git commit -m "feat: add auto-classifier Tier 1 keyword matching"
 ## Task 3: `auto-classifier.js` — Tier 2 embedding similarity
 
 **Files:**
+
 - Modify: `src/main/auto-classifier.js`
 - Modify: `tests/main/auto-classifier.test.js`
 
 - [ ] **Step 1: Add failing embedding tests**
 
 Append to `tests/main/auto-classifier.test.js`:
+
 ```javascript
 describe('classifyVideo — Tier 2 embedding', () => {
   it('assigns folder when cosine similarity >= 0.45', async () => {
@@ -289,14 +331,18 @@ describe('classifyVideo — Tier 2 embedding', () => {
 ```bash
 npx vitest run tests/main/auto-classifier.test.js
 ```
+
 Expected: embedding tests FAIL (current `classifyByEmbedding` returns null always).
 
 - [ ] **Step 3: Implement Tier 2 in `src/main/auto-classifier.js`**
 
 Replace the `classifyByEmbedding` stub function:
+
 ```javascript
 function cosineSimilarity(a, b) {
-  let dot = 0, magA = 0, magB = 0
+  let dot = 0,
+    magA = 0,
+    magB = 0
   for (let i = 0; i < a.length; i++) {
     dot += a[i] * b[i]
     magA += a[i] * a[i]
@@ -308,7 +354,9 @@ function cosineSimilarity(a, b) {
 
 async function getEmbeddingPipeline() {
   if (!embeddingPipeline) {
-    embeddingPipeline = await hfPipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', { device: 'cpu' })
+    embeddingPipeline = await hfPipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
+      device: 'cpu'
+    })
   }
   return embeddingPipeline
 }
@@ -324,7 +372,10 @@ async function classifyByEmbedding(videoEntry, folderNames) {
   for (const folder of folderNames) {
     const out = await pipe(folder, { pooling: 'mean', normalize: true })
     const sim = cosineSimilarity(videoVec, Array.from(out.data))
-    if (sim > bestSim) { bestSim = sim; bestFolder = folder }
+    if (sim > bestSim) {
+      bestSim = sim
+      bestFolder = folder
+    }
   }
 
   return bestSim >= 0.45 ? bestFolder : null
@@ -332,12 +383,16 @@ async function classifyByEmbedding(videoEntry, folderNames) {
 ```
 
 Also add a test-only reset export at the bottom of the file (before `fetchProviderModels`):
+
 ```javascript
 // Allows tests to reset the cached pipeline between test suites
-export function _resetEmbeddingCache() { embeddingPipeline = null }
+export function _resetEmbeddingCache() {
+  embeddingPipeline = null
+}
 ```
 
 In the test file, replace the existing `import { classifyVideo } from ...` line and the existing `beforeEach` with:
+
 ```javascript
 import { classifyVideo, _resetEmbeddingCache } from '../../src/main/auto-classifier.js'
 
@@ -352,6 +407,7 @@ beforeEach(() => {
 ```bash
 npx vitest run tests/main/auto-classifier.test.js
 ```
+
 Expected: All tests PASS.
 
 - [ ] **Step 5: Commit**
@@ -366,12 +422,14 @@ git commit -m "feat: add auto-classifier Tier 2 semantic embedding similarity"
 ## Task 4: `auto-classifier.js` — Tier 3 LLM + `fetchProviderModels`
 
 **Files:**
+
 - Modify: `src/main/auto-classifier.js`
 - Modify: `tests/main/auto-classifier.test.js`
 
 - [ ] **Step 1: Add failing LLM and fetchProviderModels tests**
 
 Append to `tests/main/auto-classifier.test.js`:
+
 ```javascript
 import { fetchProviderModels } from '../../src/main/auto-classifier.js'
 
@@ -391,7 +449,11 @@ describe('classifyVideo — Tier 3 LLM', () => {
     global.fetch.mockResolvedValue({
       json: async () => ({ content: [{ text: 'Cooking' }] })
     })
-    const config = { autoClassifyProvider: 'claude', autoClassifyApiKey: 'sk-test', autoClassifyModel: '' }
+    const config = {
+      autoClassifyProvider: 'claude',
+      autoClassifyApiKey: 'sk-test',
+      autoClassifyModel: ''
+    }
     const result = await classifyVideo(
       { title: 'Perfect carbonara recipe', uploader: '', description: '', url: '' },
       ['Cooking', 'Gaming'],
@@ -404,7 +466,11 @@ describe('classifyVideo — Tier 3 LLM', () => {
     global.fetch.mockResolvedValue({
       json: async () => ({ candidates: [{ content: { parts: [{ text: 'Gaming' }] } }] })
     })
-    const config = { autoClassifyProvider: 'gemini', autoClassifyApiKey: 'key-test', autoClassifyModel: '' }
+    const config = {
+      autoClassifyProvider: 'gemini',
+      autoClassifyApiKey: 'key-test',
+      autoClassifyModel: ''
+    }
     const result = await classifyVideo(
       { title: 'Speedrun world record', uploader: '', description: '', url: '' },
       ['Cooking', 'Gaming'],
@@ -417,7 +483,11 @@ describe('classifyVideo — Tier 3 LLM', () => {
     global.fetch.mockResolvedValue({
       json: async () => ({ choices: [{ message: { content: 'Cooking' } }] })
     })
-    const config = { autoClassifyProvider: 'openai', autoClassifyApiKey: 'sk-open', autoClassifyModel: 'gpt-5-nano' }
+    const config = {
+      autoClassifyProvider: 'openai',
+      autoClassifyApiKey: 'sk-open',
+      autoClassifyModel: 'gpt-5-nano'
+    }
     const result = await classifyVideo(
       { title: 'Baking bread tutorial', uploader: '', description: '', url: '' },
       ['Cooking', 'Gaming'],
@@ -428,7 +498,11 @@ describe('classifyVideo — Tier 3 LLM', () => {
 
   it('returns none when LLM responds "none"', async () => {
     global.fetch.mockResolvedValue({ json: async () => ({ content: [{ text: 'none' }] }) })
-    const config = { autoClassifyProvider: 'claude', autoClassifyApiKey: 'sk-test', autoClassifyModel: '' }
+    const config = {
+      autoClassifyProvider: 'claude',
+      autoClassifyApiKey: 'sk-test',
+      autoClassifyModel: ''
+    }
     const result = await classifyVideo(
       { title: 'Unclassifiable content', uploader: '', description: '', url: '' },
       ['Cooking', 'Gaming'],
@@ -439,7 +513,11 @@ describe('classifyVideo — Tier 3 LLM', () => {
 
   it('returns none when LLM response is not in folder list', async () => {
     global.fetch.mockResolvedValue({ json: async () => ({ content: [{ text: 'Sports' }] }) })
-    const config = { autoClassifyProvider: 'claude', autoClassifyApiKey: 'sk-test', autoClassifyModel: '' }
+    const config = {
+      autoClassifyProvider: 'claude',
+      autoClassifyApiKey: 'sk-test',
+      autoClassifyModel: ''
+    }
     const result = await classifyVideo(
       { title: 'Soccer match', uploader: '', description: '', url: '' },
       ['Cooking', 'Gaming'],
@@ -450,7 +528,11 @@ describe('classifyVideo — Tier 3 LLM', () => {
 
   it('skips LLM when provider is "local"', async () => {
     const config = { autoClassifyProvider: 'local', autoClassifyApiKey: '' }
-    await classifyVideo({ title: 'test', uploader: '', description: '', url: '' }, ['Cooking'], config)
+    await classifyVideo(
+      { title: 'test', uploader: '', description: '', url: '' },
+      ['Cooking'],
+      config
+    )
     expect(fetch).not.toHaveBeenCalled()
   })
 })
@@ -493,20 +575,24 @@ describe('fetchProviderModels', () => {
 ```bash
 npx vitest run tests/main/auto-classifier.test.js
 ```
+
 Expected: LLM and fetchProviderModels tests FAIL.
 
 - [ ] **Step 3: Implement Tier 3 and `fetchProviderModels` in `src/main/auto-classifier.js`**
 
 Add these constants and functions before the `classifyVideo` export:
+
 ```javascript
 const DEFAULT_MODELS = {
   claude: 'claude-haiku-4-6',
   gemini: 'gemini-3.1-flash-lite',
-  openai: 'gpt-5-nano',
+  openai: 'gpt-5-nano'
 }
 
 function buildLLMPrompt(videoEntry, folderNames) {
-  const desc = videoEntry.description ? '. Description: ' + videoEntry.description.slice(0, 100) : ''
+  const desc = videoEntry.description
+    ? '. Description: ' + videoEntry.description.slice(0, 100)
+    : ''
   return `Folders: ${folderNames.join(', ')}\nVideo: "${videoEntry.title || ''}" by "${videoEntry.uploader || ''}"${desc}\nReply with exactly one folder name from the list, or "none".`
 }
 
@@ -519,23 +605,33 @@ async function classifyByLLM(videoEntry, folderNames, config) {
   if (autoClassifyProvider === 'claude') {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': autoClassifyApiKey, 'anthropic-version': '2023-06-01' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': autoClassifyApiKey,
+        'anthropic-version': '2023-06-01'
+      },
       body: JSON.stringify({ model, max_tokens: 50, messages: [{ role: 'user', content: prompt }] })
     })
     const data = await resp.json()
     raw = data.content?.[0]?.text?.trim() || null
   } else if (autoClassifyProvider === 'gemini') {
-    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${autoClassifyApiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-    })
+    const resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${autoClassifyApiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+      }
+    )
     const data = await resp.json()
     raw = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null
   } else if (autoClassifyProvider === 'openai') {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${autoClassifyApiKey}` },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${autoClassifyApiKey}`
+      },
       body: JSON.stringify({ model, max_tokens: 50, messages: [{ role: 'user', content: prompt }] })
     })
     const data = await resp.json()
@@ -543,11 +639,12 @@ async function classifyByLLM(videoEntry, folderNames, config) {
   }
 
   if (!raw || raw.toLowerCase() === 'none') return null
-  return folderNames.find(f => f.toLowerCase() === raw.toLowerCase()) || null
+  return folderNames.find((f) => f.toLowerCase() === raw.toLowerCase()) || null
 }
 ```
 
 Replace the `fetchProviderModels` stub:
+
 ```javascript
 export async function fetchProviderModels(provider, apiKey) {
   try {
@@ -556,21 +653,25 @@ export async function fetchProviderModels(provider, apiKey) {
         headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' }
       })
       const data = await resp.json()
-      return (data.data || []).map(m => m.id)
+      return (data.data || []).map((m) => m.id)
     }
     if (provider === 'gemini') {
-      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`)
+      const resp = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`
+      )
       const data = await resp.json()
-      return (data.models || []).map(m => m.name.replace('models/', ''))
+      return (data.models || []).map((m) => m.name.replace('models/', ''))
     }
     if (provider === 'openai') {
       const resp = await fetch('https://api.openai.com/v1/models', {
-        headers: { 'Authorization': `Bearer ${apiKey}` }
+        headers: { Authorization: `Bearer ${apiKey}` }
       })
       const data = await resp.json()
-      return (data.data || []).map(m => m.id).sort()
+      return (data.data || []).map((m) => m.id).sort()
     }
-  } catch { /* network error */ }
+  } catch {
+    /* network error */
+  }
   return []
 }
 ```
@@ -580,6 +681,7 @@ export async function fetchProviderModels(provider, apiKey) {
 ```bash
 npx vitest run tests/main/auto-classifier.test.js
 ```
+
 Expected: All tests PASS.
 
 - [ ] **Step 5: Commit**
@@ -594,12 +696,14 @@ git commit -m "feat: add auto-classifier Tier 3 LLM and fetchProviderModels"
 ## Task 5: Config store — add 4 new fields
 
 **Files:**
+
 - Modify: `src/main/config-store.js`
 - Modify: `tests/main/config-store.test.js`
 
 - [ ] **Step 1: Update the defaults test to include new fields**
 
 In `tests/main/config-store.test.js`, update the "returns defaults" test:
+
 ```javascript
 it('returns defaults when no file exists', () => {
   const cfg = readConfig(path.join(tmp, 'cfg.json'))
@@ -616,11 +720,13 @@ it('returns defaults when no file exists', () => {
 ```bash
 npx vitest run tests/main/config-store.test.js
 ```
+
 Expected: FAIL — `autoClassifyEnabled` is undefined.
 
 - [ ] **Step 3: Add new fields to `getDefaults()` in `src/main/config-store.js`**
 
 Replace the `getDefaults` function:
+
 ```javascript
 function getDefaults() {
   const { app } = _require('electron')
@@ -632,7 +738,7 @@ function getDefaults() {
     autoClassifyEnabled: false,
     autoClassifyProvider: 'local',
     autoClassifyApiKey: '',
-    autoClassifyModel: '',
+    autoClassifyModel: ''
   }
 }
 ```
@@ -642,6 +748,7 @@ function getDefaults() {
 ```bash
 npx vitest run tests/main/config-store.test.js
 ```
+
 Expected: All tests PASS.
 
 - [ ] **Step 5: Commit**
@@ -656,55 +763,60 @@ git commit -m "feat: add autoClassify config fields to config-store"
 ## Task 6: IPC handlers — `library:autoClassify` and `classify:fetchModels`
 
 **Files:**
+
 - Modify: `src/main/ipc-handlers.js`
 
 - [ ] **Step 1: Add imports and two new handlers to `src/main/ipc-handlers.js`**
 
 Add to the imports at the top of the file:
+
 ```javascript
 import { classifyVideo, fetchProviderModels } from './auto-classifier.js'
 ```
 
 Add these two handlers inside `registerIpcHandlers`, after the `library:moveFile` handler:
+
 ```javascript
-  ipcMain.handle('library:autoClassify', async () => {
-    const config = readConfig()
-    const { outputFolder } = config
-    if (!outputFolder || !fs.existsSync(outputFolder)) return { moved: [], skipped: 0 }
+ipcMain.handle('library:autoClassify', async () => {
+  const config = readConfig()
+  const { outputFolder } = config
+  if (!outputFolder || !fs.existsSync(outputFolder)) return { moved: [], skipped: 0 }
 
-    const folderNames = fs.readdirSync(outputFolder)
-      .filter(f => !f.startsWith('.') && fs.statSync(path.join(outputFolder, f)).isDirectory())
-    if (folderNames.length === 0) return { moved: [], skipped: 0 }
+  const folderNames = fs
+    .readdirSync(outputFolder)
+    .filter((f) => !f.startsWith('.') && fs.statSync(path.join(outputFolder, f)).isDirectory())
+  if (folderNames.length === 0) return { moved: [], skipped: 0 }
 
-    const index = readMetadataIndex()
-    const rootFiles = fs.readdirSync(outputFolder)
-      .filter(f => !f.startsWith('.') && !fs.statSync(path.join(outputFolder, f)).isDirectory())
+  const index = readMetadataIndex()
+  const rootFiles = fs
+    .readdirSync(outputFolder)
+    .filter((f) => !f.startsWith('.') && !fs.statSync(path.join(outputFolder, f)).isDirectory())
 
-    const moved = []
-    let skipped = 0
-    for (const file of rootFiles) {
-      const filePath = path.join(outputFolder, file)
-      const meta = index[filePath] || {}
-      const { folder } = await classifyVideo(
-        { title: meta.title, uploader: meta.uploader, description: meta.description, url: meta.url },
-        folderNames,
-        config
-      )
-      if (folder) {
-        const newPath = path.join(outputFolder, folder, file)
-        fs.renameSync(filePath, newPath)
-        moveMetadataEntry(filePath, newPath)
-        moved.push({ file, toFolder: folder })
-      } else {
-        skipped++
-      }
+  const moved = []
+  let skipped = 0
+  for (const file of rootFiles) {
+    const filePath = path.join(outputFolder, file)
+    const meta = index[filePath] || {}
+    const { folder } = await classifyVideo(
+      { title: meta.title, uploader: meta.uploader, description: meta.description, url: meta.url },
+      folderNames,
+      config
+    )
+    if (folder) {
+      const newPath = path.join(outputFolder, folder, file)
+      fs.renameSync(filePath, newPath)
+      moveMetadataEntry(filePath, newPath)
+      moved.push({ file, toFolder: folder })
+    } else {
+      skipped++
     }
-    return { moved, skipped }
-  })
+  }
+  return { moved, skipped }
+})
 
-  ipcMain.handle('classify:fetchModels', (_, { provider, apiKey }) =>
-    fetchProviderModels(provider, apiKey)
-  )
+ipcMain.handle('classify:fetchModels', (_, { provider, apiKey }) =>
+  fetchProviderModels(provider, apiKey)
+)
 ```
 
 - [ ] **Step 2: Run full main test suite to verify no regressions**
@@ -712,6 +824,7 @@ Add these two handlers inside `registerIpcHandlers`, after the `library:moveFile
 ```bash
 npm run test
 ```
+
 Expected: All existing tests PASS.
 
 - [ ] **Step 3: Commit**
@@ -726,11 +839,13 @@ git commit -m "feat: add library:autoClassify and classify:fetchModels IPC handl
 ## Task 7: Preload bridge — expose new APIs
 
 **Files:**
+
 - Modify: `src/preload/index.js`
 
 - [ ] **Step 1: Add two new entries to the context bridge**
 
 In `src/preload/index.js`, add after the `deleteFolder` line inside the `contextBridge.exposeInMainWorld` call:
+
 ```javascript
   autoClassify: () => ipcRenderer.invoke('library:autoClassify'),
   fetchClassifyModels: (provider, apiKey) => ipcRenderer.invoke('classify:fetchModels', { provider, apiKey }),
@@ -741,6 +856,7 @@ In `src/preload/index.js`, add after the `deleteFolder` line inside the `context
 ```bash
 npm run dev
 ```
+
 Expected: App launches, no console errors. Ctrl-C to stop.
 
 - [ ] **Step 3: Commit**
@@ -755,12 +871,14 @@ git commit -m "feat: expose autoClassify and fetchClassifyModels on window.api"
 ## Task 8: Download manager — auto-classify on download completion
 
 **Files:**
+
 - Modify: `src/main/download-manager.js`
 - Modify: `tests/main/download-manager.test.js`
 
 - [ ] **Step 1: Add a failing test for auto-classify on completion**
 
 In `tests/main/download-manager.test.js`, add these mocks at the top (after existing mocks):
+
 ```javascript
 vi.mock('../../src/main/auto-classifier.js', () => ({
   classifyVideo: vi.fn().mockResolvedValue({ folder: null, tier: 'none' })
@@ -773,7 +891,7 @@ vi.mock('fs', async (importOriginal) => {
       ...actual,
       readdirSync: vi.fn(() => ['Music']),
       statSync: vi.fn(() => ({ isDirectory: () => true })),
-      renameSync: vi.fn(),
+      renameSync: vi.fn()
     }
   }
 })
@@ -782,12 +900,14 @@ vi.mock('path', async (importOriginal) => importOriginal())
 ```
 
 Add these imports after the existing imports:
+
 ```javascript
 import { classifyVideo } from '../../src/main/auto-classifier.js'
 import { moveMetadataEntry } from '../../src/main/metadata-store.js'
 ```
 
 Update the `config-store.js` mock to include new fields, and update the `metadata-store.js` mock to also export `moveMetadataEntry`:
+
 ```javascript
 vi.mock('../../src/main/config-store.js', () => ({
   readConfig: vi.fn(() => ({
@@ -796,28 +916,38 @@ vi.mock('../../src/main/config-store.js', () => ({
     autoClassifyEnabled: false,
     autoClassifyProvider: 'local',
     autoClassifyApiKey: '',
-    autoClassifyModel: '',
+    autoClassifyModel: ''
   }))
 }))
 // Replace the existing metadata-store mock (already at top of file) with:
 vi.mock('../../src/main/metadata-store.js', () => ({
   writeMetadataEntry: vi.fn(),
   downloadAndStoreThumbnail: vi.fn().mockResolvedValue(undefined),
-  moveMetadataEntry: vi.fn(),
+  moveMetadataEntry: vi.fn()
 }))
 ```
 
 Add these tests:
+
 ```javascript
 describe('auto-classify on download completion', () => {
   it('does not call classifyVideo when autoClassifyEnabled is false', async () => {
     let onDone
-    startDownload.mockImplementation((url, fmt, dir, onProg, done) => { onDone = done; return { kill: vi.fn() } })
+    startDownload.mockImplementation((url, fmt, dir, onProg, done) => {
+      onDone = done
+      return { kill: vi.fn() }
+    })
     const dm = new DownloadManager()
-    dm.add('https://a.com', 'mp4', 'V1', { title: 'Guitar music', uploader: '', description: '', thumbnailUrl: null, url: '' })
+    dm.add('https://a.com', 'mp4', 'V1', {
+      title: 'Guitar music',
+      uploader: '',
+      description: '',
+      thumbnailUrl: null,
+      url: ''
+    })
     onDone('/tmp/vids/video.mp4')
     // Wait for async operations
-    await new Promise(r => setTimeout(r, 10))
+    await new Promise((r) => setTimeout(r, 10))
     expect(classifyVideo).not.toHaveBeenCalled()
   })
 
@@ -829,16 +959,25 @@ describe('auto-classify on download completion', () => {
       autoClassifyEnabled: true,
       autoClassifyProvider: 'local',
       autoClassifyApiKey: '',
-      autoClassifyModel: '',
+      autoClassifyModel: ''
     })
     classifyVideo.mockResolvedValue({ folder: 'Music', tier: 'keyword' })
 
     let onDone
-    startDownload.mockImplementation((url, fmt, dir, onProg, done) => { onDone = done; return { kill: vi.fn() } })
+    startDownload.mockImplementation((url, fmt, dir, onProg, done) => {
+      onDone = done
+      return { kill: vi.fn() }
+    })
     const dm = new DownloadManager()
-    dm.add('https://a.com', 'mp4', 'Guitar music', { title: 'Guitar music', uploader: '', description: '', thumbnailUrl: null, url: '' })
+    dm.add('https://a.com', 'mp4', 'Guitar music', {
+      title: 'Guitar music',
+      uploader: '',
+      description: '',
+      thumbnailUrl: null,
+      url: ''
+    })
     onDone('/tmp/vids/guitar-music.mp4')
-    await new Promise(r => setTimeout(r, 20))
+    await new Promise((r) => setTimeout(r, 20))
     expect(classifyVideo).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Guitar music' }),
       ['Music'],
@@ -854,42 +993,61 @@ describe('auto-classify on download completion', () => {
 ```bash
 npx vitest run tests/main/download-manager.test.js
 ```
+
 Expected: new tests FAIL.
 
 - [ ] **Step 3: Update `src/main/download-manager.js`**
 
 Add imports at the top:
+
 ```javascript
 import fs from 'fs'
 import path from 'path'
 import { classifyVideo } from './auto-classifier.js'
-import { writeMetadataEntry, downloadAndStoreThumbnail, moveMetadataEntry } from './metadata-store.js'
+import {
+  writeMetadataEntry,
+  downloadAndStoreThumbnail,
+  moveMetadataEntry
+} from './metadata-store.js'
 ```
 
 Replace the existing `import { writeMetadataEntry, downloadAndStoreThumbnail } from './metadata-store.js'` line with the one above.
 
 In `_start`, after the `writeMetadataEntry(...)` call and the `downloadAndStoreThumbnail` call, add:
+
 ```javascript
-        const cfg = readConfig()
-        if (cfg.autoClassifyEnabled && actualPath) {
-          try {
-            const folderNames = fs.readdirSync(cfg.outputFolder)
-              .filter(f => !f.startsWith('.') && fs.statSync(path.join(cfg.outputFolder, f)).isDirectory())
-            if (folderNames.length > 0) {
-              classifyVideo(
-                { title: item.metadata.title, uploader: item.metadata.uploader, description: item.metadata.description, url: item.metadata.url },
-                folderNames,
-                cfg
-              ).then(({ folder }) => {
-                if (folder) {
-                  const newPath = path.join(cfg.outputFolder, folder, path.basename(actualPath))
-                  fs.renameSync(actualPath, newPath)
-                  moveMetadataEntry(actualPath, newPath)
-                }
-              }).catch(() => {})
-            }
-          } catch { /* don't block completion on classify errors */ }
-        }
+const cfg = readConfig()
+if (cfg.autoClassifyEnabled && actualPath) {
+  try {
+    const folderNames = fs
+      .readdirSync(cfg.outputFolder)
+      .filter(
+        (f) => !f.startsWith('.') && fs.statSync(path.join(cfg.outputFolder, f)).isDirectory()
+      )
+    if (folderNames.length > 0) {
+      classifyVideo(
+        {
+          title: item.metadata.title,
+          uploader: item.metadata.uploader,
+          description: item.metadata.description,
+          url: item.metadata.url
+        },
+        folderNames,
+        cfg
+      )
+        .then(({ folder }) => {
+          if (folder) {
+            const newPath = path.join(cfg.outputFolder, folder, path.basename(actualPath))
+            fs.renameSync(actualPath, newPath)
+            moveMetadataEntry(actualPath, newPath)
+          }
+        })
+        .catch(() => {})
+    }
+  } catch {
+    /* don't block completion on classify errors */
+  }
+}
 ```
 
 - [ ] **Step 4: Run all main tests**
@@ -897,6 +1055,7 @@ In `_start`, after the `writeMetadataEntry(...)` call and the `downloadAndStoreT
 ```bash
 npm run test
 ```
+
 Expected: All tests PASS.
 
 - [ ] **Step 5: Commit**
@@ -911,11 +1070,13 @@ git commit -m "feat: auto-classify video into folder after download completes"
 ## Task 9: Settings panel — auto-classify section
 
 **Files:**
+
 - Modify: `src/renderer/src/components/SettingsPanel.jsx`
 
 - [ ] **Step 1: Add auto-classify section to `SettingsPanel.jsx`**
 
 Replace the full contents of `src/renderer/src/components/SettingsPanel.jsx`:
+
 ```jsx
 import React, { useState } from 'react'
 import { useAppStore } from '../store/app-store.js'
@@ -923,7 +1084,7 @@ import { useAppStore } from '../store/app-store.js'
 const DEFAULT_MODELS = {
   claude: 'claude-haiku-4-6',
   gemini: 'gemini-3.1-flash-lite',
-  openai: 'gpt-5-nano',
+  openai: 'gpt-5-nano'
 }
 
 export function SettingsPanel() {
@@ -935,7 +1096,10 @@ export function SettingsPanel() {
 
   async function handleBrowse() {
     const folder = await window.api.openFolder()
-    if (folder) { setLocal(c => ({ ...c, outputFolder: folder })); setFolderError('') }
+    if (folder) {
+      setLocal((c) => ({ ...c, outputFolder: folder }))
+      setFolderError('')
+    }
   }
 
   async function handleFetchModels() {
@@ -948,7 +1112,7 @@ export function SettingsPanel() {
       setAvailableModels(models)
       if (models.length > 0 && !local.autoClassifyModel) {
         const def = DEFAULT_MODELS[provider]
-        setLocal(c => ({ ...c, autoClassifyModel: models.includes(def) ? def : models[0] }))
+        setLocal((c) => ({ ...c, autoClassifyModel: models.includes(def) ? def : models[0] }))
       }
     } catch {
       setAvailableModels([])
@@ -958,7 +1122,10 @@ export function SettingsPanel() {
   }
 
   async function handleSave() {
-    if (!local.outputFolder) { setFolderError('Please select an output folder.'); return }
+    if (!local.outputFolder) {
+      setFolderError('Please select an output folder.')
+      return
+    }
     const saved = await window.api.writeConfig(local)
     setConfig(saved)
     setSettingsOpen(false)
@@ -974,12 +1141,18 @@ export function SettingsPanel() {
         <div className="mb-4">
           <label className="block text-sm text-gray-400 mb-1">Download folder</label>
           <div className="flex gap-2">
-            <input readOnly value={local.outputFolder || ''} placeholder="No folder selected"
+            <input
+              readOnly
+              value={local.outputFolder || ''}
+              placeholder="No folder selected"
               className={`flex-1 bg-gray-800 text-sm text-white px-3 py-2 rounded border cursor-default ${
                 folderError ? 'border-red-500' : 'border-gray-600'
-              }`} />
-            <button onClick={handleBrowse}
-              className="bg-gray-700 hover:bg-gray-600 text-white text-sm px-3 py-2 rounded border border-gray-600">
+              }`}
+            />
+            <button
+              onClick={handleBrowse}
+              className="bg-gray-700 hover:bg-gray-600 text-white text-sm px-3 py-2 rounded border border-gray-600"
+            >
               Browse…
             </button>
           </div>
@@ -988,23 +1161,34 @@ export function SettingsPanel() {
 
         <div className="mb-4">
           <label className="block text-sm text-gray-400 mb-1">Max concurrent downloads</label>
-          <input type="number" min={1} max={5} value={local.maxConcurrent}
-            onChange={e => setLocal(c => ({ ...c, maxConcurrent: Math.max(1, parseInt(e.target.value) || 1) }))}
-            className="w-24 bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-blue-500" />
+          <input
+            type="number"
+            min={1}
+            max={5}
+            value={local.maxConcurrent}
+            onChange={(e) =>
+              setLocal((c) => ({ ...c, maxConcurrent: Math.max(1, parseInt(e.target.value) || 1) }))
+            }
+            className="w-24 bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-blue-500"
+          />
         </div>
 
         <div className="mb-6 border-t border-gray-700 pt-4">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm text-gray-400">Auto-classify new downloads</span>
             <button
-              onClick={() => setLocal(c => ({ ...c, autoClassifyEnabled: !c.autoClassifyEnabled }))}
+              onClick={() =>
+                setLocal((c) => ({ ...c, autoClassifyEnabled: !c.autoClassifyEnabled }))
+              }
               className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${
                 local.autoClassifyEnabled ? 'bg-blue-600' : 'bg-gray-600'
               }`}
             >
-              <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-                local.autoClassifyEnabled ? 'translate-x-5' : 'translate-x-0.5'
-              }`} />
+              <span
+                className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                  local.autoClassifyEnabled ? 'translate-x-5' : 'translate-x-0.5'
+                }`}
+              />
             </button>
           </div>
 
@@ -1012,8 +1196,13 @@ export function SettingsPanel() {
             <label className="block text-xs text-gray-500 mb-1">Provider</label>
             <select
               value={local.autoClassifyProvider || 'local'}
-              onChange={e => {
-                setLocal(c => ({ ...c, autoClassifyProvider: e.target.value, autoClassifyApiKey: '', autoClassifyModel: '' }))
+              onChange={(e) => {
+                setLocal((c) => ({
+                  ...c,
+                  autoClassifyProvider: e.target.value,
+                  autoClassifyApiKey: '',
+                  autoClassifyModel: ''
+                }))
                 setAvailableModels([])
               }}
               className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-blue-500"
@@ -1032,7 +1221,7 @@ export function SettingsPanel() {
                 <input
                   type="password"
                   value={local.autoClassifyApiKey || ''}
-                  onChange={e => setLocal(c => ({ ...c, autoClassifyApiKey: e.target.value }))}
+                  onChange={(e) => setLocal((c) => ({ ...c, autoClassifyApiKey: e.target.value }))}
                   onBlur={handleFetchModels}
                   placeholder="Enter API key…"
                   className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-blue-500"
@@ -1043,18 +1232,28 @@ export function SettingsPanel() {
                 <label className="block text-xs text-gray-500 mb-1">Model</label>
                 {availableModels.length > 0 ? (
                   <select
-                    value={local.autoClassifyModel || DEFAULT_MODELS[local.autoClassifyProvider] || ''}
-                    onChange={e => setLocal(c => ({ ...c, autoClassifyModel: e.target.value }))}
+                    value={
+                      local.autoClassifyModel || DEFAULT_MODELS[local.autoClassifyProvider] || ''
+                    }
+                    onChange={(e) => setLocal((c) => ({ ...c, autoClassifyModel: e.target.value }))}
                     className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-blue-500"
                   >
-                    {availableModels.map(m => <option key={m} value={m}>{m}</option>)}
+                    {availableModels.map((m) => (
+                      <option key={m} value={m}>
+                        {m}
+                      </option>
+                    ))}
                   </select>
                 ) : (
                   <input
                     type="text"
                     value={local.autoClassifyModel || ''}
-                    onChange={e => setLocal(c => ({ ...c, autoClassifyModel: e.target.value }))}
-                    placeholder={modelsFetching ? 'Loading models…' : (DEFAULT_MODELS[local.autoClassifyProvider] || 'Model name')}
+                    onChange={(e) => setLocal((c) => ({ ...c, autoClassifyModel: e.target.value }))}
+                    placeholder={
+                      modelsFetching
+                        ? 'Loading models…'
+                        : DEFAULT_MODELS[local.autoClassifyProvider] || 'Model name'
+                    }
                     className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-blue-500"
                   />
                 )}
@@ -1064,12 +1263,16 @@ export function SettingsPanel() {
         </div>
 
         <div className="flex justify-end gap-2">
-          <button onClick={() => setSettingsOpen(false)}
-            className="text-sm text-gray-400 hover:text-white px-4 py-2 rounded hover:bg-gray-700">
+          <button
+            onClick={() => setSettingsOpen(false)}
+            className="text-sm text-gray-400 hover:text-white px-4 py-2 rounded hover:bg-gray-700"
+          >
             Cancel
           </button>
-          <button onClick={handleSave}
-            className="text-sm bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-medium">
+          <button
+            onClick={handleSave}
+            className="text-sm bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-medium"
+          >
             Save
           </button>
         </div>
@@ -1084,6 +1287,7 @@ export function SettingsPanel() {
 ```bash
 npm run dev
 ```
+
 Open Settings. Verify: auto-classify toggle visible, provider dropdown shows 4 options, API key + model inputs appear when Claude/Gemini/OpenAI selected. Save works. Ctrl-C.
 
 - [ ] **Step 3: Commit**
@@ -1098,29 +1302,37 @@ git commit -m "feat: add auto-classify settings section to SettingsPanel"
 ## Task 10: Library — auto-classify button and status
 
 **Files:**
+
 - Modify: `src/renderer/src/components/LibraryToolbar.jsx`
 - Modify: `src/renderer/src/components/LibraryTab.jsx`
 
 - [ ] **Step 1: Add auto-classify props to `LibraryToolbar.jsx`**
 
 Replace the full contents of `src/renderer/src/components/LibraryToolbar.jsx`:
+
 ```jsx
 import React from 'react'
 
 export const SORT_CYCLE = [
-  { field: 'date',   direction: 'desc', label: 'Date ↓' },
-  { field: 'date',   direction: 'asc',  label: 'Date ↑' },
-  { field: 'name',   direction: 'asc',  label: 'Name ↑' },
-  { field: 'name',   direction: 'desc', label: 'Name ↓' },
-  { field: 'folder', direction: 'asc',  label: 'Folder A–Z' },
-  { field: 'folder', direction: 'desc', label: 'Folder Z–A' },
+  { field: 'date', direction: 'desc', label: 'Date ↓' },
+  { field: 'date', direction: 'asc', label: 'Date ↑' },
+  { field: 'name', direction: 'asc', label: 'Name ↑' },
+  { field: 'name', direction: 'desc', label: 'Name ↓' },
+  { field: 'folder', direction: 'asc', label: 'Folder A–Z' },
+  { field: 'folder', direction: 'desc', label: 'Folder Z–A' }
 ]
 
 export default function LibraryToolbar({
-  sort, search, onSortChange, onSearchChange, resultCount,
-  onAutoClassify, classifyStatus, hasUncategorized,
+  sort,
+  search,
+  onSortChange,
+  onSearchChange,
+  resultCount,
+  onAutoClassify,
+  classifyStatus,
+  hasUncategorized
 }) {
-  const idx = SORT_CYCLE.findIndex(s => s.field === sort.field && s.direction === sort.direction)
+  const idx = SORT_CYCLE.findIndex((s) => s.field === sort.field && s.direction === sort.direction)
   const isDefault = sort.field === 'date' && sort.direction === 'desc'
   const label = idx >= 0 ? SORT_CYCLE[idx].label : 'Date ↓'
 
@@ -1134,21 +1346,40 @@ export default function LibraryToolbar({
 
   return (
     <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-800 flex-shrink-0">
-      <div className={`flex flex-1 items-center gap-2 bg-gray-900 rounded-md px-2.5 py-1.5 border ${search ? 'border-indigo-500' : 'border-gray-700'}`}>
-        <svg className={`w-3.5 h-3.5 flex-shrink-0 ${search ? 'text-indigo-400' : 'text-gray-500'}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      <div
+        className={`flex flex-1 items-center gap-2 bg-gray-900 rounded-md px-2.5 py-1.5 border ${search ? 'border-indigo-500' : 'border-gray-700'}`}
+      >
+        <svg
+          className={`w-3.5 h-3.5 flex-shrink-0 ${search ? 'text-indigo-400' : 'text-gray-500'}`}
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
         <input
           type="text"
           value={search}
-          onChange={e => onSearchChange(e.target.value)}
+          onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search title, uploader, description…"
           className="flex-1 bg-transparent text-sm text-white placeholder-gray-600 focus:outline-none min-w-0"
         />
         {search && (
           <>
-            <span className="text-xs text-gray-500 flex-shrink-0 tabular-nums">{resultCount} result{resultCount !== 1 ? 's' : ''}</span>
-            <button onClick={() => onSearchChange('')} className="text-gray-500 hover:text-gray-300 text-xs flex-shrink-0 leading-none">✕</button>
+            <span className="text-xs text-gray-500 flex-shrink-0 tabular-nums">
+              {resultCount} result{resultCount !== 1 ? 's' : ''}
+            </span>
+            <button
+              onClick={() => onSearchChange('')}
+              className="text-gray-500 hover:text-gray-300 text-xs flex-shrink-0 leading-none"
+            >
+              ✕
+            </button>
           </>
         )}
       </div>
@@ -1173,7 +1404,7 @@ export default function LibraryToolbar({
               : 'border-gray-700 text-gray-400 bg-gray-900 hover:border-gray-600 hover:text-white'
           }`}
         >
-          {classifyRunning ? 'Classifying…' : (classifyStatus || 'Auto-classify')}
+          {classifyRunning ? 'Classifying…' : classifyStatus || 'Auto-classify'}
         </button>
       )}
     </div>
@@ -1186,45 +1417,46 @@ export default function LibraryToolbar({
 In `LibraryTab.jsx`:
 
 After the existing state declarations (after the `deletingFolder` state line), add:
+
 ```jsx
-  const [classifyStatus, setClassifyStatus] = useState(null) // null | 'running' | string
+const [classifyStatus, setClassifyStatus] = useState(null) // null | 'running' | string
 ```
 
 After the `refresh` function, add:
+
 ```jsx
-  async function handleAutoClassify() {
-    setClassifyStatus('running')
-    try {
-      const result = await window.api.autoClassify()
-      await refresh()
-      setClassifyStatus(`Moved ${result.moved.length} · ${result.skipped} skipped`)
-      setTimeout(() => setClassifyStatus(null), 3000)
-    } catch {
-      setClassifyStatus(null)
-    }
+async function handleAutoClassify() {
+  setClassifyStatus('running')
+  try {
+    const result = await window.api.autoClassify()
+    await refresh()
+    setClassifyStatus(`Moved ${result.moved.length} · ${result.skipped} skipped`)
+    setTimeout(() => setClassifyStatus(null), 3000)
+  } catch {
+    setClassifyStatus(null)
   }
+}
 ```
 
 After the `activeUrls` useMemo, add:
+
 ```jsx
-  const hasUncategorized = useMemo(
-    () => visibleFiles.some(f => !f.folder),
-    [visibleFiles]
-  )
+const hasUncategorized = useMemo(() => visibleFiles.some((f) => !f.folder), [visibleFiles])
 ```
 
 Update the `<LibraryToolbar` JSX call to pass the new props:
+
 ```jsx
-        <LibraryToolbar
-          sort={librarySort}
-          search={librarySearch}
-          onSortChange={setLibrarySort}
-          onSearchChange={setLibrarySearch}
-          resultCount={totalResults}
-          onAutoClassify={handleAutoClassify}
-          classifyStatus={classifyStatus}
-          hasUncategorized={hasUncategorized}
-        />
+<LibraryToolbar
+  sort={librarySort}
+  search={librarySearch}
+  onSortChange={setLibrarySort}
+  onSearchChange={setLibrarySearch}
+  resultCount={totalResults}
+  onAutoClassify={handleAutoClassify}
+  classifyStatus={classifyStatus}
+  hasUncategorized={hasUncategorized}
+/>
 ```
 
 - [ ] **Step 3: Run the app and verify end-to-end**
@@ -1247,6 +1479,7 @@ Ctrl-C to stop.
 ```bash
 npm run test:all
 ```
+
 Expected: All tests PASS.
 
 - [ ] **Step 5: Commit**

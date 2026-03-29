@@ -30,7 +30,7 @@ const YOUTUBE_PLAYER_EXCEPTIONS = [
   // library panel loads these from a non-youtube.com origin (renderer process)
   '@@||i.ytimg.com^',
   '@@||yt3.ggpht.com^',
-  '@@||yt3.googleusercontent.com^',
+  '@@||yt3.googleusercontent.com^'
 ]
 
 let blocker = null

@@ -61,15 +61,7 @@ function buildChapterStub(fileBasename, metadata) {
     anchors.push(`<!-- pully:url:${url} -->`)
   }
   anchors.push(`<!-- pully:downloaded:${date} -->`)
-  return [
-    `## ${title}`,
-    ...anchors,
-    '',
-    '### AI Summary',
-    '',
-    '### My Notes',
-    '',
-  ].join('\n')
+  return [`## ${title}`, ...anchors, '', '### AI Summary', '', '### My Notes', ''].join('\n')
 }
 
 /** Updates or inserts a specific anchor in a chapter identified by URL. */
@@ -120,7 +112,8 @@ export function initChapter(filePath, metadata, outputFolder) {
 
   // Detect if filePath is a real file path or a URL key
   // A real file path will have outputFolder in it or at least a simple relative path
-  const isRealFilePath = filePath.includes(outputFolder) || (filePath.includes(path.sep) && !filePath.startsWith('http'))
+  const isRealFilePath =
+    filePath.includes(outputFolder) || (filePath.includes(path.sep) && !filePath.startsWith('http'))
 
   // Try to find existing chapter by file basename (only if this is a real file path)
   if (isRealFilePath && content.includes(`<!-- pully:file:${fileBasename} -->`)) return
@@ -130,7 +123,7 @@ export function initChapter(filePath, metadata, outputFolder) {
   if (metadata.url) {
     // Parse the notes to find chapters with matching URL
     const { chapters } = readFolderNotes(null, outputFolder)
-    existingChapter = chapters.find(ch => ch.url === metadata.url)
+    existingChapter = chapters.find((ch) => ch.url === metadata.url)
   }
 
   // If chapter exists by URL, adopt it (update file anchor if needed)
@@ -162,7 +155,7 @@ export function initChapter(filePath, metadata, outputFolder) {
 
   // Emit event after creating new chapter
   const { chapters } = readFolderNotes(null, outputFolder)
-  const chapter = chapters.find(ch => ch.file === fileBasename || ch.url === metadata.url)
+  const chapter = chapters.find((ch) => ch.file === fileBasename || ch.url === metadata.url)
   if (chapter) {
     emitChapterUpdated(notesPath, chapter)
   }
@@ -184,7 +177,14 @@ export function readFolderNotes(folderName, outputFolder) {
   for (const line of lines) {
     if (line.startsWith('## ')) {
       if (current) chapters.push(finalizeChapter(current))
-      current = { heading: line.slice(3), file: null, url: null, downloadedAt: null, _summary: [], _bullets: [] }
+      current = {
+        heading: line.slice(3),
+        file: null,
+        url: null,
+        downloadedAt: null,
+        _summary: [],
+        _bullets: []
+      }
       section = null
     } else if (current) {
       const fm = line.match(/<!--\s*pully:file:(.*?)\s*-->/)
@@ -193,17 +193,26 @@ export function readFolderNotes(folderName, outputFolder) {
       if (fm) current.file = fm[1].trim()
       if (um) current.url = um[1].trim()
       if (dm) current.downloadedAt = dm[1].trim()
-      if (line === '### AI Summary') { section = 'summary'; continue }
-      if (line === '### My Notes') { section = 'notes'; continue }
-      if (line.startsWith('### ') || line === '---') { section = null; continue }
+      if (line === '### AI Summary') {
+        section = 'summary'
+        continue
+      }
+      if (line === '### My Notes') {
+        section = 'notes'
+        continue
+      }
+      if (line.startsWith('### ') || line === '---') {
+        section = null
+        continue
+      }
       if (section === 'summary' && line.trim()) current._summary.push(line)
       if (section === 'notes' && line.startsWith('- ')) current._bullets.push(line.slice(2).trim())
     }
   }
   if (current) chapters.push(finalizeChapter(current))
 
-  const titleLine = lines.find(l => l.startsWith('# '))
-  const title = titleLine ? titleLine.slice(2).trim() : (folderName || 'Library')
+  const titleLine = lines.find((l) => l.startsWith('# '))
+  const title = titleLine ? titleLine.slice(2).trim() : folderName || 'Library'
   return { title, chapters }
 }
 
@@ -214,7 +223,7 @@ function finalizeChapter(c) {
     downloadedAt: c.downloadedAt,
     title: c.heading,
     summary: c._summary.join('\n').trim() || null,
-    bullets: c._bullets,
+    bullets: c._bullets
   }
 }
 
@@ -230,7 +239,10 @@ function updateSection(notesPath, fileBasename, sectionHeading, newBody) {
   for (let i = 0; i < lines.length; i++) {
     if (lines[i].includes(`<!-- pully:file:${fileBasename} -->`)) inChapter = true
     if (!inChapter) continue
-    if (lines[i] === sectionHeading) { sectionStart = i + 1; continue }
+    if (lines[i] === sectionHeading) {
+      sectionStart = i + 1
+      continue
+    }
     if (sectionStart !== -1 && sectionEnd === -1) {
       if (lines[i].startsWith('### ') || lines[i] === '---' || lines[i].startsWith('## ')) {
         sectionEnd = i
@@ -259,7 +271,7 @@ export function writeSummarySection(filePath, summary, outputFolder) {
 
   // Emit event after updating summary
   const { chapters } = readFolderNotes(null, outputFolder)
-  const chapter = chapters.find(ch => ch.file === fileBasename)
+  const chapter = chapters.find((ch) => ch.file === fileBasename)
   if (chapter) {
     emitChapterUpdated(notesPath, chapter)
   }
@@ -268,7 +280,7 @@ export function writeSummarySection(filePath, summary, outputFolder) {
 export function writeBulletsSection(filePath, bullets, outputFolder) {
   const notesPath = getNotesPath(filePath, outputFolder)
   const fileBasename = path.basename(filePath)
-  const body = bullets.map(b => `- ${b}`).join('\n')
+  const body = bullets.map((b) => `- ${b}`).join('\n')
   updateSection(notesPath, fileBasename, '### My Notes', body)
   logger.info('notes', `Bullets updated: ${fileBasename}`, {
     filename: fileBasename,
@@ -277,7 +289,7 @@ export function writeBulletsSection(filePath, bullets, outputFolder) {
 
   // Emit event after updating bullets
   const { chapters } = readFolderNotes(null, outputFolder)
-  const chapter = chapters.find(ch => ch.file === fileBasename)
+  const chapter = chapters.find((ch) => ch.file === fileBasename)
   if (chapter) {
     emitChapterUpdated(notesPath, chapter)
   }
@@ -293,7 +305,10 @@ function extractChapter(content, fileBasename) {
     if (lines[i].includes(`<!-- pully:file:${fileBasename} -->`)) {
       // Walk back to find the ## heading
       for (let j = i; j >= 0; j--) {
-        if (lines[j].startsWith('## ')) { chapterStart = j; break }
+        if (lines[j].startsWith('## ')) {
+          chapterStart = j
+          break
+        }
       }
       // Walk forward to find the closing --- or next ##
       for (let j = i + 1; j < lines.length; j++) {
@@ -309,7 +324,11 @@ function extractChapter(content, fileBasename) {
 
   const chapterLines = lines.slice(chapterStart, chapterEnd)
   const remainingLines = [...lines.slice(0, chapterStart), ...lines.slice(chapterEnd)]
-  const remaining = remainingLines.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd() + '\n'
+  const remaining =
+    remainingLines
+      .join('\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trimEnd() + '\n'
   return { chapterContent: chapterLines.join('\n'), remaining }
 }
 
@@ -349,7 +368,7 @@ export function moveChapter(oldFilePath, newFilePath, outputFolder) {
 
   // Emit event after moving chapter
   const { chapters } = readFolderNotes(null, outputFolder)
-  const chapter = chapters.find(ch => ch.file === newBasename)
+  const chapter = chapters.find((ch) => ch.file === newBasename)
   if (chapter) {
     emitChapterUpdated(newNotesPath, chapter)
   }

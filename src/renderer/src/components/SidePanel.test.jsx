@@ -6,10 +6,10 @@ import { describe, test, expect, afterEach, vi } from 'vitest'
 
 // Stub heavy sub-components
 vi.mock('./MediaPanel.jsx', () => ({
-  MediaPanel: () => <div data-testid="media-panel">MediaPanel</div>,
+  MediaPanel: () => <div data-testid="media-panel">MediaPanel</div>
 }))
 vi.mock('./ProgressPanel.jsx', () => ({
-  default: () => <div data-testid="progress-panel">ProgressPanel</div>,
+  default: () => <div data-testid="progress-panel">ProgressPanel</div>
 }))
 
 afterEach(() => {

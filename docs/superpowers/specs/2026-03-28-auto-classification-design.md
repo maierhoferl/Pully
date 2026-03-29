@@ -34,11 +34,13 @@ Uses `@huggingface/transformers` with ONNX model `all-MiniLM-L6-v2` (~23MB, CPU-
 ### Tier 3 — Cloud LLM (only when provider configured and Tier 2 below threshold)
 
 Invoked only when:
+
 - `autoClassifyProvider !== 'local'`
 - A valid API key is configured
 - Tier 2 best similarity < 0.45
 
 Sends a minimal prompt:
+
 ```
 Folders: Music, Cooking, Programming, Gaming
 Video: "Baked sourdough recipe" by "Joshua Weissman". Description: "Step by step..."
@@ -48,9 +50,9 @@ Reply with exactly one folder name from the list, or "none".
 **Default models:**
 | Provider | Default Model |
 |----------|--------------|
-| Claude   | `claude-haiku-4-6` |
-| Gemini   | `gemini-3.1-flash-lite` |
-| OpenAI   | `gpt-5-nano` |
+| Claude | `claude-haiku-4-6` |
+| Gemini | `gemini-3.1-flash-lite` |
+| OpenAI | `gpt-5-nano` |
 
 Model is user-selectable via a dropdown populated dynamically from the provider's API after an API key is entered. Falls back to a free-text input if the fetch fails.
 
@@ -64,10 +66,10 @@ Confidence thresholds are hardcoded; no user-facing knob.
 Four new fields added to `config-store.js`:
 
 ```javascript
-autoClassifyEnabled: boolean   // default: false
-autoClassifyProvider: string   // 'local' | 'claude' | 'gemini' | 'openai', default: 'local'
-autoClassifyApiKey: string     // default: ''
-autoClassifyModel: string      // default: '' (uses per-provider default)
+autoClassifyEnabled: boolean // default: false
+autoClassifyProvider: string // 'local' | 'claude' | 'gemini' | 'openai', default: 'local'
+autoClassifyApiKey: string // default: ''
+autoClassifyModel: string // default: '' (uses per-provider default)
 ```
 
 ---
@@ -90,15 +92,15 @@ Holds lazy-loaded embedding pipeline in module scope. No state beyond the cached
 
 ### Modified files
 
-| File | Change |
-|------|--------|
-| `src/main/config-store.js` | Add 4 new config fields with defaults |
-| `src/main/ipc-handlers.js` | Add `library:autoClassify` and `classify:fetchModels` handlers |
-| `src/main/download-manager.js` | Call `classifyVideo()` after `writeMetadataEntry()` when enabled |
-| `src/preload/index.js` | Expose `autoClassify()` and `fetchClassifyModels()` on `window.api` |
-| `src/renderer/src/components/SettingsPanel.jsx` | Add "Auto-classify" settings section |
-| `src/renderer/src/components/LibraryTab.jsx` | Add "Auto-classify" button + status line to toolbar |
-| `src/renderer/src/store/app-store.js` | Persist `config` fields (already handled by generic config flow) |
+| File                                            | Change                                                              |
+| ----------------------------------------------- | ------------------------------------------------------------------- |
+| `src/main/config-store.js`                      | Add 4 new config fields with defaults                               |
+| `src/main/ipc-handlers.js`                      | Add `library:autoClassify` and `classify:fetchModels` handlers      |
+| `src/main/download-manager.js`                  | Call `classifyVideo()` after `writeMetadataEntry()` when enabled    |
+| `src/preload/index.js`                          | Expose `autoClassify()` and `fetchClassifyModels()` on `window.api` |
+| `src/renderer/src/components/SettingsPanel.jsx` | Add "Auto-classify" settings section                                |
+| `src/renderer/src/components/LibraryTab.jsx`    | Add "Auto-classify" button + status line to toolbar                 |
+| `src/renderer/src/store/app-store.js`           | Persist `config` fields (already handled by generic config flow)    |
 
 ---
 

@@ -47,51 +47,80 @@ export function ensureBinary(src, dest) {
 }
 
 export function extractInfo(url, binaryPath = getDefaultBinaryPath()) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const proc = spawn(binaryPath, [
-      '--dump-json', '--flat-playlist', '--no-warnings',
-      '--playlist-items', '1-20', url
+      '--dump-json',
+      '--flat-playlist',
+      '--no-warnings',
+      '--playlist-items',
+      '1-20',
+      url
     ])
     logger.info('app', 'yt-dlp process spawned', { url, pid: proc.pid })
     let out = ''
-    proc.stdout.on('data', d => { out += d.toString() })
-    proc.stderr.on('data', chunk => {
+    proc.stdout.on('data', (d) => {
+      out += d.toString()
+    })
+    proc.stderr.on('data', (chunk) => {
       for (const line of chunk.toString().split('\n')) {
         if (line.trim()) logger.warn('app', line.trim())
       }
     })
-    proc.on('close', code => {
+    proc.on('close', (code) => {
       logger.info('app', 'yt-dlp process exited', { url, exitCode: code })
       if (code !== 0) return resolve([])
       const entries = []
       for (const line of out.trim().split('\n')) {
         if (!line.trim()) continue
-        try { entries.push(JSON.parse(line)) } catch { /* skip */ }
+        try {
+          entries.push(JSON.parse(line))
+        } catch {
+          /* skip */
+        }
       }
       resolve(entries)
     })
-    proc.on('error', err => {
+    proc.on('error', (err) => {
       logger.error('app', 'yt-dlp process error', { error: err.message })
     })
     // Timeout after 30s
-    setTimeout(() => { proc.kill(); resolve([]) }, 30000)
+    setTimeout(() => {
+      proc.kill()
+      resolve([])
+    }, 30000)
   })
 }
 
-export function startDownload(url, formatId, outputDir, onProgress, onDone, onError, binaryPath = getDefaultBinaryPath(), ffmpegPath = getDefaultFfmpegPath()) {
+export function startDownload(
+  url,
+  formatId,
+  outputDir,
+  onProgress,
+  onDone,
+  onError,
+  binaryPath = getDefaultBinaryPath(),
+  ffmpegPath = getDefaultFfmpegPath()
+) {
   const proc = spawn(binaryPath, [
-    '--format', formatId,
-    '--output', path.join(outputDir, '%(title)s.%(ext)s'),
-    '--print', 'after_move:%(filepath)s',
-    '--embed-thumbnail', '--embed-metadata',
-    '--ffmpeg-location', ffmpegPath,
-    '--newline', '--no-warnings', url
+    '--format',
+    formatId,
+    '--output',
+    path.join(outputDir, '%(title)s.%(ext)s'),
+    '--print',
+    'after_move:%(filepath)s',
+    '--embed-thumbnail',
+    '--embed-metadata',
+    '--ffmpeg-location',
+    ffmpegPath,
+    '--newline',
+    '--no-warnings',
+    url
   ])
   logger.info('app', 'yt-dlp process spawned', { url, pid: proc.pid })
   let buf = ''
   let actualPath = null
   const stderrLines = []
-  proc.stdout.on('data', data => {
+  proc.stdout.on('data', (data) => {
     buf += data.toString()
     const lines = buf.split('\n')
     buf = lines.pop()
@@ -106,14 +135,14 @@ export function startDownload(url, formatId, outputDir, onProgress, onDone, onEr
       }
     }
   })
-  proc.stderr.on('data', chunk => {
+  proc.stderr.on('data', (chunk) => {
     const text = chunk.toString()
     stderrLines.push(text)
     for (const line of text.split('\n')) {
       if (line.trim()) logger.warn('download', line.trim())
     }
   })
-  proc.on('close', code => {
+  proc.on('close', (code) => {
     logger.info('app', 'yt-dlp process exited', { url, exitCode: code })
     if (code === 0) {
       onDone(actualPath)
@@ -123,7 +152,7 @@ export function startDownload(url, formatId, outputDir, onProgress, onDone, onEr
       onError(new Error(errorMsg))
     }
   })
-  proc.on('error', err => {
+  proc.on('error', (err) => {
     logger.error('app', 'yt-dlp process error', { error: err.message })
     onError(err)
   })

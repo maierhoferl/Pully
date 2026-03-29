@@ -20,9 +20,11 @@ Currently, notes.md entries are only created after a download completes or a "Re
 ## Immediate Stub Creation
 
 ### Remember
+
 `initChapter` is already called synchronously before the async classify chain in `ipc-handlers.js`. No change needed to the timing — the stub exists before classify runs.
 
 ### Download
+
 `initChapter` is currently called only after yt-dlp finishes. Change: call `initChapter` at `downloadManager.add()` time with the data available at click (title, URL, outputFolder). The `pully:file:` anchor is initially omitted or left as a URL-based placeholder; it is written/updated when the download completes and the real filename is known.
 
 If `initChapter` is called again on completion (with the real `filePath`), it must detect the existing URL-keyed entry and update the `pully:file:` anchor rather than creating a duplicate chapter. Logic: on init, if no `pully:file:` anchor exists but a matching `pully:url:` anchor exists, adopt the existing chapter.
@@ -42,12 +44,14 @@ If `initChapter` is called again on completion (with the real `filePath`), it mu
 ### New event: `notes:chapter-updated`
 
 **Emitted by main in four cases:**
+
 1. Stub created on "Remember" or "Download" click
 2. `moveChapter` completes after classification moves the file
 3. `writeSummarySection` completes after AI summarizing
 4. Real filename resolved after download completes
 
 **Payload:**
+
 ```js
 {
   notesPath: string,   // absolute path to the notes.md file
@@ -88,6 +92,7 @@ Set whenever a `notes:chapter-updated` event arrives. Replaced (not merged) on e
 Current: `ProgressPanel` fills the bottom pane entirely.
 
 New:
+
 ```
 Bottom pane
   ├── Tab bar: [Notes (default)] [Progress]
@@ -130,19 +135,19 @@ Tab switching is local state in `SidePanel.jsx` (`useState('notes')`). No persis
 
 ## Files Changed
 
-| File | Change |
-|------|--------|
-| `src/main/notes-store.js` | Stub creation without filename; adopt-by-URL logic; emit `notes:chapter-updated` after every write |
-| `src/main/download-manager.js` | Call `initChapter` at add-time; resolve filename anchor on completion |
-| `src/main/ipc-handlers.js` | Ensure `initChapter` fires before async classify on Remember |
-| `src/main/auto-classifier.js` | Emit `notes:chapter-updated` after `moveChapter` |
-| `src/main/ai-summarizer.js` | Emit `notes:chapter-updated` after `writeSummarySection` |
-| `src/renderer/src/store/app-store.js` | Add `browserActiveChapter` slice |
-| `src/renderer/src/hooks/useIpcEvents.js` | Subscribe to `notes:chapter-updated` |
-| `src/renderer/src/components/NotesChapterView.jsx` | Extract `ChapterCard` |
-| `src/renderer/src/components/ChapterCard.jsx` | New — extracted component |
-| `src/renderer/src/components/BrowserNotesPanel.jsx` | New — notes panel for Browser tab |
-| `src/renderer/src/components/SidePanel.jsx` | Add tab bar, conditional panel rendering |
+| File                                                | Change                                                                                             |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `src/main/notes-store.js`                           | Stub creation without filename; adopt-by-URL logic; emit `notes:chapter-updated` after every write |
+| `src/main/download-manager.js`                      | Call `initChapter` at add-time; resolve filename anchor on completion                              |
+| `src/main/ipc-handlers.js`                          | Ensure `initChapter` fires before async classify on Remember                                       |
+| `src/main/auto-classifier.js`                       | Emit `notes:chapter-updated` after `moveChapter`                                                   |
+| `src/main/ai-summarizer.js`                         | Emit `notes:chapter-updated` after `writeSummarySection`                                           |
+| `src/renderer/src/store/app-store.js`               | Add `browserActiveChapter` slice                                                                   |
+| `src/renderer/src/hooks/useIpcEvents.js`            | Subscribe to `notes:chapter-updated`                                                               |
+| `src/renderer/src/components/NotesChapterView.jsx`  | Extract `ChapterCard`                                                                              |
+| `src/renderer/src/components/ChapterCard.jsx`       | New — extracted component                                                                          |
+| `src/renderer/src/components/BrowserNotesPanel.jsx` | New — notes panel for Browser tab                                                                  |
+| `src/renderer/src/components/SidePanel.jsx`         | Add tab bar, conditional panel rendering                                                           |
 
 ---
 

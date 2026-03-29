@@ -10,6 +10,7 @@ Reorganise the Browser tab from a vertical stack (webview + bottom media panel) 
 ## Layout
 
 ### Before
+
 ```
 ┌─────────────────────────────┐
 │ Nav bar                     │
@@ -23,6 +24,7 @@ Reorganise the Browser tab from a vertical stack (webview + bottom media panel) 
 ```
 
 ### After
+
 ```
 ┌─────────────────────────────┬──────────────┐
 │ Nav bar (full width)        │              │
@@ -39,25 +41,30 @@ Reorganise the Browser tab from a vertical stack (webview + bottom media panel) 
 ## Components
 
 ### New: `SidePanel.jsx`
+
 - Owns vertical split state (default 70% MediaPanel / 30% Progress)
 - Renders `MediaPanel` on top, `ProgressPanel` on bottom
 - Vertical drag handle between them, clamped 20%–80%
 
 ### New: `ProgressPanel.jsx`
+
 - Sticky "Progress" header
 - Lists `DownloadRow` items: active (queued/downloading) first, then done/failed
 - Empty state: small muted text "No downloads yet" (no hero image)
 - Reads `downloads` from Zustand store directly
 
 ### Modified: `BrowserTab.jsx`
+
 - Horizontal split: webview (flex-1) + `SidePanel` (default 320px)
 - Horizontal drag handle between them, clamped 200px–600px
 - Removes `<MediaPanel />` from bottom
 
 ### Modified: `TabBar.jsx`
+
 - Remove `downloads` entry from `TABS` array
 
 ### Modified: `App.jsx`
+
 - Remove `DownloadsTab` lazy import and render
 
 ### Deleted: `DownloadsTab.jsx`
@@ -72,11 +79,13 @@ Both handles use the same mouse-drag pattern:
 4. Cleanup also runs on component unmount
 
 **Horizontal handle** (webview ↔ right panel):
+
 - Updates right panel width in pixels
 - Clamped: min 200px, max 600px
 - Cursor: `col-resize`
 
 **Vertical handle** (MediaPanel ↔ Progress):
+
 - Updates split as percentage of panel height
 - Clamped: min 20%, max 80%
 - Default: 70% / 30%

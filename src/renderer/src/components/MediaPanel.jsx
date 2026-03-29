@@ -72,7 +72,7 @@ function getBestFormats(entry) {
   }
   const seen = new Set()
   return entry.formats
-    .filter(f => {
+    .filter((f) => {
       const key = `${f.height || 'audio'}-${f.ext}`
       if (seen.has(key)) return false
       seen.add(key)
@@ -80,17 +80,17 @@ function getBestFormats(entry) {
     })
     .sort((a, b) => (b.height || 0) - (a.height || 0))
     .slice(0, 8)
-    .map(f => ({
+    .map((f) => ({
       format_id: f.format_id,
       label: f.height
         ? `${f.height}p ${f.ext}${f.filesize ? ' · ' + formatSize(f.filesize) : ''}`
-        : `Audio ${f.ext}`,
+        : `Audio ${f.ext}`
     }))
 }
 
 function DownloadButton({ downloadId }) {
-  const downloads = useAppStore(s => s.downloads)
-  const dl = downloads.find(d => d.id === downloadId)
+  const downloads = useAppStore((s) => s.downloads)
+  const dl = downloads.find((d) => d.id === downloadId)
 
   if (!dl) return null
 
@@ -110,7 +110,10 @@ function DownloadButton({ downloadId }) {
   }
 
   return (
-    <button disabled className={`text-xs font-semibold px-2 py-1 rounded flex-shrink-0 transition-colors text-center ${style}`}>
+    <button
+      disabled
+      className={`text-xs font-semibold px-2 py-1 rounded flex-shrink-0 transition-colors text-center ${style}`}
+    >
       {label}
     </button>
   )
@@ -129,7 +132,7 @@ function MediaEntry({ entry }) {
       uploader: entry.uploader || entry.channel || null,
       description: entry.description || null,
       thumbnailUrl: entry.thumbnail || null,
-      url: sourceUrl,
+      url: sourceUrl
     }
     const id = await window.api.addDownload(
       sourceUrl,
@@ -149,7 +152,7 @@ function MediaEntry({ entry }) {
         uploader: entry.uploader || entry.channel || null,
         description: entry.description || null,
         thumbnailUrl: entry.thumbnail || null,
-        url: entry.webpage_url || entry.url,
+        url: entry.webpage_url || entry.url
       })
       setRememberState(result.alreadyExists ? 'exists' : 'done')
     } catch {
@@ -157,13 +160,19 @@ function MediaEntry({ entry }) {
     }
   }
 
-  const rememberLabel = { idle: 'Remember', pending: '…', done: 'Saved ✓', exists: 'In library', error: 'Failed' }[rememberState]
+  const rememberLabel = {
+    idle: 'Remember',
+    pending: '…',
+    done: 'Saved ✓',
+    exists: 'In library',
+    error: 'Failed'
+  }[rememberState]
   const rememberStyle = {
     idle: 'bg-green-700 hover:bg-green-600 text-white cursor-pointer',
     pending: 'bg-gray-600 text-gray-400 cursor-not-allowed',
     done: 'bg-purple-800 text-purple-200 cursor-default',
     exists: 'bg-gray-700 text-gray-400 cursor-default',
-    error: 'bg-red-800 text-red-200 cursor-default',
+    error: 'bg-red-800 text-red-200 cursor-default'
   }[rememberState]
 
   const isPlaylist = Boolean(entry.playlist_id)
@@ -181,10 +190,14 @@ function MediaEntry({ entry }) {
         </span>
         <select
           value={selected}
-          onChange={e => setSelected(e.target.value)}
+          onChange={(e) => setSelected(e.target.value)}
           className="text-[0.7rem] bg-gray-700 border border-gray-600 rounded px-1.5 py-0.5 text-gray-300"
         >
-          {formats.map(f => <option key={f.format_id} value={f.format_id}>{f.label}</option>)}
+          {formats.map((f) => (
+            <option key={f.format_id} value={f.format_id}>
+              {f.label}
+            </option>
+          ))}
         </select>
       </div>
       {/* Thumbnail + action buttons */}
@@ -194,7 +207,9 @@ function MediaEntry({ entry }) {
             src={entry.thumbnail}
             alt=""
             className="w-24 h-14 object-cover rounded-md flex-shrink-0 shadow"
-            onError={e => { e.target.style.display = 'none' }}
+            onError={(e) => {
+              e.target.style.display = 'none'
+            }}
           />
         ) : isPlaylist ? (
           <PlaylistIcon />
@@ -203,22 +218,25 @@ function MediaEntry({ entry }) {
           <button
             onClick={handleRemember}
             disabled={rememberState !== 'idle'}
-            title={rememberState === 'exists' ? 'Already in library' : 'Save reference without downloading'}
+            title={
+              rememberState === 'exists'
+                ? 'Already in library'
+                : 'Save reference without downloading'
+            }
             className={`text-xs font-semibold px-2 py-1 rounded transition-colors ${rememberStyle}`}
           >
             {rememberLabel}
           </button>
-          {downloadId
-            ? <DownloadButton downloadId={downloadId} />
-            : (
-              <button
-                onClick={handleDownload}
-                className="text-xs font-semibold bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white px-2 py-1 rounded transition-colors"
-              >
-                Download
-              </button>
-            )
-          }
+          {downloadId ? (
+            <DownloadButton downloadId={downloadId} />
+          ) : (
+            <button
+              onClick={handleDownload}
+              className="text-xs font-semibold bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white px-2 py-1 rounded transition-colors"
+            >
+              Download
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -226,7 +244,13 @@ function MediaEntry({ entry }) {
 }
 
 export function MediaPanel() {
-  const { mediaScanResults, mediaScanLoading, currentBrowserUrl, startMediaScan, setMediaScanResults } = useAppStore()
+  const {
+    mediaScanResults,
+    mediaScanLoading,
+    currentBrowserUrl,
+    startMediaScan,
+    setMediaScanResults
+  } = useAppStore()
   const [collapsed, setCollapsed] = useState(false)
 
   async function handleRefresh() {
@@ -252,35 +276,42 @@ export function MediaPanel() {
   }
 
   // Split results into videos and playlists
-  const videos = hasResults ? mediaScanResults.filter(e => !e.playlist_id) : []
-  const playlists = hasResults ? mediaScanResults.filter(e => e.playlist_id) : []
+  const videos = hasResults ? mediaScanResults.filter((e) => !e.playlist_id) : []
+  const playlists = hasResults ? mediaScanResults.filter((e) => e.playlist_id) : []
 
   return (
     <div className="bg-gray-950">
-      <div onClick={() => hasResults && setCollapsed(c => !c)}
-        className={`flex items-center gap-2 px-3 py-2.5 sticky top-0 bg-gray-950 border-b border-gray-800 z-10 ${hasResults ? 'cursor-pointer hover:bg-gray-900' : ''}`}>
-        <span className={`text-sm font-bold tracking-wide ${mediaScanLoading ? 'text-blue-400' : hasResults ? 'text-white' : 'text-gray-500'}`}>
+      <div
+        onClick={() => hasResults && setCollapsed((c) => !c)}
+        className={`flex items-center gap-2 px-3 py-2.5 sticky top-0 bg-gray-950 border-b border-gray-800 z-10 ${hasResults ? 'cursor-pointer hover:bg-gray-900' : ''}`}
+      >
+        <span
+          className={`text-sm font-bold tracking-wide ${mediaScanLoading ? 'text-blue-400' : hasResults ? 'text-white' : 'text-gray-500'}`}
+        >
           {headingText()}
         </span>
         <button
-          onClick={e => { e.stopPropagation(); handleRefresh() }}
+          onClick={(e) => {
+            e.stopPropagation()
+            handleRefresh()
+          }}
           disabled={!currentBrowserUrl || mediaScanLoading}
           className="ml-auto p-1 rounded text-gray-500 hover:text-white hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           title="Refresh"
         >
           ↻
         </button>
-        {hasResults && (
-          <span className="text-gray-500 text-xs">{collapsed ? '▼' : '▲'}</span>
-        )}
+        {hasResults && <span className="text-gray-500 text-xs">{collapsed ? '▼' : '▲'}</span>}
       </div>
       {!collapsed && hasResults && (
         <div className="p-2 flex flex-col gap-1">
           {videos.length > 0 && (
             <>
-              <div className="text-xs font-semibold text-gray-400 px-1 py-1.5 uppercase tracking-wider">Videos</div>
+              <div className="text-xs font-semibold text-gray-400 px-1 py-1.5 uppercase tracking-wider">
+                Videos
+              </div>
               <div className="flex flex-col gap-1">
-                {videos.map(entry => (
+                {videos.map((entry) => (
                   <MediaEntry key={entry.id || entry.url} entry={entry} />
                 ))}
               </div>
@@ -288,9 +319,11 @@ export function MediaPanel() {
           )}
           {playlists.length > 0 && (
             <>
-              <div className="text-xs font-semibold text-gray-400 px-1 py-1.5 uppercase tracking-wider mt-2">Playlists</div>
+              <div className="text-xs font-semibold text-gray-400 px-1 py-1.5 uppercase tracking-wider mt-2">
+                Playlists
+              </div>
               <div className="flex flex-col gap-1">
-                {playlists.map(entry => (
+                {playlists.map((entry) => (
                   <MediaEntry key={entry.id || entry.url} entry={entry} />
                 ))}
               </div>

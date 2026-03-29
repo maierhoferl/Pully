@@ -2,7 +2,7 @@
 export default function NotesFolderList({ folders, activeFolder, onSelect }) {
   return (
     <div className="flex flex-col gap-0.5 p-2">
-      {[null, ...folders].map(folder => (
+      {[null, ...folders].map((folder) => (
         <button
           key={folder ?? '__root__'}
           onClick={() => onSelect(folder)}
