@@ -56,7 +56,7 @@ export async function generateSummary(filePath, metadata, config) {
     const isYouTube = metadata.url && YOUTUBE_RE.test(metadata.url)
 
     let result
-    if (aiProvider === 'gemini' && isYouTube) {
+    if (aiProvider === 'gemini' && isYouTube && !metadata.page) {
       logger.info('summarize', `Using YouTube-native API`, {
         filename: path.basename(filePath),
         provider: 'gemini',
@@ -64,17 +64,19 @@ export async function generateSummary(filePath, metadata, config) {
       })
       result = await callLLMWithVideo(aiProvider, aiApiKey, model, prompt, metadata.url)
     } else {
-      // Text metadata path for all other cases
+      // Text metadata path for all other cases (including pages with content)
       const titleLine = `Title: ${metadata.title || 'Unknown'}`
       const uploaderLine = `Uploader: ${metadata.uploader || 'Unknown'}`
       const descLine = `Description: ${(metadata.description || '').slice(0, 500)}`
-      const userContent = `${prompt}\n\n${titleLine}\n${uploaderLine}\n${descLine}`
+      const pageLine = metadata.page ? `\n\nPage Content:\n${metadata.page.slice(0, 2000)}` : ''
+      const userContent = `${prompt}\n\n${titleLine}\n${uploaderLine}\n${descLine}${pageLine}`
 
       logger.info('summarize', `Sending to LLM`, {
         filename: path.basename(filePath),
         provider: aiProvider,
         model,
-        userContentPreview: userContent.slice(0, 150)
+        userContentPreview: userContent.slice(0, 150),
+        hasPageContent: !!metadata.page
       })
 
       result = await callLLM(aiProvider, aiApiKey, model, [{ role: 'user', content: userContent }])

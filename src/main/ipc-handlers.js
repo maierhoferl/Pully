@@ -80,7 +80,7 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
 
   ipcMain.handle(
     'library:remember',
-    async (_, { title, uploader, description, thumbnailUrl, url, contentType = 'video' }) => {
+    async (_, { title, uploader, description, thumbnailUrl, url, contentType = 'video', page }) => {
       const cfg = readConfig()
       const { outputFolder } = cfg
       if (!outputFolder || !fs.existsSync(outputFolder))
@@ -95,6 +95,7 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
         thumbnailUrl,
         url,
         contentType,
+        page,
         downloadedAt: new Date().toISOString()
       }
       const refPath = await createReferenceFile(outputFolder, {

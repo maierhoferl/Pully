@@ -90,4 +90,19 @@ describe('generateSummary', () => {
     const callArgs = callLLM.mock.calls[0]
     expect(callArgs[3][0].content).toContain('Summarize this.')
   })
+
+  it('uses callLLM for Gemini + YouTube URL when page content is present', async () => {
+    const filePath = path.join(tmpDir, 'page.ref')
+    const metadata = {
+      title: 'Page Title',
+      url: 'https://example.com',
+      description: 'desc',
+      uploader: 'Site',
+      page: 'Extracted page content here'
+    }
+    await generateSummary(filePath, metadata, baseConfig)
+    expect(callLLM).toHaveBeenCalled()
+    const callArgs = callLLM.mock.calls[0]
+    expect(callArgs[3][0].content).toContain('Extracted page content here')
+  })
 })

@@ -163,12 +163,20 @@ export default function BrowserTab() {
             return tag?.getAttribute(attr) || null
           }
 
+          // Extract page content: combine title, headings, and body text
+          const pageText = Array.from(document.querySelectorAll('h1, h2, h3, p, li'))
+            .map(el => el.textContent?.trim())
+            .filter(text => text && text.length > 0)
+            .slice(0, 100) // Limit to first 100 elements
+            .join('\\n')
+
           return {
             title: getMetaContent('og:title') || document.title,
             description: getMetaContent('og:description') || getMetaContent('description'),
             thumbnailUrl: getMetaContent('og:image'),
             siteName: getMetaContent('og:site_name') || new URL(location.href).hostname,
-            url: location.href
+            url: location.href,
+            page: pageText
           }
         })()
       `)
@@ -193,7 +201,8 @@ export default function BrowserTab() {
         description: meta.description,
         thumbnailUrl,
         url: meta.url,
-        contentType: 'page'
+        contentType: 'page',
+        page: meta.page
       })
     } catch (error) {
       console.error('Failed to remember site:', error)
