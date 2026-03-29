@@ -19,6 +19,18 @@ export class DownloadManager extends EventEmitter {
   add(url, formatId, title, metadata = null) {
     const id = crypto.randomUUID()
     this.queue.push({ id, url, formatId, title, metadata, status: 'queued', percent: 0, speed: '', eta: '', error: undefined })
+
+    // Create notes stub immediately with URL as key so Notes panel displays right away
+    const cfg = readConfig()
+    if (metadata) {
+      try {
+        initChapter(url, {
+          ...metadata,
+          downloadedAt: new Date().toISOString().split('T')[0]
+        }, cfg.outputFolder)
+      } catch { /* don't block on notes errors */ }
+    }
+
     this.emit('queue-updated', this.getAll())
     this._tick()
     return id

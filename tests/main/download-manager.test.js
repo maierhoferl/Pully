@@ -187,6 +187,19 @@ describe('auto-classify on download completion', () => {
 })
 
 describe('notes + summarize pipeline on download completion', () => {
+  it('creates notes stub immediately on add() with URL as key', () => {
+    startDownload.mockReturnValue({ kill: vi.fn() })
+    readConfig.mockReturnValue({ outputFolder: '/out', maxConcurrent: 1, autoClassifyEnabled: false, autoSummarizeEnabled: false })
+    const dm = new DownloadManager()
+    dm.add('https://yt.com/v=1', 'mp4', 'My Video', { title: 'My Video', url: 'https://yt.com/v=1', thumbnailUrl: null })
+    // Should be called immediately with URL as the filePath key
+    expect(initChapter).toHaveBeenCalledWith(
+      'https://yt.com/v=1',
+      expect.objectContaining({ title: 'My Video', url: 'https://yt.com/v=1' }),
+      '/out'
+    )
+  })
+
   it('calls initChapter after successful download', () => {
     let onDone
     startDownload.mockImplementation((_u, _f, _d, _p, done) => { onDone = done; return { kill: vi.fn() } })
