@@ -144,7 +144,7 @@ function MediaEntry({ entry }) {
             onClick={handleRemember}
             disabled={rememberState !== 'idle'}
             title={rememberState === 'exists' ? 'Already in library' : 'Save reference without downloading'}
-            className={`text-xs font-semibold px-2 py-1 rounded flex-shrink-0 transition-colors ${rememberStyle}`}
+            className={`text-xs font-semibold px-2 py-1 rounded transition-colors ${rememberStyle}`}
           >
             {rememberLabel}
           </button>
@@ -153,7 +153,7 @@ function MediaEntry({ entry }) {
             : (
               <button
                 onClick={handleDownload}
-                className="text-xs font-semibold bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white px-2 py-1 rounded flex-shrink-0 transition-colors"
+                className="text-xs font-semibold bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white px-2 py-1 rounded transition-colors"
               >
                 Download
               </button>
