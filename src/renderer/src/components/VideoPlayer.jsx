@@ -63,7 +63,12 @@ export default function VideoPlayer({ src, onClose }) {
     const onDurationChange = () => setDuration(v.duration)
     const onVolumeChange = () => { setVolume(v.volume); setMuted(v.muted) }
     const onRateChange = () => setPlaybackRate(v.playbackRate)
-    const onError = () => setError('Could not play this file.')
+    const onError = () => {
+      const err = v.error
+      const meta = err ? { code: err.code, message: err.message, src } : { src }
+      window.api.logError?.('video-player', `Video playback failed: ${src}`, meta)
+      setError('Could not play this file.')
+    }
     const onEnded = () => { setPlaying(false); setShowControls(true); clearTimeout(hideTimer.current) }
     v.addEventListener('play', onPlay)
     v.addEventListener('pause', onPause)

@@ -83,15 +83,50 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-  // Serve local thumbnail files via pully:// — replaces file:// which is blocked
+  // Serve local files via pully:// — replaces file:// which is blocked
   // from http://localhost origins in dev mode.
+  // Supports range requests so HTML5 <video> can seek/stream video files.
   protocol.handle('pully', req => {
     const filePath = fileURLToPath(req.url.replace(/^pully:/, 'file:'))
     try {
-      const data = fs.readFileSync(filePath)
+      const stat = fs.statSync(filePath)
       const ext = path.extname(filePath).toLowerCase().slice(1)
-      const mime = { jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', png: 'image/png' }
-      return new Response(data, { headers: { 'Content-Type': mime[ext] || 'application/octet-stream' } })
+      const mimeTypes = {
+        jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', png: 'image/png',
+        mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime',
+        mkv: 'video/x-matroska', m4v: 'video/mp4', avi: 'video/x-msvideo'
+      }
+      const contentType = mimeTypes[ext] || 'application/octet-stream'
+
+      const rangeHeader = req.headers.get('range')
+      if (rangeHeader) {
+        const [rawStart, rawEnd] = rangeHeader.replace('bytes=', '').split('-')
+        const chunkStart = rawStart ? parseInt(rawStart, 10) : 0
+        const chunkEnd = rawEnd ? Math.min(parseInt(rawEnd, 10), stat.size - 1) : stat.size - 1
+        const chunkLength = chunkEnd - chunkStart + 1
+        const buffer = Buffer.alloc(chunkLength)
+        const fd = fs.openSync(filePath, 'r')
+        fs.readSync(fd, buffer, 0, chunkLength, chunkStart)
+        fs.closeSync(fd)
+        return new Response(buffer, {
+          status: 206,
+          headers: {
+            'Content-Type': contentType,
+            'Content-Range': `bytes ${chunkStart}-${chunkEnd}/${stat.size}`,
+            'Accept-Ranges': 'bytes',
+            'Content-Length': String(chunkLength)
+          }
+        })
+      }
+
+      const data = fs.readFileSync(filePath)
+      return new Response(data, {
+        headers: {
+          'Content-Type': contentType,
+          'Accept-Ranges': 'bytes',
+          'Content-Length': String(stat.size)
+        }
+      })
     } catch {
       return new Response(null, { status: 404 })
     }

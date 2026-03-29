@@ -17,6 +17,11 @@ function isHelperFile(fileName) {
 }
 
 export function registerIpcHandlers(downloadManager, mainWindow, logger) {
+  ipcMain.handle('log:renderer', (_, { level, category, message, meta }) => {
+    const fn = logger[level] ?? logger.info
+    fn.call(logger, category, message, meta)
+  })
+
   ipcMain.handle('config:read', () => readConfig())
   ipcMain.handle('config:write', (_, data) => {
     writeConfig(data)
@@ -64,7 +69,7 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
         title: meta.title || null,
         uploader: meta.uploader || null,
         description: meta.description || null,
-        thumbnailUrl: thumbnailSrc(fullPath),
+        thumbnailUrl: thumbnailSrc(fullPath) || meta.thumbnailUrl || null,
         videoUrl: toPullyUrl(fullPath),
         url: meta.url || null,
         downloadedAt: meta.downloadedAt || null,
