@@ -61,6 +61,10 @@ function buildChapterStub(fileBasename, metadata) {
     anchors.push(`<!-- pully:url:${url} -->`)
   }
   anchors.push(`<!-- pully:downloaded:${date} -->`)
+  // Add contentType anchor if not the default 'video'
+  if (metadata.contentType && metadata.contentType !== 'video') {
+    anchors.push(`<!-- pully:contentType:${metadata.contentType} -->`)
+  }
   return [`## ${title}`, ...anchors, '', '### AI Summary', '', '### My Notes', ''].join('\n')
 }
 
@@ -182,6 +186,7 @@ export function readFolderNotes(folderName, outputFolder) {
         file: null,
         url: null,
         downloadedAt: null,
+        contentType: null,
         _summary: [],
         _bullets: []
       }
@@ -190,9 +195,11 @@ export function readFolderNotes(folderName, outputFolder) {
       const fm = line.match(/<!--\s*pully:file:(.*?)\s*-->/)
       const um = line.match(/<!--\s*pully:url:(.*?)\s*-->/)
       const dm = line.match(/<!--\s*pully:downloaded:(.*?)\s*-->/)
+      const cm = line.match(/<!--\s*pully:contentType:(.*?)\s*-->/)
       if (fm) current.file = fm[1].trim()
       if (um) current.url = um[1].trim()
       if (dm) current.downloadedAt = dm[1].trim()
+      if (cm) current.contentType = cm[1].trim()
       if (line === '### AI Summary') {
         section = 'summary'
         continue
@@ -221,6 +228,7 @@ function finalizeChapter(c) {
     filePath: c.file,
     url: c.url,
     downloadedAt: c.downloadedAt,
+    contentType: c.contentType || 'video',
     title: c.heading,
     summary: c._summary.join('\n').trim() || null,
     bullets: c._bullets

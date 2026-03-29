@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAppStore } from '../store/app-store.js'
 import VideoPlayer from './VideoPlayer.jsx'
+import { ContentTypeIcon } from './icons/ContentTypeIcon.jsx'
 
 function fmtDateTime(iso) {
   const d = new Date(iso)
@@ -46,9 +47,12 @@ export default function LibraryDetailPanel({ file, onClose, onDelete, style }) {
       style={style}
     >
       <div className="flex items-start justify-between gap-2 p-4 flex-shrink-0">
-        <div className="min-w-0">
-          <h2 className="text-sm font-bold text-white leading-snug">{title}</h2>
-          <p className="text-xs text-gray-400 mt-0.5 truncate">{subtitle}</p>
+        <div className="min-w-0 flex items-start gap-2">
+          <ContentTypeIcon type={file.contentType || 'video'} size={16} className="flex-shrink-0 mt-0.5 text-gray-500" />
+          <div className="min-w-0">
+            <h2 className="text-sm font-bold text-white leading-snug">{title}</h2>
+            <p className="text-xs text-gray-400 mt-0.5 truncate">{subtitle}</p>
+          </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <button

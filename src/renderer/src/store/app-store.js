@@ -35,6 +35,10 @@ export const useAppStore = create((set) => ({
 
   libraryFiles: [],
   setLibraryFiles: (files) => set({ libraryFiles: files }),
+  removeLibraryFile: (path) =>
+    set((state) => ({
+      libraryFiles: state.libraryFiles.filter((f) => f.path !== path)
+    })),
 
   librarySort: { field: 'date', direction: 'desc' },
   setLibrarySort: (field, direction) => set({ librarySort: { field, direction } }),

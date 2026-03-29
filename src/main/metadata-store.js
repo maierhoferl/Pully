@@ -92,11 +92,11 @@ export function deleteFolderFromIndex(dirPath, indexPath) {
   fs.writeFileSync(p, JSON.stringify(index, null, 2))
 }
 
-// Creates a .ref stub file representing a remembered (not downloaded) online video.
+// Creates a .ref stub file representing a remembered (not downloaded) online video or page.
 // Writes metadata to the index and fire-and-forgets the thumbnail sidecar download.
 export async function createReferenceFile(
   outputFolder,
-  { title, uploader, description, thumbnailUrl, url }
+  { title, uploader, description, thumbnailUrl, url, contentType = 'video' }
 ) {
   const safe =
     (title || 'Untitled')
@@ -118,6 +118,7 @@ export async function createReferenceFile(
     thumbnailUrl,
     url,
     downloadedAt,
+    contentType,
     isReference: true
   })
   if (thumbnailUrl) {

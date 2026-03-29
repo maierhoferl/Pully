@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { ContentTypeIcon } from './icons/ContentTypeIcon.jsx'
+import { useAppStore } from '../store/app-store.js'
 
 function safeHostname(url) {
   try {
@@ -45,10 +47,17 @@ export function ChapterCard({ chapter, onGenerateSummary, onUpdateBullets, onPla
     }
   }
 
+  const libraryFiles = useAppStore((s) => s.libraryFiles)
+  const fileMatch = libraryFiles?.find((f) => f.name === chapter.filePath)
+  const contentType = fileMatch?.contentType || chapter.contentType || 'video'
+
   return (
     <div className="mb-6 last:mb-0">
       <div className="flex items-start justify-between mb-2">
-        <h2 className="text-base font-semibold text-white">{chapter.title}</h2>
+        <div className="flex items-center gap-2 min-w-0">
+          <ContentTypeIcon type={contentType} size={16} className="flex-shrink-0 text-gray-500" />
+          <h2 className="text-base font-semibold text-white truncate">{chapter.title}</h2>
+        </div>
         <button
           onClick={() => onPlay(chapter.filePath)}
           className="text-xs text-blue-400 hover:text-blue-300 whitespace-nowrap ml-4 shrink-0"

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../store/app-store.js'
 import LibraryDetailPanel from './LibraryDetailPanel.jsx'
 import LibraryToolbar from './LibraryToolbar.jsx'
+import { ContentTypeIcon } from './icons/ContentTypeIcon.jsx'
 
 // Stable color per folder name (derived from name hash so colors don't shift when folders are added)
 const PALETTE = [
@@ -479,10 +480,8 @@ export default function LibraryTab() {
                               setSelectedPath((prev) => (prev === file.path ? null : file.path))
                             }
                           >
-                            <div className="w-16 aspect-video bg-gray-700 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
-                              <span className="text-gray-500 text-lg">
-                                {file.name?.endsWith('.ref') ? '🔖' : '▶'}
-                              </span>
+                            <div className="w-16 aspect-video bg-gray-700 rounded overflow-hidden flex-shrink-0 flex items-center justify-center text-gray-500">
+                              <ContentTypeIcon type={file.contentType || 'video'} size={20} />
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="text-sm font-medium text-white truncate">{title}</p>

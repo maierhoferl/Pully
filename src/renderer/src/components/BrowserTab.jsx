@@ -154,6 +154,52 @@ export default function BrowserTab() {
     wv.loadURL(url)
   }
 
+  const handleRememberSite = useCallback(async () => {
+    try {
+      const meta = await webviewRef.current.executeJavaScript(`
+        (function() {
+          const getMetaContent = (property, attr = 'content') => {
+            const tag = document.querySelector(\`meta[property="\${property}"], meta[name="\${property}"]\`)
+            return tag?.getAttribute(attr) || null
+          }
+
+          return {
+            title: getMetaContent('og:title') || document.title,
+            description: getMetaContent('og:description') || getMetaContent('description'),
+            thumbnailUrl: getMetaContent('og:image'),
+            siteName: getMetaContent('og:site_name') || new URL(location.href).hostname,
+            url: location.href
+          }
+        })()
+      `)
+
+      // If no og:image, try to fetch favicon
+      let thumbnailUrl = meta.thumbnailUrl
+      if (!thumbnailUrl) {
+        const faviconLink = document.querySelector('link[rel="icon"]')
+        if (faviconLink?.href) {
+          try {
+            const url = new URL(faviconLink.href, meta.url)
+            thumbnailUrl = url.href
+          } catch {
+            // ignore invalid favicon URLs
+          }
+        }
+      }
+
+      await window.api.rememberMedia({
+        title: meta.title,
+        uploader: meta.siteName,
+        description: meta.description,
+        thumbnailUrl,
+        url: meta.url,
+        contentType: 'page'
+      })
+    } catch (error) {
+      console.error('Failed to remember site:', error)
+    }
+  }, [])
+
   function handleSideDragStart(e) {
     e.preventDefault()
     const startX = e.clientX
@@ -246,7 +292,7 @@ export default function BrowserTab() {
           <div className="h-6 w-0.5 bg-gray-600 rounded pointer-events-none" />
         </div>
         <div style={{ width: sideWidth }} className="flex-shrink-0 h-full">
-          <SidePanel />
+          <SidePanel onRememberSite={handleRememberSite} />
         </div>
       </div>
     </div>

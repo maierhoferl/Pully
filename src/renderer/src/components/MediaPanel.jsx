@@ -119,11 +119,12 @@ function DownloadButton({ downloadId }) {
   )
 }
 
-function MediaEntry({ entry }) {
+function MediaEntry({ entry, libraryMatch }) {
   const formats = getBestFormats(entry)
   const [selected, setSelected] = useState(formats[0]?.format_id || 'best')
   const [downloadId, setDownloadId] = useState(null)
   const [rememberState, setRememberState] = useState('idle') // idle | pending | done | exists | error
+  const [forgetting, setForgetting] = useState(false)
 
   async function handleDownload() {
     const sourceUrl = entry.webpage_url || entry.url
@@ -160,6 +161,19 @@ function MediaEntry({ entry }) {
     }
   }
 
+  async function handleForget() {
+    if (!libraryMatch || forgetting) return
+    setForgetting(true)
+    try {
+      await window.api.deleteFile(libraryMatch.path)
+      setRememberState('idle')
+    } catch {
+      console.error('Failed to forget item:', error)
+    } finally {
+      setForgetting(false)
+    }
+  }
+
   const rememberLabel = {
     idle: 'Remember',
     pending: '…',
@@ -176,6 +190,7 @@ function MediaEntry({ entry }) {
   }[rememberState]
 
   const isPlaylist = Boolean(entry.playlist_id)
+  const inLibrary = Boolean(libraryMatch)
 
   return (
     <div className="bg-gray-800 hover:bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 transition-colors">
@@ -215,19 +230,25 @@ function MediaEntry({ entry }) {
           <PlaylistIcon />
         ) : null}
         <div className="flex flex-col gap-1.5">
-          <button
-            onClick={handleRemember}
-            disabled={rememberState !== 'idle'}
-            title={
-              rememberState === 'exists'
-                ? 'Already in library'
-                : 'Save reference without downloading'
-            }
-            className={`text-xs font-semibold px-2 py-1 rounded transition-colors ${rememberStyle}`}
-          >
-            {rememberLabel}
-          </button>
-          {downloadId ? (
+          {inLibrary ? (
+            <button
+              onClick={handleForget}
+              disabled={forgetting}
+              className="text-xs font-semibold bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {forgetting ? '…' : 'Forget'}
+            </button>
+          ) : (
+            <button
+              onClick={handleRemember}
+              disabled={rememberState !== 'idle'}
+              title={rememberState === 'exists' ? 'Already in library' : 'Save reference without downloading'}
+              className={`text-xs font-semibold px-2 py-1 rounded transition-colors ${rememberStyle}`}
+            >
+              {rememberLabel}
+            </button>
+          )}
+          {inLibrary ? null : downloadId ? (
             <DownloadButton downloadId={downloadId} />
           ) : (
             <button
@@ -243,15 +264,18 @@ function MediaEntry({ entry }) {
   )
 }
 
-export function MediaPanel() {
+export function MediaPanel({ onRememberSite }) {
   const {
     mediaScanResults,
     mediaScanLoading,
     currentBrowserUrl,
     startMediaScan,
-    setMediaScanResults
+    setMediaScanResults,
+    libraryFiles,
+    removeLibraryFile
   } = useAppStore()
   const [collapsed, setCollapsed] = useState(false)
+  const [rememberingSite, setRememberingSite] = useState(false)
 
   async function handleRefresh() {
     if (!currentBrowserUrl || mediaScanLoading) return
@@ -264,10 +288,34 @@ export function MediaPanel() {
     }
   }
 
+  async function handleRememberSiteClick() {
+    if (rememberingSite) return
+    setRememberingSite(true)
+    try {
+      await onRememberSite()
+    } catch {
+      console.error('Failed to remember site')
+    } finally {
+      setRememberingSite(false)
+    }
+  }
+
+  async function handleForgetSite() {
+    const siteMatch = libraryFiles?.find((f) => f.url === currentBrowserUrl)
+    if (!siteMatch) return
+    try {
+      await window.api.deleteFile(siteMatch.path)
+      removeLibraryFile(siteMatch.path)
+    } catch {
+      console.error('Failed to forget site')
+    }
+  }
+
   // Don't show before the first navigation
   if (!mediaScanLoading && mediaScanResults === null) return null
 
   const hasResults = Array.isArray(mediaScanResults) && mediaScanResults.length > 0
+  const siteInLibrary = libraryFiles?.some((f) => f.url === currentBrowserUrl)
 
   function headingText() {
     if (mediaScanLoading) return 'Scanning for content to download…'
@@ -281,9 +329,29 @@ export function MediaPanel() {
 
   return (
     <div className="bg-gray-950">
+      {/* Remember Site button (always visible) */}
+      <div className="px-3 py-2 bg-gray-900 border-b border-gray-800">
+        {siteInLibrary ? (
+          <button
+            onClick={handleForgetSite}
+            className="w-full text-xs font-semibold px-2.5 py-1.5 rounded bg-red-700 hover:bg-red-600 text-white transition-colors"
+          >
+            Forget Site
+          </button>
+        ) : (
+          <button
+            onClick={handleRememberSiteClick}
+            disabled={rememberingSite}
+            className="w-full text-xs font-semibold px-2.5 py-1.5 rounded bg-green-700 hover:bg-green-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white transition-colors"
+          >
+            {rememberingSite ? '…' : 'Remember Site'}
+          </button>
+        )}
+      </div>
+
       <div
         onClick={() => hasResults && setCollapsed((c) => !c)}
-        className={`flex items-center gap-2 px-3 py-2.5 sticky top-0 bg-gray-950 border-b border-gray-800 z-10 ${hasResults ? 'cursor-pointer hover:bg-gray-900' : ''}`}
+        className={`flex items-center gap-2 px-3 py-2.5 sticky top-[45px] bg-gray-950 border-b border-gray-800 z-10 ${hasResults ? 'cursor-pointer hover:bg-gray-900' : ''}`}
       >
         <span
           className={`text-sm font-bold tracking-wide ${mediaScanLoading ? 'text-blue-400' : hasResults ? 'text-white' : 'text-gray-500'}`}
@@ -311,9 +379,10 @@ export function MediaPanel() {
                 Videos
               </div>
               <div className="flex flex-col gap-1">
-                {videos.map((entry) => (
-                  <MediaEntry key={entry.id || entry.url} entry={entry} />
-                ))}
+                {videos.map((entry) => {
+                  const libraryMatch = libraryFiles?.find((f) => f.url === (entry.webpage_url || entry.url))
+                  return <MediaEntry key={entry.id || entry.url} entry={entry} libraryMatch={libraryMatch} />
+                })}
               </div>
             </>
           )}
@@ -323,9 +392,10 @@ export function MediaPanel() {
                 Playlists
               </div>
               <div className="flex flex-col gap-1">
-                {playlists.map((entry) => (
-                  <MediaEntry key={entry.id || entry.url} entry={entry} />
-                ))}
+                {playlists.map((entry) => {
+                  const libraryMatch = libraryFiles?.find((f) => f.url === (entry.webpage_url || entry.url))
+                  return <MediaEntry key={entry.id || entry.url} entry={entry} libraryMatch={libraryMatch} />
+                })}
               </div>
             </>
           )}
