@@ -34,7 +34,12 @@ const baseEntry = {
   ],
 }
 
-beforeEach(() => vi.clearAllMocks())
+beforeEach(() => {
+  vi.clearAllMocks()
+  mockState.mediaScanResults = null
+  mockState.mediaScanLoading = false
+  mockState.downloads = []
+})
 
 describe('MediaEntry type indicator', () => {
   it('shows "Single video" when playlist_id is absent', () => {
