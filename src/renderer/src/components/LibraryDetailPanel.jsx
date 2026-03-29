@@ -11,7 +11,7 @@ function fmtDateTime(iso) {
   )
 }
 
-export default function LibraryDetailPanel({ file, onClose, onDelete }) {
+export default function LibraryDetailPanel({ file, onClose, onDelete, style }) {
   const [isPlaying, setIsPlaying] = useState(false)
 
   // Reset player when the selected file changes
@@ -35,7 +35,7 @@ export default function LibraryDetailPanel({ file, onClose, onDelete }) {
   const subtitle = `${uploader} · ${dateStr}`
 
   return (
-    <div className="w-[640px] flex-shrink-0 bg-gray-900 border-l border-gray-700 flex flex-col h-full overflow-hidden">
+    <div className="flex-shrink-0 bg-gray-900 border-l border-gray-700 flex flex-col h-full overflow-hidden" style={style}>
       <div className="flex items-start justify-between gap-2 p-4 flex-shrink-0">
         <div className="min-w-0">
           <h2 className="text-sm font-bold text-white leading-snug">{title}</h2>

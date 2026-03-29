@@ -8,6 +8,22 @@ import { useAppStore } from '../store/app-store.js'
 export default function NotesTab() {
   const [folders, setFolders] = useState([])
   const [notesSelectedFile, setNotesSelectedFile] = useState(null)
+  const [sideWidth, setSideWidth] = useState(400)
+
+  function handleSideDragStart(e) {
+    e.preventDefault()
+    const startX = e.clientX
+    const startWidth = sideWidth
+    function onMove(ev) {
+      setSideWidth(Math.max(1, startWidth + (startX - ev.clientX)))
+    }
+    function onUp() {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
   const activeNotesFolder = useAppStore(s => s.activeNotesFolder)
   const activeNotesChapter = useAppStore(s => s.activeNotesChapter)
   const setActiveNotesFolder = useAppStore(s => s.setActiveNotesFolder)
@@ -44,12 +60,26 @@ export default function NotesTab() {
         />
       </div>
 
-      {/* Right panel — video detail (shown when Play is clicked) */}
-      {notesSelectedFile && (
+      {/* Resize handle */}
+      <div
+        role="separator"
+        className="w-1 bg-gray-800 hover:bg-blue-600 cursor-col-resize flex-shrink-0 flex items-center justify-center transition-colors"
+        onMouseDown={handleSideDragStart}
+      >
+        <div className="h-6 w-0.5 bg-gray-600 rounded pointer-events-none" />
+      </div>
+
+      {/* Right panel — video detail */}
+      {notesSelectedFile ? (
         <LibraryDetailPanel
           file={notesSelectedFile}
           onClose={() => setNotesSelectedFile(null)}
+          style={{ width: sideWidth }}
         />
+      ) : (
+        <div style={{ width: sideWidth }} className="flex-shrink-0 bg-gray-900 border-l border-gray-700 flex items-center justify-center h-full">
+          <p className="text-sm text-gray-600">Select a file to view details</p>
+        </div>
       )}
     </div>
   )

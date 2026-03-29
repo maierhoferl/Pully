@@ -144,7 +144,7 @@ export default function BrowserTab() {
     const startWidth = sideWidth
 
     function onMove(ev) {
-      setSideWidth(Math.max(200, Math.min(600, startWidth + (startX - ev.clientX))))
+      setSideWidth(Math.max(1, startWidth + (startX - ev.clientX)))
     }
 
     function onUp() {

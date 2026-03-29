@@ -40,6 +40,22 @@ export default function LibraryTab() {
   const skipRenameBlurRef = useRef(false)
   const [deletingFolder, setDeletingFolder] = useState(null) // { name, count }
   const [classifyStatus, setClassifyStatus] = useState(null) // null | 'running' | result string
+  const [sideWidth, setSideWidth] = useState(400)
+
+  function handleSideDragStart(e) {
+    e.preventDefault()
+    const startX = e.clientX
+    const startWidth = sideWidth
+    function onMove(ev) {
+      setSideWidth(Math.max(1, startWidth + (startX - ev.clientX)))
+    }
+    function onUp() {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
 
   async function refresh() {
     const [files, folders] = await Promise.all([
@@ -499,12 +515,24 @@ export default function LibraryTab() {
         </div>
       )}
 
-      {selected && (
+      <div
+        role="separator"
+        className="w-1 bg-gray-800 hover:bg-blue-600 cursor-col-resize flex-shrink-0 flex items-center justify-center transition-colors"
+        onMouseDown={handleSideDragStart}
+      >
+        <div className="h-6 w-0.5 bg-gray-600 rounded pointer-events-none" />
+      </div>
+      {selected ? (
         <LibraryDetailPanel
           file={selected}
           onClose={() => setSelectedPath(null)}
           onDelete={handleDelete}
+          style={{ width: sideWidth }}
         />
+      ) : (
+        <div style={{ width: sideWidth }} className="flex-shrink-0 bg-gray-900 border-l border-gray-700 flex items-center justify-center h-full">
+          <p className="text-sm text-gray-600">Select a file to view details</p>
+        </div>
       )}
     </div>
   )
