@@ -8,14 +8,15 @@ const YOUTUBE_RE = /youtube\.com|youtu\.be/
 /** Generate a summary for a video. Returns the summary string. */
 export async function generateSummary(filePath, metadata, config) {
   const startTime = Date.now()
+  const model = config.autoSummarizeModel || config.aiModel || ''
   logger.info('summarize', `Started: ${path.basename(filePath)}`, {
     filename: path.basename(filePath),
     provider: config.aiProvider,
-    model: config.aiModel
+    model
   })
 
   try {
-    const { aiProvider, aiApiKey, aiModel, defaultSummaryPrompt } = config
+    const { aiProvider, aiApiKey, defaultSummaryPrompt } = config
     const folderPath = path.dirname(filePath)
     const customPromptPath = path.join(folderPath, 'summary-prompt.md')
 
@@ -44,7 +45,7 @@ export async function generateSummary(filePath, metadata, config) {
         provider: 'gemini',
         url: metadata.url
       })
-      result = await callLLMWithVideo(aiProvider, aiApiKey, aiModel || '', prompt, metadata.url)
+      result = await callLLMWithVideo(aiProvider, aiApiKey, model, prompt, metadata.url)
     } else {
       // Text metadata path for all other cases
       const titleLine = `Title: ${metadata.title || 'Unknown'}`
@@ -55,11 +56,11 @@ export async function generateSummary(filePath, metadata, config) {
       logger.info('summarize', `Sending to LLM`, {
         filename: path.basename(filePath),
         provider: aiProvider,
-        model: aiModel,
+        model,
         userContentPreview: userContent.slice(0, 150)
       })
 
-      result = await callLLM(aiProvider, aiApiKey, aiModel || '', [{ role: 'user', content: userContent }])
+      result = await callLLM(aiProvider, aiApiKey, model, [{ role: 'user', content: userContent }])
     }
 
     logger.info('summarize', `Response received`, {
@@ -71,7 +72,7 @@ export async function generateSummary(filePath, metadata, config) {
     logger.info('summarize', `Completed: ${path.basename(filePath)}`, {
       filename: path.basename(filePath),
       provider: config.aiProvider,
-      model: config.aiModel,
+      model,
       duration: `${duration.toFixed(2)}s`,
       responseLength: result.length
     })
@@ -81,7 +82,7 @@ export async function generateSummary(filePath, metadata, config) {
     logger.error('summarize', `Failed: ${path.basename(filePath)}`, {
       filename: path.basename(filePath),
       provider: config.aiProvider,
-      model: config.aiModel,
+      model,
       error: error.message
     })
     throw error
