@@ -96,7 +96,7 @@ describe('readFolderNotes', () => {
     fs.writeFileSync(notesPath, `# Library\n\n---\n\n## My Video\n<!-- pully:file:video.mp4 -->\n<!-- pully:url:https://yt.com/1 -->\n<!-- pully:downloaded:2026-03-28 -->\n\n### AI Summary\nGreat video about stuff.\n\n### My Notes\n- point one\n- point two\n\n---\n`)
     const result = readFolderNotes(null, tmpDir)
     expect(result.chapters).toHaveLength(1)
-    expect(result.chapters[0].file).toBe('video.mp4')
+    expect(result.chapters[0].filePath).toBe('video.mp4')
     expect(result.chapters[0].url).toBe('https://yt.com/1')
     expect(result.chapters[0].summary).toBe('Great video about stuff.')
     expect(result.chapters[0].bullets).toEqual(['point one', 'point two'])

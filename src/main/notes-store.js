@@ -209,10 +209,10 @@ export function readFolderNotes(folderName, outputFolder) {
 
 function finalizeChapter(c) {
   return {
-    file: c.file,
+    filePath: c.file,
     url: c.url,
     downloadedAt: c.downloadedAt,
-    heading: c.heading,
+    title: c.heading,
     summary: c._summary.join('\n').trim() || null,
     bullets: c._bullets,
   }
