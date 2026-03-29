@@ -24,7 +24,7 @@ export async function generateSummary(filePath, metadata, config) {
 
     let prompt =
       defaultSummaryPrompt ||
-      'Summarize the key topics and insights in concise bullet points. Cover the what, why, how and the implications. Use concise language of an expert. Never go beyond what is covered.'
+      'Summarize the key topics and insights in Markdown format. Use bullet points for key takeaways, bold for important concepts, and additional formatting as needed. Cover the what, why, how and the implications. Use concise language of an expert. Never go beyond what is covered.'
     let promptSource = 'default'
 
     // Priority 1: Per-folder custom prompt (highest priority)

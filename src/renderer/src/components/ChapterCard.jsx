@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { ContentTypeIcon } from './icons/ContentTypeIcon.jsx'
 import { useAppStore } from '../store/app-store.js'
 
@@ -119,7 +121,31 @@ export function ChapterCard({ chapter, folderName, onGenerateSummary, onUpdateBu
       <div className="mb-3">
         <div className="text-xs font-medium text-gray-400 mb-1">AI Summary</div>
         {localSummary ? (
-          <div className="text-sm text-gray-300 leading-relaxed">{localSummary}</div>
+          <div className="prose prose-invert max-w-none prose-sm text-gray-300 prose-headings:text-gray-200 prose-p:my-1 prose-li:my-0">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                h1: ({ node, ...props }) => <h3 className="text-base font-semibold mt-2 mb-1" {...props} />,
+                h2: ({ node, ...props }) => <h3 className="text-base font-semibold mt-2 mb-1" {...props} />,
+                h3: ({ node, ...props }) => <h4 className="text-sm font-semibold mt-1.5 mb-0.5" {...props} />,
+                p: ({ node, ...props }) => <p className="my-1 leading-relaxed" {...props} />,
+                ul: ({ node, ...props }) => <ul className="my-1 ml-4 list-disc" {...props} />,
+                ol: ({ node, ...props }) => <ol className="my-1 ml-4 list-decimal" {...props} />,
+                li: ({ node, ...props }) => <li className="my-0" {...props} />,
+                strong: ({ node, ...props }) => <strong className="font-semibold text-gray-100" {...props} />,
+                em: ({ node, ...props }) => <em className="italic text-gray-400" {...props} />,
+                code: ({ node, inline, ...props }) =>
+                  inline ? (
+                    <code className="bg-gray-800 px-1 py-0.5 rounded text-xs font-mono text-gray-200" {...props} />
+                  ) : (
+                    <code className="bg-gray-800 p-1 rounded block text-xs font-mono text-gray-200 overflow-auto my-1" {...props} />
+                  ),
+                a: ({ node, ...props }) => <a className="text-blue-400 hover:text-blue-300 underline" {...props} />
+              }}
+            >
+              {localSummary}
+            </ReactMarkdown>
+          </div>
         ) : (
           <div className="text-xs text-gray-500 italic">No summary yet.</div>
         )}
