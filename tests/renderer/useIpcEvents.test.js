@@ -11,8 +11,6 @@ describe('useIpcEvents', () => {
     result.current.setSettingsOpen(false)
     result.current.setConfig({ outputFolder: '', maxConcurrent: 3 })
     result.current.setDownloads([])
-    result.current.setCurrentBrowserUrl(null)
-    result.current.startMediaScan()
     result.current.setLibraryFiles([])
     result.current.setLibrarySort('date', 'desc')
     result.current.setLibrarySearch('')

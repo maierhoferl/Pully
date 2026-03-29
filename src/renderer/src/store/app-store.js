@@ -1,5 +1,19 @@
 import { create } from 'zustand'
 
+let _tabIdCounter = 1
+function makeTab({ url = '', title = 'New Tab', suspended = false } = {}) {
+  return {
+    id: `tab-${_tabIdCounter++}`,
+    url,
+    title,
+    suspended,
+    mediaScanResults: null,
+    mediaScanLoading: false
+  }
+}
+
+const _initialTab = makeTab()
+
 export const useAppStore = create((set) => ({
   activeTab: 'browser',
   setActiveTab: (tab) => set({ activeTab: tab }),
@@ -25,13 +39,53 @@ export const useAppStore = create((set) => ({
       downloads: state.downloads.filter((d) => d.url !== url)
     })),
 
-  currentBrowserUrl: null,
-  setCurrentBrowserUrl: (url) => set({ currentBrowserUrl: url }),
+  // Browser tabs
+  browserTabs: [_initialTab],
+  activeBrowserTabId: _initialTab.id,
 
-  mediaScanResults: null,
-  mediaScanLoading: false,
-  startMediaScan: () => set({ mediaScanLoading: true, mediaScanResults: null }),
-  setMediaScanResults: (results) => set({ mediaScanResults: results, mediaScanLoading: false }),
+  addBrowserTab: (attrs = {}) =>
+    set((state) => {
+      const tab = makeTab(attrs)
+      return { browserTabs: [...state.browserTabs, tab], activeBrowserTabId: tab.id }
+    }),
+
+  closeBrowserTab: (id) =>
+    set((state) => {
+      if (state.browserTabs.length === 1) {
+        // Last tab: replace with a fresh home tab
+        const freshTab = makeTab()
+        return { browserTabs: [freshTab], activeBrowserTabId: freshTab.id }
+      }
+      const idx = state.browserTabs.findIndex((t) => t.id === id)
+      const remaining = state.browserTabs.filter((t) => t.id !== id)
+      let nextActiveId = state.activeBrowserTabId
+      if (state.activeBrowserTabId === id) {
+        // Activate adjacent tab (prefer right, fall back to left)
+        const nextIdx = Math.min(idx, remaining.length - 1)
+        nextActiveId = remaining[nextIdx].id
+      }
+      return { browserTabs: remaining, activeBrowserTabId: nextActiveId }
+    }),
+
+  closeOtherBrowserTabs: (id) =>
+    set((state) => ({
+      browserTabs: state.browserTabs.filter((t) => t.id === id),
+      activeBrowserTabId: id
+    })),
+
+  setActiveBrowserTab: (id) => set({ activeBrowserTabId: id }),
+
+  updateBrowserTab: (id, patch) =>
+    set((state) => ({
+      browserTabs: state.browserTabs.map((t) => (t.id === id ? { ...t, ...patch } : t))
+    })),
+
+  reorderBrowserTabs: (tabs) => set({ browserTabs: tabs }),
+
+  suspendBrowserTab: (id) =>
+    set((state) => ({
+      browserTabs: state.browserTabs.map((t) => (t.id === id ? { ...t, suspended: true } : t))
+    })),
 
   libraryFiles: [],
   setLibraryFiles: (files) => set({ libraryFiles: files }),
