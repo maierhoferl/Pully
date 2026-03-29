@@ -202,8 +202,15 @@ export default function BrowserTab() {
 
   function handleSideDragStart(e) {
     e.preventDefault()
+    e.stopPropagation()
     const startX = e.clientX
     const startWidth = sideWidth
+    const wv = webviewRef.current
+
+    // Disable pointer events on webview during drag to prevent it from capturing mousemove events
+    if (wv) {
+      wv.style.pointerEvents = 'none'
+    }
 
     function onMove(ev) {
       setSideWidth(Math.max(1, startWidth + (startX - ev.clientX)))
@@ -212,6 +219,10 @@ export default function BrowserTab() {
     function onUp() {
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onUp)
+      // Re-enable pointer events on webview
+      if (wv) {
+        wv.style.pointerEvents = 'auto'
+      }
     }
 
     window.addEventListener('mousemove', onMove)
