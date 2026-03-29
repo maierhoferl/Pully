@@ -3,7 +3,7 @@ import { MediaPanel } from './MediaPanel.jsx'
 import ProgressPanel from './ProgressPanel.jsx'
 import { BrowserNotesPanel } from './BrowserNotesPanel.jsx'
 
-export default function SidePanel({ onRememberSite }) {
+export default function SidePanel({ onRememberSite, onDownloadSite }) {
   const [splitPct, setSplitPct] = useState(70)
   const [activeTab, setActiveTab] = useState('notes')
   const containerRef = useRef(null)
@@ -37,7 +37,7 @@ export default function SidePanel({ onRememberSite }) {
         style={{ height: `${splitPct}%` }}
         className="overflow-y-auto min-h-0 flex-shrink-0 border-t-2 border-blue-600"
       >
-        <MediaPanel onRememberSite={onRememberSite} />
+        <MediaPanel onRememberSite={onRememberSite} onDownloadSite={onDownloadSite} />
       </div>
       <div
         role="separator"

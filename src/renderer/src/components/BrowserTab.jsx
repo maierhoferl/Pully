@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { useAppStore } from '../store/app-store.js'
 import SidePanel from './SidePanel.jsx'
+import { captureFromWebview } from '../utils/pageCapture.js'
 
 const HOME = 'https://www.youtube.com'
 const RESCAN_INTERVAL_MS = 2_000
@@ -209,6 +210,21 @@ export default function BrowserTab() {
     }
   }, [])
 
+  const handleDownloadSite = useCallback(async () => {
+    try {
+      const { title, siteName, url, markdown } = await captureFromWebview(webviewRef.current)
+      await window.api.savePage({
+        title,
+        siteName,
+        url,
+        markdown,
+        contentType: 'page'
+      })
+    } catch (error) {
+      console.error('Failed to download site:', error)
+    }
+  }, [])
+
   function handleSideDragStart(e) {
     e.preventDefault()
     e.stopPropagation()
@@ -312,7 +328,7 @@ export default function BrowserTab() {
           <div className="h-6 w-0.5 bg-gray-600 rounded pointer-events-none" />
         </div>
         <div style={{ width: sideWidth }} className="flex-shrink-0 h-full">
-          <SidePanel onRememberSite={handleRememberSite} />
+          <SidePanel onRememberSite={handleRememberSite} onDownloadSite={handleDownloadSite} />
         </div>
       </div>
     </div>

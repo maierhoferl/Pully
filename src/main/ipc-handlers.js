@@ -6,6 +6,7 @@ import { enableAdblock, disableAdblock } from './adblock-manager.js'
 import { extractInfo, getDefaultBinaryPath } from './ytdlp-runner.js'
 import {
   readMetadataIndex,
+  writeMetadataEntry,
   deleteMetadataEntry,
   moveMetadataEntry,
   moveThumbnailSidecar,
@@ -160,6 +161,107 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
       }
 
       return { refPath, alreadyExists: false }
+    }
+  )
+
+  ipcMain.handle(
+    'library:savePage',
+    async (_, { title, siteName, url, markdown, contentType = 'page' }) => {
+      const cfg = readConfig()
+      const { outputFolder } = cfg
+      if (!outputFolder || !fs.existsSync(outputFolder))
+        throw new Error('No output folder configured')
+
+      // Sanitize title to create filename
+      const sanitized = title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .slice(0, 50)
+      const dateStr = new Date().toISOString().slice(0, 10)
+      const fileName = `${sanitized}-${dateStr}.md`
+      const filePath = path.join(outputFolder, fileName)
+
+      // Write markdown to file
+      fs.writeFileSync(filePath, markdown, 'utf8')
+
+      // Write metadata
+      const metadata = {
+        title,
+        uploader: siteName,
+        url,
+        contentType,
+        downloadedAt: new Date().toISOString()
+      }
+      writeMetadataEntry(filePath, metadata)
+
+      // Init notes chapter
+      try {
+        initChapter(filePath, metadata, outputFolder)
+      } catch {
+        /* don't block on notes errors */
+      }
+
+      // Trigger classification if enabled
+      if (cfg.autoClassifyEnabled) {
+        try {
+          const folderNames = fs
+            .readdirSync(outputFolder)
+            .filter(
+              (f) => !f.startsWith('.') && fs.statSync(path.join(outputFolder, f)).isDirectory()
+            )
+          if (folderNames.length > 0) {
+            classifyVideo({ title, uploader: siteName, url }, folderNames, cfg)
+              .then(({ folder }) => {
+                if (folder) {
+                  const ext = '.md'
+                  const stem = sanitized
+                  let newPath = path.join(outputFolder, folder, fileName)
+                  let counter = 1
+                  while (fs.existsSync(newPath)) {
+                    newPath = path.join(outputFolder, folder, `${stem} (${counter})${ext}`)
+                    counter++
+                  }
+                  try {
+                    fs.renameSync(filePath, newPath)
+                    moveMetadataEntry(filePath, newPath)
+                    moveChapter(filePath, newPath, outputFolder)
+                  } catch {
+                    /* skip if move fails */
+                  }
+                }
+                if (cfg.autoSummarizeEnabled && cfg.aiApiKey) {
+                  generateSummary(filePath, metadata, cfg).catch(() => {})
+                }
+              })
+              .catch(() => {})
+          }
+        } catch {
+          /* don't block on classify errors */
+        }
+      } else if (cfg.autoSummarizeEnabled && cfg.aiApiKey) {
+        generateSummary(filePath, metadata, cfg).catch(() => {})
+      }
+
+      // Emit library:changed event so renderer refreshes
+      mainWindow.webContents.send('library:changed')
+
+      // Return the new file entry
+      return {
+        name: fileName,
+        path: filePath,
+        folder: null,
+        size: Buffer.byteLength(markdown, 'utf8'),
+        mtime: new Date().toISOString(),
+        title,
+        uploader: siteName,
+        description: null,
+        thumbnailUrl: null,
+        videoUrl: toPullyUrl(filePath),
+        url,
+        downloadedAt: metadata.downloadedAt,
+        contentType
+      }
     }
   )
 

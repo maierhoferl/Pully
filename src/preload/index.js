@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('api', {
   addDownload: (url, formatId, title, metadata) =>
     ipcRenderer.invoke('download:add', { url, formatId, title, metadata }),
   rememberMedia: (metadata) => ipcRenderer.invoke('library:remember', metadata),
+  savePage: (data) => ipcRenderer.invoke('library:savePage', data),
   retryDownload: (id) => ipcRenderer.invoke('download:retry', id),
   cancelDownload: (id) => ipcRenderer.invoke('download:cancel', id),
   getAllDownloads: () => ipcRenderer.invoke('download:getAll'),

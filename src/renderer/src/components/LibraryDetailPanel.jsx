@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react'
 import { useAppStore } from '../store/app-store.js'
-import VideoPlayer from './VideoPlayer.jsx'
+import { ContentViewer } from './ContentViewer.jsx'
 import { ContentTypeIcon } from './icons/ContentTypeIcon.jsx'
 
 function fmtDateTime(iso) {
@@ -13,13 +12,6 @@ function fmtDateTime(iso) {
 }
 
 export default function LibraryDetailPanel({ file, onClose, onDelete, style }) {
-  const [isPlaying, setIsPlaying] = useState(false)
-
-  // Reset player when the selected file changes
-  useEffect(() => {
-    setIsPlaying(false)
-  }, [file?.path])
-
   const setActiveTab = useAppStore((s) => s.setActiveTab)
   const setActiveNotesFolder = useAppStore((s) => s.setActiveNotesFolder)
   const setActiveNotesChapter = useAppStore((s) => s.setActiveNotesChapter)
@@ -30,7 +22,6 @@ export default function LibraryDetailPanel({ file, onClose, onDelete, style }) {
     setActiveTab('notes')
   }
 
-  const isRef = file.name?.endsWith('.ref')
   const title = file.title || file.name.replace(/\.[^/.]+$/, '')
   const uploader = file.uploader || '—'
   const description = file.description || '—'
@@ -82,30 +73,7 @@ export default function LibraryDetailPanel({ file, onClose, onDelete, style }) {
       </div>
 
       <div className="mx-4 mb-3 flex-shrink-0">
-        {isRef ? (
-          <div className="relative aspect-video bg-gray-800 rounded overflow-hidden flex items-center justify-center">
-            <button
-              onClick={() => file.url && window.api.openUrl(file.url)}
-              disabled={!file.url}
-              className="relative z-10 bg-purple-700 hover:bg-purple-600 text-white font-bold px-5 py-2.5 rounded text-sm transition-colors disabled:opacity-40"
-            >
-              ▶ Watch Online
-            </button>
-          </div>
-        ) : isPlaying ? (
-          <VideoPlayer src={file.videoUrl} onClose={() => setIsPlaying(false)} />
-        ) : (
-          <div className="relative aspect-video bg-gray-700 rounded overflow-hidden">
-            <button
-              onClick={() => setIsPlaying(true)}
-              className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/50 transition-colors"
-            >
-              <span className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-2.5 rounded text-sm transition-colors">
-                ▶ PLAY
-              </span>
-            </button>
-          </div>
-        )}
+        <ContentViewer file={file} onClose={onClose} />
       </div>
 
       {file.url && (

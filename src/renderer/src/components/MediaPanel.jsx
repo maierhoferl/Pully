@@ -264,7 +264,7 @@ function MediaEntry({ entry, libraryMatch }) {
   )
 }
 
-export function MediaPanel({ onRememberSite }) {
+export function MediaPanel({ onRememberSite, onDownloadSite }) {
   const {
     mediaScanResults,
     mediaScanLoading,
@@ -276,6 +276,7 @@ export function MediaPanel({ onRememberSite }) {
   } = useAppStore()
   const [collapsed, setCollapsed] = useState(false)
   const [rememberingSite, setRememberingSite] = useState(false)
+  const [downloadingSite, setDownloadingSite] = useState(false)
 
   async function handleRefresh() {
     if (!currentBrowserUrl || mediaScanLoading) return
@@ -297,6 +298,18 @@ export function MediaPanel({ onRememberSite }) {
       console.error('Failed to remember site')
     } finally {
       setRememberingSite(false)
+    }
+  }
+
+  async function handleDownloadSiteClick() {
+    if (downloadingSite || !onDownloadSite) return
+    setDownloadingSite(true)
+    try {
+      await onDownloadSite()
+    } catch {
+      console.error('Failed to download site')
+    } finally {
+      setDownloadingSite(false)
     }
   }
 
@@ -329,7 +342,7 @@ export function MediaPanel({ onRememberSite }) {
 
   return (
     <div className="bg-gray-950">
-      {/* Remember Site button (always visible) */}
+      {/* Site control buttons */}
       <div className="px-3 py-2 bg-gray-900 border-b border-gray-800">
         {siteInLibrary ? (
           <button
@@ -339,13 +352,25 @@ export function MediaPanel({ onRememberSite }) {
             Forget Site
           </button>
         ) : (
-          <button
-            onClick={handleRememberSiteClick}
-            disabled={rememberingSite}
-            className="w-full text-xs font-semibold px-2.5 py-1.5 rounded bg-green-700 hover:bg-green-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white transition-colors"
-          >
-            {rememberingSite ? '…' : 'Remember Site'}
-          </button>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-gray-400 flex-shrink-0">Site:</span>
+            <button
+              onClick={handleDownloadSiteClick}
+              disabled={downloadingSite}
+              className="flex-1 text-xs font-semibold px-2 py-1.5 rounded bg-blue-700 hover:bg-blue-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white transition-colors"
+              title="Save page as markdown file with embedded images"
+            >
+              {downloadingSite ? '…' : 'Download'}
+            </button>
+            <button
+              onClick={handleRememberSiteClick}
+              disabled={rememberingSite}
+              className="flex-1 text-xs font-semibold px-2 py-1.5 rounded bg-green-700 hover:bg-green-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white transition-colors"
+              title="Save as reference without downloading content"
+            >
+              {rememberingSite ? '…' : 'Remember'}
+            </button>
+          </div>
         )}
       </div>
 
