@@ -52,7 +52,7 @@ function DownloadButton({ downloadId }) {
   }
 
   return (
-    <button disabled className={`text-sm font-semibold px-4 py-1.5 rounded flex-shrink-0 min-w-[90px] text-center ${style}`}>
+    <button disabled className={`text-xs font-semibold px-2 py-1 rounded flex-shrink-0 transition-colors text-center ${style}`}>
       {label}
     </button>
   )
@@ -101,45 +101,66 @@ function MediaEntry({ entry }) {
 
   const rememberLabel = { idle: 'Remember', pending: '…', done: 'Saved ✓', exists: 'In library', error: 'Failed' }[rememberState]
   const rememberStyle = {
-    idle: 'bg-gray-700 hover:bg-gray-600 text-gray-200 cursor-pointer',
+    idle: 'bg-green-700 hover:bg-green-600 text-white cursor-pointer',
     pending: 'bg-gray-600 text-gray-400 cursor-not-allowed',
     done: 'bg-purple-800 text-purple-200 cursor-default',
     exists: 'bg-gray-700 text-gray-400 cursor-default',
     error: 'bg-red-800 text-red-200 cursor-default',
   }[rememberState]
 
+  const isPlaylist = Boolean(entry.playlist_id)
+
   return (
-    <div className="flex items-center gap-3 py-2.5 px-3 hover:bg-gray-800 rounded-lg border border-transparent hover:border-gray-700 transition-colors">
-      {entry.thumbnail && (
-        <img src={entry.thumbnail} alt="" className="w-24 h-14 object-cover rounded-md flex-shrink-0 shadow"
-          onError={e => { e.target.style.display = 'none' }} />
-      )}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-white truncate leading-snug" title={entry.title}>
-          {entry.title || entry.id}
-        </p>
-        <select value={selected} onChange={e => setSelected(e.target.value)}
-          className="mt-1 text-xs bg-gray-700 border border-gray-600 rounded px-1.5 py-0.5 text-gray-300 max-w-full">
+    <div className="bg-gray-800 hover:bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 transition-colors">
+      {/* Title */}
+      <p className="text-sm font-medium text-white truncate leading-snug" title={entry.title}>
+        {entry.title || entry.id}
+      </p>
+      {/* Metadata line: type indicator + quality selector */}
+      <div className="flex items-center gap-3 mt-0.5">
+        <span className="text-[0.65rem] text-gray-400 flex-shrink-0">
+          {isPlaylist ? 'Playlist' : 'Single video'}
+        </span>
+        <select
+          value={selected}
+          onChange={e => setSelected(e.target.value)}
+          className="text-[0.7rem] bg-gray-700 border border-gray-600 rounded px-1.5 py-0.5 text-gray-300"
+        >
           {formats.map(f => <option key={f.format_id} value={f.format_id}>{f.label}</option>)}
         </select>
       </div>
-      <button
-        onClick={handleRemember}
-        disabled={rememberState !== 'idle'}
-        title={rememberState === 'exists' ? 'Already in library' : 'Save reference without downloading'}
-        className={`text-sm font-semibold px-3 py-1.5 rounded flex-shrink-0 transition-colors ${rememberStyle}`}
-      >
-        {rememberLabel}
-      </button>
-      {downloadId
-        ? <DownloadButton downloadId={downloadId} />
-        : (
-          <button onClick={handleDownload}
-            className="text-sm font-semibold bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white px-4 py-1.5 rounded flex-shrink-0 min-w-[90px] text-center transition-colors">
-            Download
+      {/* Thumbnail + action buttons */}
+      <div className="flex gap-3 mt-2">
+        {entry.thumbnail && (
+          <img
+            src={entry.thumbnail}
+            alt=""
+            className="w-24 h-14 object-cover rounded-md flex-shrink-0 shadow"
+            onError={e => { e.target.style.display = 'none' }}
+          />
+        )}
+        <div className="flex flex-col gap-1.5">
+          <button
+            onClick={handleRemember}
+            disabled={rememberState !== 'idle'}
+            title={rememberState === 'exists' ? 'Already in library' : 'Save reference without downloading'}
+            className={`text-xs font-semibold px-2 py-1 rounded flex-shrink-0 transition-colors ${rememberStyle}`}
+          >
+            {rememberLabel}
           </button>
-        )
-      }
+          {downloadId
+            ? <DownloadButton downloadId={downloadId} />
+            : (
+              <button
+                onClick={handleDownload}
+                className="text-xs font-semibold bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white px-2 py-1 rounded flex-shrink-0 transition-colors"
+              >
+                Download
+              </button>
+            )
+          }
+        </div>
+      </div>
     </div>
   )
 }
