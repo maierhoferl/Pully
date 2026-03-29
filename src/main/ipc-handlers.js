@@ -43,12 +43,60 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
   ipcMain.handle('download:getAll', () => downloadManager.getAll())
 
   ipcMain.handle('library:remember', async (_, { title, uploader, description, thumbnailUrl, url }) => {
-    const { outputFolder } = readConfig()
+    const cfg = readConfig()
+    const { outputFolder } = cfg
     if (!outputFolder || !fs.existsSync(outputFolder)) throw new Error('No output folder configured')
     const index = readMetadataIndex()
     const existing = Object.entries(index).find(([, m]) => m.isReference && m.url === url)
     if (existing) return { refPath: existing[0], alreadyExists: true }
+    const metadata = { title, uploader, description, thumbnailUrl, url, downloadedAt: new Date().toISOString() }
     const refPath = await createReferenceFile(outputFolder, { title, uploader, description, thumbnailUrl, url })
+
+    // Notes: init chapter stub
+    try {
+      initChapter(refPath, metadata, outputFolder)
+    } catch { /* don't block on notes errors */ }
+
+    // Classify + summarize pipeline (mirrors download completion)
+    if (cfg.autoClassifyEnabled) {
+      try {
+        const folderNames = fs.readdirSync(outputFolder)
+          .filter(f => !f.startsWith('.') && fs.statSync(path.join(outputFolder, f)).isDirectory())
+        if (folderNames.length > 0) {
+          classifyVideo({ title, uploader, description, url }, folderNames, cfg).then(({ folder }) => {
+            let finalPath = refPath
+            if (folder) {
+              const base = path.basename(refPath)
+              const ext = path.extname(base)
+              const stem = path.basename(base, ext)
+              let newPath = path.join(outputFolder, folder, base)
+              let counter = 1
+              while (fs.existsSync(newPath)) {
+                newPath = path.join(outputFolder, folder, `${stem} (${counter})${ext}`)
+                counter++
+              }
+              try {
+                fs.renameSync(refPath, newPath)
+                moveMetadataEntry(refPath, newPath)
+                moveThumbnailSidecar(refPath, newPath)
+                moveChapter(refPath, newPath, outputFolder)
+                finalPath = newPath
+              } catch { /* skip if move fails */ }
+            }
+            if (cfg.autoSummarizeEnabled && cfg.aiApiKey) {
+              generateSummary(finalPath, { ...metadata, url }, cfg)
+                .then(summary => writeSummarySection(finalPath, summary, outputFolder))
+                .catch(() => {})
+            }
+          }).catch(() => {})
+        }
+      } catch { /* don't block on classify errors */ }
+    } else if (cfg.autoSummarizeEnabled && cfg.aiApiKey) {
+      generateSummary(refPath, { ...metadata, url }, cfg)
+        .then(summary => writeSummarySection(refPath, summary, outputFolder))
+        .catch(() => {})
+    }
+
     return { refPath, alreadyExists: false }
   })
 
