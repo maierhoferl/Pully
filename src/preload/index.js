@@ -13,6 +13,7 @@ contextBridge.exposeInMainWorld('api', {
   listLibrary: () => ipcRenderer.invoke('library:list'),
   revealInFinder: filePath => ipcRenderer.invoke('library:reveal', filePath),
   playFile: filePath => ipcRenderer.invoke('library:play', filePath),
+  resolveStream: url => ipcRenderer.invoke('media:resolveStream', url),
   openUrl: url => ipcRenderer.invoke('shell:openUrl', url),
   deleteFile: filePath => ipcRenderer.invoke('library:delete', filePath),
   listFolders: () => ipcRenderer.invoke('library:listFolders'),

@@ -6,7 +6,7 @@ function safeHostname(url) {
   try { return new URL(url).hostname } catch { return url }
 }
 
-function ChapterCard({ chapter, onGenerateSummary, onUpdateBullets, onPlayInLibrary }) {
+function ChapterCard({ chapter, onGenerateSummary, onUpdateBullets, onPlay }) {
   const [editingBullets, setEditingBullets] = useState(false)
   const [bulletText, setBulletText] = useState(chapter.bullets.join('\n'))
   const [summarizing, setSummarizing] = useState(false)
@@ -42,10 +42,10 @@ function ChapterCard({ chapter, onGenerateSummary, onUpdateBullets, onPlayInLibr
       <div className="flex items-start justify-between mb-2">
         <h2 className="text-base font-semibold text-white">{chapter.heading}</h2>
         <button
-          onClick={() => onPlayInLibrary(chapter.file)}
+          onClick={() => onPlay(chapter.file)}
           className="text-xs text-blue-400 hover:text-blue-300 whitespace-nowrap ml-4 shrink-0"
         >
-          ▶ Play in Library
+          ▶ Play
         </button>
       </div>
       <div className="text-xs text-gray-500 mb-3 flex gap-3">
@@ -112,7 +112,7 @@ function ChapterCard({ chapter, onGenerateSummary, onUpdateBullets, onPlayInLibr
   )
 }
 
-export default function NotesChapterView({ folderName, activeChapter }) {
+export default function NotesChapterView({ folderName, activeChapter, onPlay }) {
   const [chapters, setChapters] = useState([])
   const [loading, setLoading] = useState(false)
   const [loadError, setLoadError] = useState(null)
@@ -133,9 +133,6 @@ export default function NotesChapterView({ folderName, activeChapter }) {
     }
   }, [activeChapter, chapters])
 
-  const setActiveTab = useAppStore(s => s.setActiveTab)
-  const setLibrarySelectedFile = useAppStore(s => s.setLibrarySelectedFile)
-
   async function resolveFilePath(fileBasename) {
     const files = useAppStore.getState().libraryFiles
     const file = files.find(f => f.name === fileBasename && (folderName ? f.folder === folderName : !f.folder))
@@ -147,13 +144,18 @@ export default function NotesChapterView({ folderName, activeChapter }) {
       : `${cfg.outputFolder}/${fileBasename}`
   }
 
-  // ⚠️ Use file.path (not fileBasename) because LibraryTab uses setSelectedPath
-  const handlePlayInLibrary = async (fileBasename) => {
+  const handlePlay = async (fileBasename) => {
     const files = useAppStore.getState().libraryFiles
     const file = files.find(f => f.name === fileBasename && (folderName ? f.folder === folderName : !f.folder))
-    const filePath = file ? file.path : await resolveFilePath(fileBasename)
-    setActiveTab('library')
-    setLibrarySelectedFile(filePath)
+    if (file) {
+      onPlay?.(file)
+    } else {
+      // File not yet in store — resolve path and build a minimal file object
+      const filePath = await resolveFilePath(fileBasename)
+      onPlay?.({ name: fileBasename, path: filePath, folder: folderName ?? null,
+        videoUrl: 'pully://' + filePath, title: null, uploader: null,
+        description: null, thumbnailUrl: null, url: null, downloadedAt: null })
+    }
   }
 
   const handleGenerateSummary = async (fileBasename) => {
@@ -183,7 +185,7 @@ export default function NotesChapterView({ folderName, activeChapter }) {
             chapter={chapter}
             onGenerateSummary={handleGenerateSummary}
             onUpdateBullets={handleUpdateBullets}
-            onPlayInLibrary={handlePlayInLibrary}
+            onPlay={handlePlay}
           />
         </div>
       ))}

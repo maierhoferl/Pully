@@ -1,5 +1,6 @@
-import React from 'react'
+import { useState, useEffect } from 'react'
 import { useAppStore } from '../store/app-store.js'
+import VideoPlayer from './VideoPlayer.jsx'
 
 function fmtDateTime(iso) {
   const d = new Date(iso)
@@ -11,6 +12,11 @@ function fmtDateTime(iso) {
 }
 
 export default function LibraryDetailPanel({ file, onClose, onDelete }) {
+  const [isPlaying, setIsPlaying] = useState(false)
+
+  // Reset player when the selected file changes
+  useEffect(() => { setIsPlaying(false) }, [file?.path])
+
   const setActiveTab = useAppStore(s => s.setActiveTab)
   const setActiveNotesFolder = useAppStore(s => s.setActiveNotesFolder)
   const setActiveNotesChapter = useAppStore(s => s.setActiveNotesChapter)
@@ -24,7 +30,7 @@ export default function LibraryDetailPanel({ file, onClose, onDelete }) {
   const title = file.title || file.name.replace(/\.[^/.]+$/, '')
   const uploader = file.uploader || '—'
   const description = file.description || '—'
-  const dateStr = file.downloadedAt ? fmtDateTime(file.downloadedAt) : fmtDateTime(file.mtime)
+  const dateStr = file.downloadedAt ? fmtDateTime(file.downloadedAt) : file.mtime ? fmtDateTime(file.mtime) : '—'
   const subtitle = `${uploader} · ${dateStr}`
 
   return (
@@ -42,13 +48,15 @@ export default function LibraryDetailPanel({ file, onClose, onDelete }) {
           >
             📝 Notes
           </button>
-          <button
-            onClick={() => onDelete(file)}
-            className="text-red-500 hover:text-red-400 text-xs px-2 py-1 rounded hover:bg-red-950 transition-colors"
-            title="Move to Trash"
-          >
-            🗑 Delete
-          </button>
+          {onDelete && (
+            <button
+              onClick={() => onDelete(file)}
+              className="text-red-500 hover:text-red-400 text-xs px-2 py-1 rounded hover:bg-red-950 transition-colors"
+              title="Move to Trash"
+            >
+              🗑 Delete
+            </button>
+          )}
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-white mt-0.5 text-lg leading-none"
@@ -59,24 +67,33 @@ export default function LibraryDetailPanel({ file, onClose, onDelete }) {
         </div>
       </div>
 
-      <div className="relative mx-4 mb-3 aspect-video bg-gray-700 rounded overflow-hidden flex-shrink-0">
-        {file.thumbnailUrl && (
-          <img
-            key={file.thumbnailUrl}
-            src={file.thumbnailUrl}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover"
-            onError={e => { e.target.style.display = 'none' }}
+      <div className="mx-4 mb-3 flex-shrink-0">
+        {isPlaying ? (
+          <VideoPlayer
+            src={file.videoUrl}
+            onClose={() => setIsPlaying(false)}
           />
+        ) : (
+          <div className="relative aspect-video bg-gray-700 rounded overflow-hidden">
+            {file.thumbnailUrl && (
+              <img
+                key={file.thumbnailUrl}
+                src={file.thumbnailUrl}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover"
+                onError={e => { e.target.style.display = 'none' }}
+              />
+            )}
+            <button
+              onClick={() => setIsPlaying(true)}
+              className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/50 transition-colors"
+            >
+              <span className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-2.5 rounded text-sm transition-colors">
+                ▶ PLAY
+              </span>
+            </button>
+          </div>
         )}
-        <button
-          onClick={() => window.api.playFile(file.path)}
-          className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/50 transition-colors"
-        >
-          <span className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-2.5 rounded text-sm transition-colors">
-            ▶ PLAY
-          </span>
-        </button>
       </div>
 
       {file.url && (

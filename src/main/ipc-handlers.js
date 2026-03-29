@@ -1,13 +1,14 @@
 import { ipcMain, dialog, shell, session } from 'electron'
 import { readConfig, writeConfig } from './config-store.js'
 import { enableAdblock, disableAdblock } from './adblock-manager.js'
-import { extractInfo } from './ytdlp-runner.js'
+import { extractInfo, getDefaultBinaryPath } from './ytdlp-runner.js'
 import { readMetadataIndex, deleteMetadataEntry, moveMetadataEntry, moveThumbnailSidecar, toPullyUrl, downloadAndStoreThumbnail, renameFolderInIndex, deleteFolderFromIndex } from './metadata-store.js'
 import { classifyVideo } from './auto-classifier.js'
 import { initChapter, moveChapter, readFolderNotes, writeSummarySection, writeBulletsSection } from './notes-store.js'
 import { generateSummary } from './ai-summarizer.js'
 import fs from 'fs'
 import path from 'path'
+import { spawn } from 'child_process'
 
 // Helper files to exclude from library and classification logic
 function isHelperFile(fileName) {
@@ -54,6 +55,7 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
         uploader: meta.uploader || null,
         description: meta.description || null,
         thumbnailUrl: thumbnailSrc(fullPath),
+        videoUrl: toPullyUrl(fullPath),
         url: meta.url || null,
         downloadedAt: meta.downloadedAt || null,
       }
@@ -296,6 +298,18 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
 
   ipcMain.handle('library:reveal', (_, filePath) => shell.showItemInFolder(filePath))
   ipcMain.handle('library:play', (_, filePath) => shell.openPath(filePath))
+
+  ipcMain.handle('media:resolveStream', (_, url) => {
+    return new Promise((resolve, reject) => {
+      const proc = spawn(getDefaultBinaryPath(), ['--get-url', '--no-warnings', url])
+      let out = ''
+      proc.stdout.on('data', d => { out += d.toString() })
+      proc.on('close', code => {
+        if (code === 0) resolve(out.trim().split('\n')[0])
+        else reject(new Error(`yt-dlp exited with code ${code}`))
+      })
+    })
+  })
   ipcMain.handle('shell:openUrl', (_, url) => shell.openExternal(url))
 
   ipcMain.handle('library:delete', async (_, filePath) => {

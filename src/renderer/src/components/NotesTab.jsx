@@ -2,10 +2,12 @@
 import { useState, useEffect } from 'react'
 import NotesFolderList from './NotesFolderList.jsx'
 import NotesChapterView from './NotesChapterView.jsx'
+import LibraryDetailPanel from './LibraryDetailPanel.jsx'
 import { useAppStore } from '../store/app-store.js'
 
 export default function NotesTab() {
   const [folders, setFolders] = useState([])
+  const [notesSelectedFile, setNotesSelectedFile] = useState(null)
   const activeNotesFolder = useAppStore(s => s.activeNotesFolder)
   const activeNotesChapter = useAppStore(s => s.activeNotesChapter)
   const setActiveNotesFolder = useAppStore(s => s.setActiveNotesFolder)
@@ -33,13 +35,22 @@ export default function NotesTab() {
         />
       </div>
 
-      {/* Right panel — chapter view */}
+      {/* Center panel — chapter view */}
       <div className="flex-1 overflow-hidden">
         <NotesChapterView
           folderName={activeNotesFolder}
           activeChapter={activeNotesChapter}
+          onPlay={setNotesSelectedFile}
         />
       </div>
+
+      {/* Right panel — video detail (shown when Play is clicked) */}
+      {notesSelectedFile && (
+        <LibraryDetailPanel
+          file={notesSelectedFile}
+          onClose={() => setNotesSelectedFile(null)}
+        />
+      )}
     </div>
   )
 }
