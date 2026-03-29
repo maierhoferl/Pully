@@ -97,7 +97,8 @@ export async function generateSummary(filePath, metadata, config) {
     })
 
     // Write summary section and emit event for real-time renderer update
-    if (outputFolder) {
+    // Only store if response is non-empty (valid)
+    if (outputFolder && result && result.trim()) {
       writeSummarySection(filePath, result, outputFolder)
     }
 

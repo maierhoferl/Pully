@@ -8,7 +8,8 @@ export function useIpcEvents() {
     updateDownloadFailed,
     setLibraryFiles,
     setConfig,
-    setBrowserActiveChapter
+    setBrowserActiveChapter,
+    setLibraryActiveChapter
   } = useAppStore()
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export function useIpcEvents() {
     })
     const handleChapterUpdated = (data) => {
       setBrowserActiveChapter(data)
+      setLibraryActiveChapter(data)
     }
     const unsubChapterUpdated = window.api.on('notes:chapter-updated', handleChapterUpdated)
 
