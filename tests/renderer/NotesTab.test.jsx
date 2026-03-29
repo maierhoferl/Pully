@@ -24,8 +24,8 @@ const mockApi = {
   readNotes: vi.fn(async () => ({
     title: 'Library',
     chapters: [{
-      file: 'video.mp4', url: 'https://youtube.com/watch?v=1',
-      downloadedAt: '2026-03-28', heading: 'My Video',
+      filePath: 'video.mp4', url: 'https://youtube.com/watch?v=1',
+      downloadedAt: '2026-03-28', title: 'My Video',
       summary: 'Great content.', bullets: ['key point'],
     }]
   })),

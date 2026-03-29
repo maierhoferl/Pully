@@ -20,7 +20,7 @@ function ChapterCard({ chapter, onGenerateSummary, onUpdateBullets, onPlay }) {
 
   const handleSaveBullets = () => {
     const bullets = bulletText.split('\n').map(b => b.replace(/^-\s*/, '').trim()).filter(Boolean)
-    onUpdateBullets(chapter.file, bullets)
+    onUpdateBullets(chapter.filePath, bullets)
     setEditingBullets(false)
   }
 
@@ -28,7 +28,7 @@ function ChapterCard({ chapter, onGenerateSummary, onUpdateBullets, onPlay }) {
     setSummarizing(true)
     setSummaryError(null)
     try {
-      const { summary } = await onGenerateSummary(chapter.file)
+      const { summary } = await onGenerateSummary(chapter.filePath)
       setLocalSummary(summary)
     } catch (e) {
       setSummaryError(e.message || 'Failed to generate summary')
@@ -40,16 +40,16 @@ function ChapterCard({ chapter, onGenerateSummary, onUpdateBullets, onPlay }) {
   return (
     <div className="mb-6 last:mb-0">
       <div className="flex items-start justify-between mb-2">
-        <h2 className="text-base font-semibold text-white">{chapter.heading}</h2>
+        <h2 className="text-base font-semibold text-white">{chapter.title}</h2>
         <button
-          onClick={() => onPlay(chapter.file)}
+          onClick={() => onPlay(chapter.filePath)}
           className="text-xs text-blue-400 hover:text-blue-300 whitespace-nowrap ml-4 shrink-0"
         >
           ▶ Play
         </button>
       </div>
       <div className="text-xs text-gray-500 mb-3 flex gap-3">
-        <span>📁 {chapter.file}</span>
+        <span>📁 {chapter.filePath}</span>
         {chapter.url && (
           <span>🔗 <a href={chapter.url} target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">{safeHostname(chapter.url)}</a></span>
         )}
@@ -166,7 +166,7 @@ export default function NotesChapterView({ folderName, activeChapter, onPlay }) 
   const handleUpdateBullets = async (fileBasename, bullets) => {
     const filePath = await resolveFilePath(fileBasename)
     window.api.updateBullets(filePath, bullets)
-    setChapters(prev => prev.map(c => c.file === fileBasename ? { ...c, bullets } : c))
+    setChapters(prev => prev.map(c => c.filePath === fileBasename ? { ...c, bullets } : c))
   }
 
   if (loading) return <div className="p-4 text-sm text-gray-400">Loading…</div>
@@ -177,8 +177,8 @@ export default function NotesChapterView({ folderName, activeChapter, onPlay }) 
     <div className="p-4 overflow-y-auto h-full">
       {chapters.map(chapter => (
         <div
-          key={chapter.file}
-          ref={el => { chapterRefs.current[chapter.file] = el }}
+          key={chapter.filePath}
+          ref={el => { chapterRefs.current[chapter.filePath] = el }}
           className="border-b border-gray-700 pb-5 mb-5 last:border-0"
         >
           <ChapterCard
