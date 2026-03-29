@@ -1,9 +1,11 @@
 import React, { useRef, useState } from 'react'
 import { MediaPanel } from './MediaPanel.jsx'
 import ProgressPanel from './ProgressPanel.jsx'
+import { BrowserNotesPanel } from './BrowserNotesPanel.jsx'
 
 export default function SidePanel() {
   const [splitPct, setSplitPct] = useState(70)
+  const [activeTab, setActiveTab] = useState('notes')
   const containerRef = useRef(null)
 
   function handleDragStart(e) {
@@ -44,8 +46,39 @@ export default function SidePanel() {
       >
         <div className="w-6 h-0.5 bg-gray-600 rounded pointer-events-none" />
       </div>
-      <div className="flex flex-col min-h-0 flex-1">
-        <ProgressPanel />
+      <div className="flex flex-col flex-1 border-t border-gray-300">
+        {/* Tab bar */}
+        <div className="flex border-b border-gray-300 bg-gray-50">
+          <button
+            onClick={() => setActiveTab('notes')}
+            className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
+              activeTab === 'notes'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Notes
+          </button>
+          <button
+            onClick={() => setActiveTab('progress')}
+            className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
+              activeTab === 'progress'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Progress
+          </button>
+        </div>
+
+        {/* Tab content */}
+        <div className="flex-1 overflow-hidden">
+          {activeTab === 'notes' ? (
+            <BrowserNotesPanel />
+          ) : (
+            <ProgressPanel />
+          )}
+        </div>
       </div>
     </div>
   )
