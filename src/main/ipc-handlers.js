@@ -5,7 +5,7 @@ import { enableAdblock, disableAdblock } from './adblock-manager.js'
 import { extractInfo, getDefaultBinaryPath } from './ytdlp-runner.js'
 import { readMetadataIndex, deleteMetadataEntry, moveMetadataEntry, moveThumbnailSidecar, toPullyUrl, downloadAndStoreThumbnail, renameFolderInIndex, deleteFolderFromIndex, createReferenceFile } from './metadata-store.js'
 import { classifyVideo } from './auto-classifier.js'
-import { initChapter, moveChapter, readFolderNotes, writeSummarySection, writeBulletsSection, setNotesEventEmitter } from './notes-store.js'
+import { initChapter, moveChapter, readFolderNotes, writeBulletsSection, setNotesEventEmitter } from './notes-store.js'
 import { generateSummary } from './ai-summarizer.js'
 import fs from 'fs'
 import path from 'path'
@@ -95,7 +95,6 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
             }
             if (cfg.autoSummarizeEnabled && cfg.aiApiKey) {
               generateSummary(finalPath, { ...metadata, url }, cfg)
-                .then(summary => writeSummarySection(finalPath, summary, outputFolder))
                 .catch(() => {})
             }
           }).catch(() => {})
@@ -103,7 +102,6 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
       } catch { /* don't block on classify errors */ }
     } else if (cfg.autoSummarizeEnabled && cfg.aiApiKey) {
       generateSummary(refPath, { ...metadata, url }, cfg)
-        .then(summary => writeSummarySection(refPath, summary, outputFolder))
         .catch(() => {})
     }
 
@@ -355,7 +353,6 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
     const index = readMetadataIndex()
     const metadata = index[filePath] || {}
     const summary = await generateSummary(filePath, metadata, cfg)
-    writeSummarySection(filePath, summary, cfg.outputFolder)
     return { summary }
   })
 

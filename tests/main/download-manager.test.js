@@ -219,6 +219,5 @@ describe('notes + summarize pipeline on download completion', () => {
     onDone('/out/Title.mp4')
     await new Promise(r => setTimeout(r, 20))
     expect(generateSummary).toHaveBeenCalledWith('/out/Title.mp4', expect.any(Object), expect.objectContaining({ aiProvider: 'gemini' }))
-    expect(writeSummarySection).toHaveBeenCalledWith('/out/Title.mp4', 'Auto summary', '/out')
   })
 })

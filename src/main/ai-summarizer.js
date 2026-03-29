@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { callLLM, callLLMWithVideo } from './ai-client.js'
+import { writeSummarySection, readFolderNotes } from './notes-store.js'
 import logger from './logger.js'
 
 const YOUTUBE_RE = /youtube\.com|youtu\.be/
@@ -76,6 +77,12 @@ export async function generateSummary(filePath, metadata, config) {
       duration: `${duration.toFixed(2)}s`,
       responseLength: result.length
     })
+
+    // Write summary section and emit event for real-time renderer update
+    const { outputFolder } = config
+    if (outputFolder) {
+      writeSummarySection(filePath, result, outputFolder)
+    }
 
     return result
   } catch (error) {

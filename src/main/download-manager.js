@@ -5,7 +5,7 @@ import { startDownload } from './ytdlp-runner.js'
 import { readConfig } from './config-store.js'
 import { writeMetadataEntry, downloadAndStoreThumbnail, moveMetadataEntry, moveThumbnailSidecar } from './metadata-store.js'
 import { classifyVideo } from './auto-classifier.js'
-import { initChapter, moveChapter, writeSummarySection } from './notes-store.js'
+import { initChapter, moveChapter } from './notes-store.js'
 import { generateSummary } from './ai-summarizer.js'
 import logger from './logger.js'
 
@@ -173,7 +173,6 @@ export class DownloadManager extends EventEmitter {
                 }
                 if (cfg.autoSummarizeEnabled && cfg.aiApiKey && item.metadata) {
                   generateSummary(finalPath, { ...item.metadata, url: item.metadata.url }, cfg)
-                    .then(summary => writeSummarySection(finalPath, summary, cfg.outputFolder))
                     .catch(() => {})
                 }
               }).catch(() => {})
@@ -181,7 +180,6 @@ export class DownloadManager extends EventEmitter {
           } catch { /* don't block completion on classify errors */ }
         } else if (cfg.autoSummarizeEnabled && cfg.aiApiKey && actualPath && item.metadata) {
           generateSummary(actualPath, { ...item.metadata, url: item.metadata.url }, cfg)
-            .then(summary => writeSummarySection(actualPath, summary, cfg.outputFolder))
             .catch(() => {})
         }
         this.emit('completed', { id: item.id })
