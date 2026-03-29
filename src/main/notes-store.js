@@ -4,6 +4,10 @@ import logger from './logger.js'
 
 /** Returns absolute path to the notes.md for the folder containing filePath. */
 export function getNotesPath(filePath, outputFolder) {
+  // If filePath looks like a URL (starts with protocol), use root notes.md
+  if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+    return path.join(outputFolder, 'notes.md')
+  }
   const rel = path.relative(outputFolder, filePath)
   const parts = rel.split(path.sep)
   if (parts.length <= 1) {
@@ -29,11 +33,17 @@ function buildChapterStub(fileBasename, metadata) {
   const date = metadata.downloadedAt
     ? metadata.downloadedAt.slice(0, 10)
     : new Date().toISOString().slice(0, 10)
+  const anchors = []
+  if (fileBasename) {
+    anchors.push(`<!-- pully:file:${fileBasename} -->`)
+  }
+  if (url) {
+    anchors.push(`<!-- pully:url:${url} -->`)
+  }
+  anchors.push(`<!-- pully:downloaded:${date} -->`)
   return [
     `## ${title}`,
-    `<!-- pully:file:${fileBasename} -->`,
-    `<!-- pully:url:${url} -->`,
-    `<!-- pully:downloaded:${date} -->`,
+    ...anchors,
     '',
     '### AI Summary',
     '',
@@ -42,17 +52,84 @@ function buildChapterStub(fileBasename, metadata) {
   ].join('\n')
 }
 
+/** Updates or inserts a specific anchor in a chapter identified by URL. */
+function updateChapterAnchor(notesPath, chapterUrl, anchorType, newValue) {
+  const content = readFile(notesPath)
+  const lines = content.split('\n')
+  let urlLineIndex = -1
+  let anchorLineIndex = -1
+
+  // Find the URL anchor to identify the chapter
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].includes(`<!-- pully:url:${chapterUrl} -->`)) {
+      urlLineIndex = i
+      break
+    }
+  }
+
+  if (urlLineIndex === -1) return // Chapter not found
+
+  // Search for existing anchor of this type within the chapter
+  for (let i = urlLineIndex + 1; i < lines.length; i++) {
+    if (lines[i].startsWith(`<!-- pully:${anchorType}:`)) {
+      anchorLineIndex = i
+      break
+    }
+    // Stop if we hit a section header or chapter divider
+    if (lines[i].startsWith('### ') || lines[i].startsWith('## ') || lines[i] === '---') {
+      break
+    }
+  }
+
+  if (anchorLineIndex !== -1) {
+    // Update existing anchor
+    lines[anchorLineIndex] = `<!-- pully:${anchorType}:${newValue} -->`
+  } else {
+    // Insert new anchor after the URL anchor
+    lines.splice(urlLineIndex + 1, 0, `<!-- pully:${anchorType}:${newValue} -->`)
+  }
+
+  fs.writeFileSync(notesPath, lines.join('\n'), 'utf8')
+}
+
 /** Creates a chapter stub in the folder's notes.md. No-op if chapter already exists. */
 export function initChapter(filePath, metadata, outputFolder) {
   const notesPath = getNotesPath(filePath, outputFolder)
   const fileBasename = path.basename(filePath)
   let content = readFile(notesPath)
-  if (content.includes(`<!-- pully:file:${fileBasename} -->`)) return
+
+  // Detect if filePath is a real file path or a URL key
+  // A real file path will have outputFolder in it or at least a simple relative path
+  const isRealFilePath = filePath.includes(outputFolder) || (filePath.includes(path.sep) && !filePath.startsWith('http'))
+
+  // Try to find existing chapter by file basename (only if this is a real file path)
+  if (isRealFilePath && content.includes(`<!-- pully:file:${fileBasename} -->`)) return
+
+  // If not found by file basename, try URL-based lookup
+  let existingChapter = null
+  if (metadata.url) {
+    // Parse the notes to find chapters with matching URL
+    const { chapters } = readFolderNotes(null, outputFolder)
+    existingChapter = chapters.find(ch => ch.url === metadata.url)
+  }
+
+  // If chapter exists by URL, adopt it (update file anchor if needed)
+  if (existingChapter) {
+    if (isRealFilePath && fileBasename) {
+      // We have a real filename now, update the file anchor
+      updateChapterAnchor(notesPath, metadata.url, 'file', fileBasename)
+    }
+    return { isNew: false, filePath: notesPath, chapterId: existingChapter.heading }
+  }
+
   if (!content) {
     const title = getFolderTitle(notesPath, outputFolder)
     content = `# ${title}\n\n`
   }
-  const stub = buildChapterStub(fileBasename, metadata)
+
+  // Only include file anchor if this is a real file path
+  const anchorFilename = isRealFilePath ? fileBasename : ''
+  const stub = buildChapterStub(anchorFilename, metadata)
   content = content.trimEnd() + '\n\n---\n\n' + stub + '\n---\n'
   fs.mkdirSync(path.dirname(notesPath), { recursive: true })
   fs.writeFileSync(notesPath, content, 'utf8')

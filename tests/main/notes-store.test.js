@@ -62,6 +62,27 @@ describe('initChapter', () => {
     const count = (content.match(/<!-- pully:file:video\.mp4 -->/g) || []).length
     expect(count).toBe(1)
   })
+
+  it('initChapter adopts existing chapter by URL when file anchor is missing', () => {
+    const notesPath = path.join(tmpDir, 'notes.md')
+    const metadata1 = { title: 'My Video', url: 'https://example.com/video', downloadedAt: '2026-03-29' }
+    const metadata2 = { title: 'My Video', url: 'https://example.com/video', downloadedAt: '2026-03-29' }
+
+    // First call: stub with no filename (using URL as key)
+    initChapter('https://example.com/video', metadata1, tmpDir)
+    let content = fs.readFileSync(notesPath, 'utf8')
+    expect(content).toContain('<!-- pully:url:https://example.com/video -->')
+    expect(content).not.toContain('<!-- pully:file:')
+
+    // Second call: real filename, should update the existing chapter
+    const videoPath = path.join(tmpDir, 'video.mp4')
+    initChapter(videoPath, metadata2, tmpDir)
+    content = fs.readFileSync(notesPath, 'utf8')
+    expect(content).toContain('<!-- pully:file:video.mp4 -->')
+    expect(content).toContain('<!-- pully:url:https://example.com/video -->')
+    // Should have only one chapter, not two
+    expect((content.match(/^## /gm) || []).length).toBe(1)
+  })
 })
 
 describe('readFolderNotes', () => {
