@@ -11,6 +11,9 @@ vi.mock('./MediaPanel.jsx', () => ({
 vi.mock('./ProgressPanel.jsx', () => ({
   default: () => <div data-testid="progress-panel">ProgressPanel</div>
 }))
+vi.mock('./BrowserNotesPanel.jsx', () => ({
+  BrowserNotesPanel: () => <div data-testid="browser-notes-panel">BrowserNotesPanel</div>
+}))
 
 afterEach(() => {
   useAppStore.setState({ mediaScanResults: null, mediaScanLoading: false })
@@ -22,9 +25,9 @@ describe('SidePanel', () => {
     expect(screen.getByTestId('media-panel')).toBeInTheDocument()
   })
 
-  test('renders ProgressPanel', () => {
+  test('renders BrowserNotesPanel by default', () => {
     render(<SidePanel />)
-    expect(screen.getByTestId('progress-panel')).toBeInTheDocument()
+    expect(screen.getByTestId('browser-notes-panel')).toBeInTheDocument()
   })
 
   test('renders a drag handle between the two panels', () => {
