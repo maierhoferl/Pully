@@ -89,6 +89,9 @@ contextBridge.exposeInMainWorld('api', {
     checkOriginalExists: (path) => ipcRenderer.invoke('files:checkOriginalExists', path)
   },
 
+  // File reading
+  readFile: (filePath) => ipcRenderer.invoke('file:read', filePath),
+
   // Generic on() method for subscribing to any IPC event
   on: (channel, callback) => {
     const handler = (_, ...args) => callback(...args)

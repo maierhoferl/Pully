@@ -14,7 +14,7 @@ function safeHostname(url) {
 
 export function ChapterCard({ chapter, folderName, onGenerateSummary, onUpdateBullets, onPlay }) {
   const [editingBullets, setEditingBullets] = useState(false)
-  const [bulletText, setBulletText] = useState(chapter.bullets.join('\n'))
+  const [bulletText, setBulletText] = useState((chapter.bullets || []).join('\n'))
   const [summarizing, setSummarizing] = useState(false)
   const [summaryError, setSummaryError] = useState(null)
   const [localSummary, setLocalSummary] = useState(chapter.summary)
@@ -24,7 +24,7 @@ export function ChapterCard({ chapter, folderName, onGenerateSummary, onUpdateBu
   }, [chapter.summary])
 
   useEffect(() => {
-    if (!editingBullets) setBulletText(chapter.bullets.join('\n'))
+    if (!editingBullets) setBulletText((chapter.bullets || []).join('\n'))
   }, [chapter.bullets, editingBullets])
 
   const handleSaveBullets = () => {
@@ -205,7 +205,7 @@ export function ChapterCard({ chapter, folderName, onGenerateSummary, onUpdateBu
               </button>
               <button
                 onClick={() => {
-                  setBulletText(chapter.bullets.join('\n'))
+                  setBulletText((chapter.bullets || []).join('\n'))
                   setEditingBullets(false)
                 }}
                 className="text-xs text-gray-400 hover:text-gray-300"
@@ -216,9 +216,9 @@ export function ChapterCard({ chapter, folderName, onGenerateSummary, onUpdateBu
           </div>
         ) : (
           <div>
-            {chapter.bullets.length > 0 ? (
+            {(chapter.bullets || []).length > 0 ? (
               <ul className="text-sm text-gray-300 space-y-0.5 mb-1">
-                {chapter.bullets.map((b, i) => (
+                {(chapter.bullets || []).map((b, i) => (
                   <li key={i} className="before:content-['•'] before:mr-2 before:text-gray-500">
                     {b}
                   </li>

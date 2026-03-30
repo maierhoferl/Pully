@@ -21,6 +21,7 @@ export function ContentViewer({ file, onClose }) {
   }
 
   const isRef = file.name?.endsWith('.ref')
+  const isMarkdown = file.name?.endsWith('.md')
   const contentType = file.contentType || 'video'
 
   // Referenced item (.ref file)
@@ -32,6 +33,11 @@ export function ContentViewer({ file, onClose }) {
       // Referenced video: embed in iframe/webview
       return <IframePlayer url={file.url} onClose={onClose} />
     }
+  }
+
+  // Markdown file (.md) — render as markdown regardless of contentType
+  if (isMarkdown) {
+    return <MarkdownPageView videoUrl={file.videoUrl} onClose={onClose} />
   }
 
   // Downloaded item

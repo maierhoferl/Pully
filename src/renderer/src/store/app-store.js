@@ -1,17 +1,23 @@
 import { create } from 'zustand'
 
 function makeTab(browserUrl = 'https://www.youtube.com') {
+  // Extract hostname for initial title if possible
+  let initialTitle = 'New Tab'
+  try {
+    initialTitle = new URL(browserUrl).hostname
+  } catch {}
+
   return {
     id: crypto.randomUUID(),
     browserUrl,
-    title: 'New Tab',
+    title: initialTitle,
     favicon: null,
     suspended: false,
     lastActiveAt: Date.now(),
     canGoBack: false,
     canGoForward: false,
     mediaScanResults: null,
-    mediaScanLoading: false,
+    mediaScanLoading: true, // Start as true so MediaPanel shows "Scanning..." instead of blank
     browserActiveChapter: null
   }
 }

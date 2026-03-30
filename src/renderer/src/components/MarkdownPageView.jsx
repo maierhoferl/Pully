@@ -23,16 +23,19 @@ export function MarkdownPageView({ videoUrl, onClose }) {
         setLoading(true)
         setError(null)
 
-        // videoUrl is a pully:// URL pointing to the .md file
-        // We need to convert it to a fetch-able URL
-        // pully:// protocol is served by the main process at a special route
-        const response = await fetch(videoUrl)
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`)
+        // Convert pully:// URL to file path
+        // pully://... or pully:///... → remove protocol
+        const filePath = videoUrl
+          .replace(/^pully:\/\/\//, '/')  // Handle pully:///path
+          .replace(/^pully:\/\//, '/')    // Handle pully://path
+
+        // Read file via IPC
+        const result = await window.api.readFile(filePath)
+        if (result.error) {
+          throw new Error(result.error)
         }
 
-        const markdown = await response.text()
-        setContent(markdown)
+        setContent(result.content)
       } catch (err) {
         console.error('Failed to fetch markdown:', err)
         setError(`Failed to load page content: ${err.message}`)

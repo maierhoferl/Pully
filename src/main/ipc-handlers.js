@@ -809,4 +809,13 @@ export function registerIpcHandlers(downloadManager, logger, getMainWindow) {
       return { exists: false }
     }
   })
+
+  ipcMain.handle('file:read', async (event, filePath) => {
+    try {
+      const content = await fs.promises.readFile(filePath, 'utf-8')
+      return { content }
+    } catch (error) {
+      return { error: error.message }
+    }
+  })
 }
