@@ -1,18 +1,22 @@
 import { create } from 'zustand'
 
-let _tabIdCounter = 1
-function makeTab({ url = '', title = 'New Tab', suspended = false } = {}) {
+function makeTab(browserUrl = 'https://www.youtube.com') {
   return {
-    id: `tab-${_tabIdCounter++}`,
-    url,
-    title,
-    suspended,
+    id: crypto.randomUUID(),
+    browserUrl,
+    title: 'New Tab',
+    favicon: null,
+    suspended: false,
+    lastActiveAt: Date.now(),
+    canGoBack: false,
+    canGoForward: false,
     mediaScanResults: null,
-    mediaScanLoading: false
+    mediaScanLoading: false,
+    browserActiveChapter: null
   }
 }
 
-const _initialTab = makeTab()
+const _initialTab = makeTab('https://www.youtube.com')
 
 export const useAppStore = create((set) => ({
   activeTab: 'browser',
@@ -43,9 +47,9 @@ export const useAppStore = create((set) => ({
   browserTabs: [_initialTab],
   activeBrowserTabId: _initialTab.id,
 
-  addBrowserTab: (attrs = {}) =>
+  addBrowserTab: (browserUrl) =>
     set((state) => {
-      const tab = makeTab(attrs)
+      const tab = makeTab(browserUrl || 'https://www.youtube.com')
       return { browserTabs: [...state.browserTabs, tab], activeBrowserTabId: tab.id }
     }),
 
@@ -105,9 +109,6 @@ export const useAppStore = create((set) => ({
 
   activeNotesChapter: null,
   setActiveNotesChapter: (chapter) => set({ activeNotesChapter: chapter }),
-
-  browserActiveChapter: null,
-  setBrowserActiveChapter: (data) => set({ browserActiveChapter: data }),
 
   libraryActiveChapter: null,
   setLibraryActiveChapter: (data) => set({ libraryActiveChapter: data }),

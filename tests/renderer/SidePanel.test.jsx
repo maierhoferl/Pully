@@ -21,7 +21,7 @@ describe('SidePanel', () => {
   beforeEach(() => {
     // Reset store state before each test
     const store = useAppStore.getState()
-    store.setBrowserActiveChapter(null)
+    store.updateBrowserTab(store.activeBrowserTabId, { browserActiveChapter: null })
     store.setDownloads([])
   })
 
