@@ -34,11 +34,11 @@ import { spawn } from 'child_process'
 // Helper files to exclude from library and classification logic
 function isHelperFile(fileName) {
   // Exclude folder-level notes file, metadata, and sidecars
-  if (fileName === 'notes.md') return true  // Folder-level notes file
+  if (fileName === 'notes.md') return true // Folder-level notes file
   if (fileName === '.pully.json') return true
   if (fileName === '.gitignore') return true
-  if (/\.thumb(\.[a-z]+)?$/i.test(fileName)) return true  // Thumbnails
-  if (/\.nfo$/i.test(fileName)) return true  // Info files
+  if (/\.thumb(\.[a-z]+)?$/i.test(fileName)) return true // Thumbnails
+  if (/\.nfo$/i.test(fileName)) return true // Info files
   return false
 }
 
@@ -607,4 +607,186 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
 
   // Log entries are pushed to renderer via mainWindow.webContents.send('log:entry', entry)
   // No handler needed — logger.js handles sending when debugMode is enabled
+
+  // File Browser Handlers
+
+  ipcMain.handle('files:listRoots', async () => {
+    // Return filesystem roots
+    if (process.platform === 'win32') {
+      const drives = []
+      for (let i = 65; i <= 90; i++) {
+        const drive = String.fromCharCode(i) + ':'
+        if (fs.existsSync(drive + '\\')) drives.push(drive)
+      }
+      return drives
+    }
+    return ['/']
+  })
+
+  ipcMain.handle('files:listDir', async (event, dirPath) => {
+    try {
+      const entries = await fs.promises.readdir(dirPath, { withFileTypes: true })
+      const items = entries
+        .filter((e) => !e.name.startsWith('.'))
+        .map((e) => ({
+          name: e.name,
+          path: path.join(dirPath, e.name),
+          isDirectory: e.isDirectory(),
+          type: getFileType(e.name)
+        }))
+        .sort((a, b) => {
+          if (a.isDirectory && !b.isDirectory) return -1
+          if (!a.isDirectory && b.isDirectory) return 1
+          return a.name.localeCompare(b.name)
+        })
+
+      return items
+    } catch (error) {
+      return { error: error.message }
+    }
+  })
+
+  ipcMain.handle('files:getLastDir', async () => {
+    const config = await readConfig()
+    return config.filesLastDir || (process.platform === 'win32' ? 'C:' : '/')
+  })
+
+  ipcMain.handle('files:setLastDir', async (event, dirPath) => {
+    const config = await readConfig()
+    config.filesLastDir = dirPath
+    await writeConfig(config)
+    return true
+  })
+
+  function getFileType(fileName) {
+    const ext = fileName.slice(fileName.lastIndexOf('.')).toLowerCase()
+    if (['.pdf'].includes(ext)) return 'pdf'
+    if (
+      [
+        '.docx',
+        '.doc',
+        '.docm',
+        '.odt',
+        '.rtf',
+        '.xlsx',
+        '.xls',
+        '.xlsm',
+        '.ods',
+        '.pptx',
+        '.ppt',
+        '.pptm',
+        '.odp'
+      ].includes(ext)
+    )
+      return 'document'
+    if (
+      [
+        '.jpg',
+        '.jpeg',
+        '.png',
+        '.gif',
+        '.webp',
+        '.bmp',
+        '.svg',
+        '.tiff',
+        '.heic',
+        '.ico',
+        '.avif'
+      ].includes(ext)
+    )
+      return 'image'
+    if (['.txt', '.csv', '.json', '.xml', '.yaml', '.md', '.html', '.htm'].includes(ext))
+      return 'text'
+    return 'other'
+  }
+
+  ipcMain.handle('files:rememberFile', async (event, filePath) => {
+    try {
+      const fileName = path.basename(filePath)
+      const config = await readConfig()
+      const outputFolder = config.outputFolder
+
+      if (!outputFolder || !fs.existsSync(outputFolder)) {
+        throw new Error('No output folder configured')
+      }
+
+      // Copy file to output folder
+      const destPath = path.join(outputFolder, fileName)
+      let finalPath = destPath
+      let counter = 1
+
+      // Handle name collisions
+      if (fs.existsSync(finalPath)) {
+        const ext = path.extname(fileName)
+        const stem = path.basename(fileName, ext)
+        while (fs.existsSync(finalPath)) {
+          finalPath = path.join(outputFolder, `${stem} (${counter})${ext}`)
+          counter++
+        }
+      }
+
+      // Copy the file
+      fs.copyFileSync(filePath, finalPath)
+
+      const title = path.parse(fileName).name
+      const contentType = getFileType(fileName)
+
+      // Write metadata
+      const metadataEntry = {
+        title,
+        contentType,
+        originalPath: filePath,
+        downloadedAt: new Date().toISOString()
+      }
+
+      writeMetadataEntry(finalPath, metadataEntry)
+
+      // Init notes chapter
+      try {
+        initChapter(finalPath, metadataEntry, outputFolder)
+      } catch {
+        /* don't block on notes errors */
+      }
+
+      mainWindow.webContents.send('library:changed')
+
+      return { success: true, title, contentType, outputPath: finalPath }
+    } catch (error) {
+      return { error: error.message }
+    }
+  })
+
+  ipcMain.handle('files:rememberFolder', async (event, folderPath) => {
+    try {
+      const files = []
+
+      async function walk(dir) {
+        const entries = await fs.promises.readdir(dir, { withFileTypes: true })
+        for (const entry of entries) {
+          if (entry.name.startsWith('.')) continue
+          const fullPath = path.join(dir, entry.name)
+          if (entry.isDirectory()) {
+            await walk(fullPath)
+          } else {
+            files.push(fullPath)
+          }
+        }
+      }
+
+      await walk(folderPath)
+      return { count: files.length, files }
+    } catch (error) {
+      return { error: error.message }
+    }
+  })
+
+  ipcMain.handle('files:isFileRemembered', async (event, filePath) => {
+    try {
+      const index = readMetadataIndex()
+      const entry = index[filePath]
+      return { remembered: !!entry }
+    } catch {
+      return { remembered: false }
+    }
+  })
 }

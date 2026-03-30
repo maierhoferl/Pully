@@ -77,6 +77,17 @@ contextBridge.exposeInMainWorld('api', {
   browserTabsRead: () => ipcRenderer.invoke('browser-tabs:read'),
   browserTabsWrite: (data) => ipcRenderer.invoke('browser-tabs:write', data),
 
+  // File Browser
+  files: {
+    listRoots: () => ipcRenderer.invoke('files:listRoots'),
+    listDir: (dirPath) => ipcRenderer.invoke('files:listDir', dirPath),
+    getLastDir: () => ipcRenderer.invoke('files:getLastDir'),
+    setLastDir: (dirPath) => ipcRenderer.invoke('files:setLastDir', dirPath),
+    rememberFile: (filePath) => ipcRenderer.invoke('files:rememberFile', filePath),
+    rememberFolder: (folderPath) => ipcRenderer.invoke('files:rememberFolder', folderPath),
+    isFileRemembered: (filePath) => ipcRenderer.invoke('files:isFileRemembered', filePath)
+  },
+
   // Generic on() method for subscribing to any IPC event
   on: (channel, callback) => {
     const handler = (_, ...args) => callback(...args)
