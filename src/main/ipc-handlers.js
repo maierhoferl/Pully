@@ -33,13 +33,13 @@ import { spawn } from 'child_process'
 
 // Helper files to exclude from library and classification logic
 function isHelperFile(fileName) {
-  // Exclude markdown notes, text metadata files, thumbnail sidecars, and Pully metadata
-  return (
-    /\.(md|txt|nfo)$/i.test(fileName) ||
-    /\.thumb(\.[a-z]+)?$/i.test(fileName) ||
-    fileName === '.pully.json' ||
-    fileName === '.gitignore'
-  )
+  // Exclude folder-level notes file, metadata, and sidecars
+  if (fileName === 'notes.md') return true  // Folder-level notes file
+  if (fileName === '.pully.json') return true
+  if (fileName === '.gitignore') return true
+  if (/\.thumb(\.[a-z]+)?$/i.test(fileName)) return true  // Thumbnails
+  if (/\.nfo$/i.test(fileName)) return true  // Info files
+  return false
 }
 
 export function registerIpcHandlers(downloadManager, mainWindow, logger) {
