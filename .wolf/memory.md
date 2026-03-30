@@ -508,3 +508,8 @@
 | 23:05 | Edited src/renderer/src/components/FileTree.jsx | CSS: directory | ~1376 |
 | 23:05 | Edited src/renderer/src/components/FileList.jsx | modified if() | ~315 |
 | 23:05 | Edited src/renderer/src/components/FilesTab.jsx | 5→5 lines | ~47 |
+
+| 22:25 | Rewrote FileTree to start at home directory with nested tree view | src/renderer/src/components/FileTree.jsx | Implemented lazy-loading children, tree structure, sync with middle panel | ~400 |
+| 22:26 | Changed all text colors from grey to white for readability | FileTree.jsx, FileList.jsx, FilesTab.jsx | Updated className colors (gray-300/400/500 → white) | ~100 |
+| 22:26 | Improved folder expansion logic with proper children rendering | src/renderer/src/components/FileTree.jsx | Only show chevron for expandable folders, sync with FileList navigation | ~200 |
+| 22:27 | Verified build and committed navigation improvements | — | Build completed in 653ms, commit: f43dd98 | ~50 |
