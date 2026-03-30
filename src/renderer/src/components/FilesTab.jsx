@@ -8,7 +8,7 @@ import FolderImportDialog from './FolderImportDialog'
 
 export default function FilesTab() {
   const { filesLastDir, filesSideWidth, filesSideSplitPct, setFilesLastDir, setFilesSideWidth, setFilesSideSplitPct } = useAppStore()
-  const [currentFolder, setCurrentFolder] = useState(filesLastDir || '/')
+  const [currentFolder, setCurrentFolder] = useState(null)
   const [selectedFile, setSelectedFile] = useState(null)
   const [sideWidth, setSideWidth] = useState(filesSideWidth || 320)
   const [sideSplitPct, setSideSplitPct] = useState(filesSideSplitPct || 60)
@@ -16,7 +16,18 @@ export default function FilesTab() {
   const [folderImportDialog, setFolderImportDialog] = useState(null)
 
   useEffect(() => {
-    setFilesLastDir(currentFolder)
+    // Load the last directory or home directory on mount
+    if (filesLastDir) {
+      setCurrentFolder(filesLastDir)
+    } else {
+      window.api.files.getLastDir?.().then(dir => setCurrentFolder(dir)).catch(() => setCurrentFolder('/'))
+    }
+  }, [filesLastDir])
+
+  useEffect(() => {
+    if (currentFolder) {
+      setFilesLastDir(currentFolder)
+    }
   }, [currentFolder])
 
   useEffect(() => {
@@ -46,31 +57,35 @@ export default function FilesTab() {
   }
 
   return (
-    <div className="h-full flex gap-0">
-      <div className="bg-gray-50 border-r" style={{ width: '200px' }}>
-        <FileTree
-          currentFolder={currentFolder}
-          onNavigate={setCurrentFolder}
-        />
+    <div className="h-full flex gap-0 bg-gray-900">
+      <div className="bg-gray-900 border-r border-gray-700" style={{ width: '200px' }}>
+        {currentFolder && (
+          <FileTree
+            currentFolder={currentFolder}
+            onNavigate={setCurrentFolder}
+          />
+        )}
       </div>
 
-      <div className="flex-1 border-r">
-        <FileList
-          currentFolder={currentFolder}
-          selectedPath={selectedFile?.path}
-          onSelectFile={handleSelectFile}
-          onNavigateFolder={setCurrentFolder}
-          rememberedPaths={rememberedPaths}
-        />
+      <div className="flex-1 border-r border-gray-700 bg-gray-950">
+        {currentFolder && (
+          <FileList
+            currentFolder={currentFolder}
+            selectedPath={selectedFile?.path}
+            onSelectFile={handleSelectFile}
+            onNavigateFolder={setCurrentFolder}
+            rememberedPaths={rememberedPaths}
+          />
+        )}
       </div>
 
       <div
-        className="border-l bg-white flex flex-col"
+        className="border-l border-gray-700 bg-gray-900 flex flex-col"
         style={{ width: `${sideWidth}px` }}
       >
         {selectedFile ? (
           <>
-            <div style={{ height: `${sideSplitPct}%` }} className="border-b overflow-y-auto">
+            <div style={{ height: `${sideSplitPct}%` }} className="border-b border-gray-700 overflow-y-auto">
               <LibraryDetailPanel
                 file={selectedFile}
                 isFileImport={true}
@@ -82,7 +97,7 @@ export default function FilesTab() {
             </div>
           </>
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-400">
+          <div className="flex items-center justify-center h-full text-gray-500">
             Select a file to view details
           </div>
         )}

@@ -73,32 +73,34 @@ export default function FileTree({ currentFolder, onNavigate, onSelectFolder }) 
     return (
       <div key={folder.path}>
         <div
-          className={`flex items-center p-1 hover:bg-gray-200 cursor-pointer ${
-            currentFolder === folder.path ? 'bg-blue-100' : ''
+          className={`flex items-center p-2 cursor-pointer transition-colors ${
+            currentFolder === folder.path
+              ? 'bg-indigo-950/60 text-indigo-300 border-l-2 border-indigo-500'
+              : 'hover:bg-gray-800 text-gray-300'
           }`}
           onClick={() => {
             expandFolder(folder.path)
             onNavigate(folder.path)
           }}
-          style={{ paddingLeft: `${depth * 16}px` }}
+          style={{ paddingLeft: `${8 + depth * 16}px` }}
         >
           {folder.isDirectory && (
             <ChevronIcon isExpanded={isExpanded} />
           )}
-          <div className="ml-1" style={{ color: '#f59e0b' }}>
+          <div className="ml-2" style={{ color: '#f59e0b' }}>
             <FolderIcon />
           </div>
-          <span className="ml-1 text-sm">{folder.name}</span>
+          <span className="ml-2 text-sm truncate">{folder.name}</span>
         </div>
       </div>
     )
   }
 
-  if (loading) return <div className="p-4">Loading...</div>
+  if (loading) return <div className="p-4 text-gray-400">Loading...</div>
 
   return (
-    <div className="h-full overflow-y-auto bg-gray-50 p-2 text-sm">
-      <div className="font-semibold mb-2 text-gray-600">Places</div>
+    <div className="h-full overflow-y-auto bg-gray-900 p-2 text-sm">
+      <div className="font-semibold mb-2 text-gray-400 px-1">Places</div>
       {tree.map(root => renderNode(root))}
     </div>
   )

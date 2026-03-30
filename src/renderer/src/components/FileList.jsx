@@ -97,17 +97,19 @@ export default function FileList({
     return !item.isDirectory && item.type !== 'other'
   }
 
-  if (loading) return <div className="p-4">Loading...</div>
+  if (loading) return <div className="p-4 text-gray-400">Loading...</div>
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-gray-950">
       <div className="flex-1 overflow-y-auto">
         {items.map(item => (
           <div
             key={item.path}
-            className={`flex items-center gap-2 p-2 border-b hover:bg-gray-100 cursor-pointer ${
-              item.path === selectedPath ? 'bg-blue-50' : ''
-            } ${!isSelectable(item) ? 'opacity-50 cursor-default' : ''}`}
+            className={`flex items-center gap-2 p-2 border-b border-gray-800 cursor-pointer transition-colors ${
+              item.path === selectedPath
+                ? 'bg-indigo-950/60 text-indigo-300'
+                : 'text-gray-300 hover:bg-gray-900'
+            } ${!isSelectable(item) ? 'opacity-40 cursor-default' : ''}`}
             onClick={() => {
               if (item.isDirectory) {
                 onNavigateFolder(item.path)
@@ -117,7 +119,7 @@ export default function FileList({
             }}
           >
             {getIcon(item)}
-            <span className="flex-1 text-sm">{item.name}</span>
+            <span className="flex-1 text-sm truncate">{item.name}</span>
             {rememberedPaths?.includes(item.path) && (
               <CheckIcon />
             )}

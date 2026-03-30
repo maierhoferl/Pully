@@ -1,5 +1,6 @@
 import { ipcMain, dialog, shell, session, BrowserWindow, app } from 'electron'
 import { EventEmitter } from 'events'
+import os from 'os'
 import { readConfig, writeConfig } from './config-store.js'
 import { listBookmarks, addBookmark, removeBookmark } from './bookmarks-store.js'
 import { listHistory, upsertHistory } from './history-store.js'
@@ -658,7 +659,7 @@ export function registerIpcHandlers(downloadManager, logger, getMainWindow) {
 
   ipcMain.handle('files:getLastDir', async () => {
     const config = await readConfig()
-    return config.filesLastDir || (process.platform === 'win32' ? 'C:' : '/')
+    return config.filesLastDir || os.homedir()
   })
 
   ipcMain.handle('files:setLastDir', async (event, dirPath) => {

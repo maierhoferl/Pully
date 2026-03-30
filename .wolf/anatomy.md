@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-03-30T20:56:36.295Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-03-30T21:01:03.355Z
 > Files: 171 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
@@ -177,7 +177,7 @@
 - `folder-curator.js` — Main orchestrator: runs all 5 curation tasks sequentially. (~3792 tok)
 - `history-store.js` — Exports listHistory, upsertHistory (~520 tok)
 - `index.js` — API routes: GET (1 endpoints) (~1894 tok)
-- `ipc-handlers.js` — Exports registerIpcHandlers (~7552 tok)
+- `ipc-handlers.js` — Exports registerIpcHandlers (~7548 tok)
 - `logger.js` — Creates a logger instance that writes to daily JSON Lines files. (~1020 tok)
 - `metadata-store.js` — Exports readMetadataIndex, writeMetadataEntry, deleteMetadataEntry, moveMetadataEntry + 6 more (~1350 tok)
 - `notes-store.js` — Set the event emitter for notes events. (~3806 tok)
@@ -210,9 +210,9 @@
 - `ContentViewer.jsx` — ContentViewer dispatches the right renderer based on: (~420 tok)
 - `DebugTab.jsx` — src/renderer/src/components/DebugTab.jsx (~2573 tok)
 - `DownloadRow.jsx` — STATUS_COLOR — uses useState (~817 tok)
-- `FileList.jsx` — FileIcon — uses useState, useEffect (~884 tok)
-- `FilesTab.jsx` — FilesTab (~953 tok)
-- `FileTree.jsx` — ChevronIcon — uses useState, useEffect (~816 tok)
+- `FileList.jsx` — FileIcon (~921 tok)
+- `FilesTab.jsx` — FilesTab (~1096 tok)
+- `FileTree.jsx` — ChevronIcon (~857 tok)
 - `FolderImportDialog.jsx` — FolderImportDialog (~296 tok)
 - `IframePlayer.jsx` — IframePlayer embeds video content in iframe or webview (~627 tok)
 - `LibraryDetailPanel.jsx` — fmtDateTime (~2115 tok)
