@@ -97,7 +97,7 @@ export default function FileList({
     return !item.isDirectory && item.type !== 'other'
   }
 
-  if (loading) return <div className="p-4 text-gray-400">Loading...</div>
+  if (loading) return <div className="p-4 text-white">Loading...</div>
 
   return (
     <div className="h-full flex flex-col bg-gray-950">
@@ -107,8 +107,8 @@ export default function FileList({
             key={item.path}
             className={`flex items-center gap-2 p-2 border-b border-gray-800 cursor-pointer transition-colors ${
               item.path === selectedPath
-                ? 'bg-indigo-950/60 text-indigo-300'
-                : 'text-gray-300 hover:bg-gray-900'
+                ? 'bg-indigo-950/60 text-white border-l-2 border-indigo-500'
+                : 'text-white hover:bg-gray-900'
             } ${!isSelectable(item) ? 'opacity-40 cursor-default' : ''}`}
             onClick={() => {
               if (item.isDirectory) {

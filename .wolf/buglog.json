@@ -902,6 +902,22 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-03-30T21:01:03.362Z"
+    },
+    {
+      "id": "bug-057",
+      "timestamp": "2026-03-30T21:05:05.571Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/renderer/src/components/FileTree.jsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "jsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-30T21:05:05.571Z"
     }
   ]
 }

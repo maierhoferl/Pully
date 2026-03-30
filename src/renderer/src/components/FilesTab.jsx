@@ -97,7 +97,7 @@ export default function FilesTab() {
             </div>
           </>
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-500">
+          <div className="flex items-center justify-center h-full text-white">
             Select a file to view details
           </div>
         )}

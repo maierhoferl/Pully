@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-03-30T21:01:03.355Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-03-30T21:05:13.120Z
 > Files: 171 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
@@ -210,9 +210,9 @@
 - `ContentViewer.jsx` — ContentViewer dispatches the right renderer based on: (~420 tok)
 - `DebugTab.jsx` — src/renderer/src/components/DebugTab.jsx (~2573 tok)
 - `DownloadRow.jsx` — STATUS_COLOR — uses useState (~817 tok)
-- `FileList.jsx` — FileIcon (~921 tok)
-- `FilesTab.jsx` — FilesTab (~1096 tok)
-- `FileTree.jsx` — ChevronIcon (~857 tok)
+- `FileList.jsx` — FileIcon (~926 tok)
+- `FilesTab.jsx` — FilesTab (~1095 tok)
+- `FileTree.jsx` — ChevronIcon (~1377 tok)
 - `FolderImportDialog.jsx` — FolderImportDialog (~296 tok)
 - `IframePlayer.jsx` — IframePlayer embeds video content in iframe or webview (~627 tok)
 - `LibraryDetailPanel.jsx` — fmtDateTime (~2115 tok)
