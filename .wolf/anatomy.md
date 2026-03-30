@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-03-30T21:11:10.407Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-03-30T21:53:39.438Z
 > Files: 171 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
@@ -176,8 +176,8 @@
 - `file-processor.js` — Determine content type from file extension (~904 tok)
 - `folder-curator.js` — Main orchestrator: runs all 5 curation tasks sequentially. (~3792 tok)
 - `history-store.js` — Exports listHistory, upsertHistory (~520 tok)
-- `index.js` — API routes: GET (1 endpoints) (~1894 tok)
-- `ipc-handlers.js` — Exports registerIpcHandlers (~7548 tok)
+- `index.js` — API routes: GET (1 endpoints) (~1904 tok)
+- `ipc-handlers.js` — Exports registerIpcHandlers (~7615 tok)
 - `logger.js` — Creates a logger instance that writes to daily JSON Lines files. (~1020 tok)
 - `metadata-store.js` — Exports readMetadataIndex, writeMetadataEntry, deleteMetadataEntry, moveMetadataEntry + 6 more (~1350 tok)
 - `notes-store.js` — Set the event emitter for notes events. (~3806 tok)
@@ -185,7 +185,7 @@
 
 ## src/preload/
 
-- `index.js` — Declares handler (~1413 tok)
+- `index.js` — Declares handler (~1438 tok)
 
 ## src/renderer/
 
@@ -204,10 +204,10 @@
 ## src/renderer/src/components/
 
 - `BrowserNotesPanel.jsx` — BrowserNotesPanel (~431 tok)
-- `BrowserTab.jsx` — HOME — uses useRef, useState, useEffect, useCallback (~7146 tok)
+- `BrowserTab.jsx` — HOME (~7146 tok)
 - `BrowserTabBar.jsx` — BrowserTabBar — uses useRef (~1025 tok)
-- `ChapterCard.jsx` — safeHostname — uses useState, useEffect (~2480 tok)
-- `ContentViewer.jsx` — ContentViewer dispatches the right renderer based on: (~420 tok)
+- `ChapterCard.jsx` — safeHostname (~2540 tok)
+- `ContentViewer.jsx` — ContentViewer dispatches the right renderer based on: (~483 tok)
 - `DebugTab.jsx` — src/renderer/src/components/DebugTab.jsx (~2573 tok)
 - `DownloadRow.jsx` — STATUS_COLOR — uses useState (~817 tok)
 - `FileList.jsx` — FileIcon (~1868 tok)
@@ -220,7 +220,7 @@
 - `LibraryTab.jsx` — Stable color per folder name (derived from name hash so colors don't shift when folders are added) (~7821 tok)
 - `LibraryToolbar.jsx` — SORT_CYCLE (~1029 tok)
 - `LivePageView.jsx` — LivePageView fetches and renders a live page from a URL (~1218 tok)
-- `MarkdownPageView.jsx` — MarkdownPageView renders a markdown file (.md) with base64-embedded images (~1308 tok)
+- `MarkdownPageView.jsx` — MarkdownPageView renders a markdown file (.md) with base64-embedded images (~1325 tok)
 - `MediaPanel.jsx` — formatSize — renders chart — uses useRef, useEffect, useState (~4330 tok)
 - `NotesChapterView.jsx` — src/renderer/src/components/NotesChapterView.jsx (~818 tok)
 - `NotesFolderList.jsx` — src/renderer/src/components/NotesFolderList.jsx (~191 tok)
@@ -244,7 +244,7 @@
 
 ## src/renderer/src/store/
 
-- `app-store.js` — Zustand store (~1487 tok)
+- `app-store.js` — Exports useAppStore (~1550 tok)
 
 ## src/renderer/src/utils/
 

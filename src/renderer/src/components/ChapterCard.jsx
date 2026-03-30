@@ -100,7 +100,15 @@ export function ChapterCard({ chapter, folderName, onGenerateSummary, onUpdateBu
         </div>
       </div>
       <div className="text-xs text-gray-500 mb-3 flex gap-3">
-        <span>📁 {chapter.filePath}</span>
+        <span>
+          📁{' '}
+          {contentType && (
+            <>
+              {contentType}{' '}
+              {chapter.filePath?.match(/\.[^.]+$/?.[0])}
+            </>
+          )}
+        </span>
         {chapter.url && (
           <span>
             🔗{' '}

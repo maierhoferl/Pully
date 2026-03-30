@@ -526,3 +526,44 @@
 | 22:36 | Added inline remember button on each file entry | src/renderer/src/components/FileList.jsx | Bookmark icon, hidden on hover, visible when remembered, handleRemember() handler | ~250 |
 | 22:36 | Updated LibraryDetailPanel file import view to dark theme | src/renderer/src/components/LibraryDetailPanel.jsx | Dark gray backgrounds, white/gray text, purple remember button | ~300 |
 | 22:37 | Verified build and committed toolbar and remember button features | — | Build completed in 757ms, commit: c0e15e9 | ~50 |
+| 23:11 | Session end: 15 writes across 5 files (ipc-handlers.js, FilesTab.jsx, FileTree.jsx, FileList.jsx, LibraryDetailPanel.jsx) | 6 reads | ~26660 tok |
+
+## Session: 2026-03-30 23:16
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-03-30 23:17
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 23:18 | Edited src/main/index.js | modified if() | ~82 |
+| 23:18 | Session end: 1 writes across 1 files (index.js) | 1 reads | ~1976 tok |
+| 23:25 | Edited src/renderer/src/components/ChapterCard.jsx | modified ChapterCard() | ~122 |
+| 23:25 | Edited src/renderer/src/components/ChapterCard.jsx | 3→3 lines | ~39 |
+| 23:25 | Edited src/renderer/src/components/ChapterCard.jsx | 9→9 lines | ~91 |
+| 23:25 | Edited src/renderer/src/components/ChapterCard.jsx | 13→13 lines | ~146 |
+| 21:30 | Fixed Notes tab blank screen: chapter.bullets undefined | ChapterCard.jsx | Added null-safe defaults (chapter.bullets \|\| []) | ~1200 |
+| 23:26 | Session end: 5 writes across 2 files (index.js, ChapterCard.jsx) | 3 reads | ~5245 tok |
+| 23:31 | Edited src/renderer/src/components/ContentViewer.jsx | added 1 condition(s) | ~294 |
+| 21:35 | Fixed markdown rendering in Library: detect .md files by extension | ContentViewer.jsx | Added isMarkdown check, route to MarkdownPageView | ~800 |
+
+## Session: 2026-03-30 23:37
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 23:38 | Edited src/renderer/src/store/app-store.js | added error handling | ~164 |
+| 23:38 | Edited src/renderer/src/components/BrowserTab.jsx | added 1 condition(s) | ~182 |
+| 23:39 | Edited src/main/ipc-handlers.js | modified catch() | ~130 |
+| 23:39 | Edited src/renderer/src/components/MarkdownPageView.jsx | modified fetchMarkdown() | ~269 |
+| 23:39 | Edited src/preload/index.js | 11→14 lines | ~215 |
+| 11:47 | Fixed initial Browser tab initialization & pully protocol | app-store.js, BrowserTab.jsx, MarkdownPageView.jsx, ipc-handlers.js, preload/index.js | init tab with mediaScanLoading:true, extract hostname for title, immediate scan trigger; added file:read IPC handler; fixed MarkdownPageView to use IPC instead of fetch | ~260 |
+| 23:39 | Session end: 5 writes across 5 files (app-store.js, BrowserTab.jsx, ipc-handlers.js, MarkdownPageView.jsx, index.js) | 9 reads | ~28266 tok |
+
+## Session: 2026-03-30 23:39
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 23:42 | Edited src/renderer/src/components/BrowserTab.jsx | reduced (-6 lines) | ~96 |
+| 23:43 | Session end: 1 writes across 1 files (BrowserTab.jsx) | 1 reads | ~7289 tok |
+| 23:53 | Edited src/renderer/src/components/ChapterCard.jsx | added optional chaining | ~197 |

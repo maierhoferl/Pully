@@ -278,12 +278,6 @@ export default function BrowserTab() {
       wv.addEventListener('did-finish-load', onFinishLoad)
       wv.addEventListener('context-menu', onContextMenu)
 
-      // Trigger initial scan once webview is attached
-      const url = wv.getURL()
-      if (url && url !== 'about:blank') {
-        scanPage(tabId, url)
-      }
-
       wv._pullyCleanup = () => {
         wv.removeEventListener('did-navigate', onNavigate)
         wv.removeEventListener('did-navigate-in-page', onInPageNavigate)
