@@ -2,14 +2,14 @@
   "version": 1,
   "created_at": "2026-03-29T15:52:14.972Z",
   "lifetime": {
-    "total_tokens_estimated": 2369873,
-    "total_reads": 895,
-    "total_writes": 870,
+    "total_tokens_estimated": 2391140,
+    "total_reads": 900,
+    "total_writes": 879,
     "total_sessions": 32,
-    "anatomy_hits": 817,
+    "anatomy_hits": 822,
     "anatomy_misses": 78,
-    "repeated_reads_blocked": 715,
-    "estimated_savings_vs_bare_cli": 1825058
+    "repeated_reads_blocked": 717,
+    "estimated_savings_vs_bare_cli": 1834467
   },
   "sessions": [
     {
@@ -11128,6 +11128,98 @@
         "reads_count": 5,
         "writes_count": 6,
         "repeated_reads_blocked": 1,
+        "anatomy_lookups": 5
+      }
+    },
+    {
+      "id": "session-2026-03-30-2258",
+      "started": "2026-03-30T20:58:25.380Z",
+      "ended": "2026-03-30T21:05:44.931Z",
+      "reads": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/FilesTab.jsx",
+          "tokens_estimated": 953,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/LibraryTab.jsx",
+          "tokens_estimated": 7821,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/FileTree.jsx",
+          "tokens_estimated": 857,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/FileList.jsx",
+          "tokens_estimated": 884,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 7552,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 56,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/FilesTab.jsx",
+          "tokens_estimated": 274,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/FilesTab.jsx",
+          "tokens_estimated": 439,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/FileTree.jsx",
+          "tokens_estimated": 343,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/FileList.jsx",
+          "tokens_estimated": 310,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/FileTree.jsx",
+          "tokens_estimated": 1376,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/FileList.jsx",
+          "tokens_estimated": 315,
+          "action": "edit"
+        },
+        {
+          "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/FilesTab.jsx",
+          "tokens_estimated": 47,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 18067,
+        "output_tokens_estimated": 3200,
+        "reads_count": 5,
+        "writes_count": 9,
+        "repeated_reads_blocked": 2,
         "anatomy_lookups": 5
       }
     }

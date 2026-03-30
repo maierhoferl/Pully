@@ -75,6 +75,7 @@ export default function FilesTab() {
             onSelectFile={handleSelectFile}
             onNavigateFolder={setCurrentFolder}
             rememberedPaths={rememberedPaths}
+            onRememberFile={handleRememberFile}
           />
         )}
       </div>

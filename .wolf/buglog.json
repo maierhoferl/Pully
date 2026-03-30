@@ -918,6 +918,38 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-03-30T21:05:05.571Z"
+    },
+    {
+      "id": "bug-058",
+      "timestamp": "2026-03-30T21:10:46.053Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/renderer/src/components/FileList.jsx",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 71→157 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "jsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-30T21:10:46.053Z"
+    },
+    {
+      "id": "bug-059",
+      "timestamp": "2026-03-30T21:11:10.415Z",
+      "error_message": "CSS fix: hover",
+      "file": "src/renderer/src/components/LibraryDetailPanel.jsx",
+      "root_cause": "hover: text-blue-700 text-xs px-2 py-1 rounded hover:bg-blue-50 transition-colors\" → text-purple-300 text-xs px-2 py-1 rounded hover:bg-purple-950/30 transition-colors\"",
+      "fix": "Changed hover: text-blue-700 text-xs px-2 py-1 rounded hover:bg-blue-50 transition-colors\" → text-purple-300 text-xs px-2 py-1 rounded hover:bg-purple-950/30 transition-colors\"",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "jsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-30T21:11:10.415Z"
     }
   ]
 }

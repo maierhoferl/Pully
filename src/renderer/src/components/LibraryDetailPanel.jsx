@@ -11,7 +11,7 @@ function fmtDateTime(iso) {
   )
 }
 
-function MetadataBar({ file }) {
+function MetadataBar({ file, isDark = false }) {
   let size = 'Unknown'
   try {
     // Note: In electron renderer context, we cannot directly use fs.statSync
@@ -22,7 +22,7 @@ function MetadataBar({ file }) {
   }
 
   return (
-    <div className="mt-4 text-xs text-gray-600 space-y-1 border-t pt-2">
+    <div className={`mt-4 text-xs space-y-1 border-t pt-2 ${isDark ? 'text-gray-400 border-gray-700' : 'text-gray-600 border-gray-200'}`}>
       <div><strong>File:</strong> {file.name || 'Unknown'}</div>
       <div><strong>Size:</strong> {size}</div>
       <div><strong>Path:</strong> {file.path || '—'}</div>
@@ -47,16 +47,16 @@ export default function LibraryDetailPanel({ file, onClose, onDelete, style, isF
     const title = file.name?.replace(/\.[^/.]+$/, '') || 'Unknown'
 
     return (
-      <div className="flex-shrink-0 bg-white flex flex-col h-full overflow-hidden">
-        <div className="flex items-start justify-between gap-2 p-4 flex-shrink-0">
+      <div className="flex-shrink-0 bg-gray-900 flex flex-col h-full overflow-hidden">
+        <div className="flex items-start justify-between gap-2 p-4 flex-shrink-0 border-b border-gray-700">
           <div className="min-w-0">
-            <h2 className="text-sm font-bold text-gray-900 leading-snug">{title}</h2>
-            <p className="text-xs text-gray-500 mt-0.5">{file.type || 'file'}</p>
+            <h2 className="text-sm font-bold text-white leading-snug">{title}</h2>
+            <p className="text-xs text-gray-400 mt-0.5">{file.type || 'file'}</p>
           </div>
           {onRememberFile && (
             <button
               onClick={() => onRememberFile(file)}
-              className="text-blue-600 hover:text-blue-700 text-xs px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+              className="text-purple-400 hover:text-purple-300 text-xs px-2 py-1 rounded hover:bg-purple-950/30 transition-colors"
               title="Remember this file to library"
             >
               ✓ Remember
@@ -75,54 +75,54 @@ export default function LibraryDetailPanel({ file, onClose, onDelete, style, isF
                 onError={(e) => {
                   e.target.style.display = 'none'
                   const fallback = document.createElement('div')
-                  fallback.className = 'bg-gray-100 p-4 rounded text-gray-600 text-sm'
+                  fallback.className = 'bg-gray-800 p-4 rounded text-gray-400 text-sm'
                   fallback.textContent = '[Image preview unavailable]'
                   e.target.parentNode.appendChild(fallback)
                 }}
               />
-              <MetadataBar file={file} />
+              <MetadataBar file={file} isDark={true} />
             </div>
           )}
 
           {/* PDF/Document preview */}
           {(file.type === 'pdf' || file.type === 'document') && (
             <div>
-              <div className="bg-gray-100 p-4 rounded text-gray-600 text-sm mb-4">
+              <div className="bg-gray-800 p-4 rounded text-gray-400 text-sm mb-4">
                 [Document Preview]
                 <br />
                 Remember to library to see full preview with AI summary
               </div>
-              <MetadataBar file={file} />
+              <MetadataBar file={file} isDark={true} />
             </div>
           )}
 
           {/* Text file preview */}
           {file.type === 'text' && file.path && (
             <div>
-              <div className="bg-gray-50 p-4 rounded text-gray-700 text-xs font-mono whitespace-pre-wrap overflow-auto max-h-48 mb-4 border">
+              <div className="bg-gray-800 p-4 rounded text-gray-300 text-xs font-mono whitespace-pre-wrap overflow-auto max-h-48 mb-4 border border-gray-700">
                 [Text preview loading...]
               </div>
-              <MetadataBar file={file} />
+              <MetadataBar file={file} isDark={true} />
             </div>
           )}
 
           {/* Other file types */}
           {file.type === 'other' && (
             <div>
-              <div className="bg-gray-100 p-4 rounded text-gray-600 text-sm mb-4">
+              <div className="bg-gray-800 p-4 rounded text-gray-400 text-sm mb-4">
                 [Preview not available for this file type]
               </div>
-              <MetadataBar file={file} />
+              <MetadataBar file={file} isDark={true} />
             </div>
           )}
 
           {/* Fallback if no type specified */}
           {!file.type && (
             <div>
-              <div className="bg-gray-100 p-4 rounded text-gray-600 text-sm mb-4">
+              <div className="bg-gray-800 p-4 rounded text-gray-400 text-sm mb-4">
                 [Select a file to preview]
               </div>
-              <MetadataBar file={file} />
+              <MetadataBar file={file} isDark={true} />
             </div>
           )}
         </div>

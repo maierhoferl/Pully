@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-03-30T21:05:13.120Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-03-30T21:11:10.407Z
 > Files: 171 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
@@ -210,12 +210,12 @@
 - `ContentViewer.jsx` — ContentViewer dispatches the right renderer based on: (~420 tok)
 - `DebugTab.jsx` — src/renderer/src/components/DebugTab.jsx (~2573 tok)
 - `DownloadRow.jsx` — STATUS_COLOR — uses useState (~817 tok)
-- `FileList.jsx` — FileIcon (~926 tok)
-- `FilesTab.jsx` — FilesTab (~1095 tok)
+- `FileList.jsx` — FileIcon (~1868 tok)
+- `FilesTab.jsx` — FilesTab (~1108 tok)
 - `FileTree.jsx` — ChevronIcon (~1377 tok)
 - `FolderImportDialog.jsx` — FolderImportDialog (~296 tok)
 - `IframePlayer.jsx` — IframePlayer embeds video content in iframe or webview (~627 tok)
-- `LibraryDetailPanel.jsx` — fmtDateTime (~2115 tok)
+- `LibraryDetailPanel.jsx` — fmtDateTime (~2173 tok)
 - `LibraryNotesPanel.jsx` — LibraryNotesPanel (~391 tok)
 - `LibraryTab.jsx` — Stable color per folder name (derived from name hash so colors don't shift when folders are added) (~7821 tok)
 - `LibraryToolbar.jsx` — SORT_CYCLE (~1029 tok)
