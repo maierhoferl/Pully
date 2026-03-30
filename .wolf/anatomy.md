@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-03-30T16:41:00.886Z
-> Files: 168 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-03-30T16:44:52.826Z
+> Files: 169 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
@@ -24,6 +24,7 @@
 - `tailwind.config.js` — Tailwind CSS configuration (~39 tok)
 - `TASK_18_MANUAL_TEST_CHECKLIST.md` — Task 18: Test Cleanup and Edge Cases - Manual Testing Checklist (~1910 tok)
 - `test-output.log` (~210 tok)
+- `TESTING_REPORT_TASKS_13-17.md` — Testing Report: Tasks 13-17 (Files Tab Integration & Testing) (~1526 tok)
 - `vitest.main.config.js` — /\*.test.js'], (~59 tok)
 - `vitest.renderer.config.js` — /_.test.{js,jsx}', 'tests/renderer/\*\*/_.test.{js,jsx}', 'tests/integration/\*_/_.test.{js,jsx}'], (~142 tok)
 

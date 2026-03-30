@@ -233,9 +233,19 @@
       "first_read": "2026-03-30T16:39:42.364Z"
     },
     "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/FileList.jsx": {
-      "count": 1,
+      "count": 2,
       "tokens": 884,
       "first_read": "2026-03-30T16:39:53.447Z"
+    },
+    "/private/tmp/claude-501/-Users-lorenzmaierhofer-claude-projects-VideoDownloader/16a1b893-33ad-454a-aa52-33dc1498dfe4/tasks/br3ro0qsa.output": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-03-30T16:50:40.214Z"
+    },
+    "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/src/renderer/src/components/FileTree.jsx": {
+      "count": 1,
+      "tokens": 816,
+      "first_read": "2026-03-30T16:50:46.465Z"
     }
   },
   "files_written": [
@@ -676,6 +686,12 @@
       "action": "edit",
       "tokens": 48,
       "at": "2026-03-30T16:41:00.891Z"
+    },
+    {
+      "file": "/Users/lorenzmaierhofer/claude-projects/VideoDownloader/TESTING_REPORT_TASKS_13-17.md",
+      "action": "create",
+      "tokens": 1744,
+      "at": "2026-03-30T16:44:52.832Z"
     }
   ],
   "edit_counts": {
@@ -711,11 +727,12 @@
     "src/renderer/src/App.jsx": 2,
     "src/renderer/src/components/LibraryDetailPanel.jsx": 2,
     "src/renderer/src/components/FolderImportDialog.jsx": 1,
-    "src/renderer/src/hooks/useIpcEvents.js": 1
+    "src/renderer/src/hooks/useIpcEvents.js": 1,
+    "TESTING_REPORT_TASKS_13-17.md": 1
   },
-  "anatomy_hits": 42,
-  "anatomy_misses": 5,
-  "repeated_reads_warned": 87,
+  "anatomy_hits": 43,
+  "anatomy_misses": 6,
+  "repeated_reads_warned": 88,
   "cerebrum_warnings": 0,
-  "stop_count": 26
+  "stop_count": 28
 }
