@@ -5,6 +5,7 @@ import { useAppStore } from './store/app-store.js'
 import { useIpcEvents } from './hooks/useIpcEvents.js'
 
 const BrowserTab = lazy(() => import('./components/BrowserTab.jsx'))
+const FilesTab = lazy(() => import('./components/FilesTab.jsx'))
 const LibraryTab = lazy(() => import('./components/LibraryTab.jsx'))
 const NotesTab = lazy(() => import('./components/NotesTab.jsx'))
 const DebugTab = lazy(() => import('./components/DebugTab').then((m) => ({ default: m.DebugTab })))
@@ -21,8 +22,14 @@ export default function App() {
 
   useEffect(() => {
     // Load bookmarks and history on app mount
-    window.api.listBookmarks().then(setBookmarks).catch(() => setBookmarks([]))
-    window.api.listHistory().then(setHistoryUrls).catch(() => setHistoryUrls([]))
+    window.api
+      .listBookmarks()
+      .then(setBookmarks)
+      .catch(() => setBookmarks([]))
+    window.api
+      .listHistory()
+      .then(setHistoryUrls)
+      .catch(() => setHistoryUrls([]))
   }, [])
 
   return (
@@ -32,6 +39,9 @@ export default function App() {
         <Suspense fallback={<Loading />}>
           <div className={activeTab === 'browser' ? 'h-full' : 'hidden'}>
             <BrowserTab />
+          </div>
+          <div className={activeTab === 'files' ? 'h-full overflow-hidden' : 'hidden'}>
+            <FilesTab />
           </div>
           <div className={activeTab === 'library' ? 'h-full overflow-y-auto' : 'hidden'}>
             <LibraryTab />
