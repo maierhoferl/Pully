@@ -520,3 +520,9 @@
 | 23:10 | Edited src/renderer/src/components/FilesTab.jsx | 11→12 lines | ~122 |
 | 23:10 | Edited src/renderer/src/components/LibraryDetailPanel.jsx | modified MetadataBar() | ~192 |
 | 23:11 | Edited src/renderer/src/components/LibraryDetailPanel.jsx | modified if() | ~960 |
+
+| 22:35 | Added FileList toolbar with parent directory navigation button | src/renderer/src/components/FileList.jsx | Implemented goToParent(), disabled at root | ~150 |
+| 22:35 | Added select all and deselect all buttons to FileList toolbar | src/renderer/src/components/FileList.jsx | Buttons in toolbar with divider, hover/active states | ~100 |
+| 22:36 | Added inline remember button on each file entry | src/renderer/src/components/FileList.jsx | Bookmark icon, hidden on hover, visible when remembered, handleRemember() handler | ~250 |
+| 22:36 | Updated LibraryDetailPanel file import view to dark theme | src/renderer/src/components/LibraryDetailPanel.jsx | Dark gray backgrounds, white/gray text, purple remember button | ~300 |
+| 22:37 | Verified build and committed toolbar and remember button features | — | Build completed in 757ms, commit: c0e15e9 | ~50 |
