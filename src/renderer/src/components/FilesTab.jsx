@@ -3,7 +3,7 @@ import { useAppStore } from '../store/app-store'
 import FileTree from './FileTree'
 import FileList from './FileList'
 import LibraryDetailPanel from './LibraryDetailPanel'
-import LibraryNotesPanel from './LibraryNotesPanel'
+import { LibraryNotesPanel } from './LibraryNotesPanel'
 
 export default function FilesTab() {
   const store = useAppStore()
