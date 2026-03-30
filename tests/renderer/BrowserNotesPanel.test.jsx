@@ -17,7 +17,8 @@ describe('BrowserNotesPanel', () => {
     // Reset store state
     const { renderHook } = require('@testing-library/react')
     const { result } = renderHook(() => useAppStore())
-    result.current.setBrowserActiveChapter(null)
+    const tabId = result.current.activeBrowserTabId
+    result.current.updateBrowserTab(tabId, { browserActiveChapter: null })
 
     // Setup window.api mocks
     window.api = {
@@ -49,7 +50,7 @@ describe('BrowserNotesPanel', () => {
       }
     }
 
-    result.current.setBrowserActiveChapter(mockChapter)
+    result.current.updateBrowserTab(result.current.activeBrowserTabId, { browserActiveChapter: mockChapter })
 
     render(<BrowserNotesPanel />)
 
@@ -73,7 +74,7 @@ describe('BrowserNotesPanel', () => {
       }
     }
 
-    result.current.setBrowserActiveChapter(mockChapter)
+    result.current.updateBrowserTab(result.current.activeBrowserTabId, { browserActiveChapter: mockChapter })
 
     render(<BrowserNotesPanel />)
 
@@ -96,7 +97,7 @@ describe('BrowserNotesPanel', () => {
       }
     }
 
-    result.current.setBrowserActiveChapter(mockChapter)
+    result.current.updateBrowserTab(result.current.activeBrowserTabId, { browserActiveChapter: mockChapter })
 
     const { container } = render(<BrowserNotesPanel />)
 

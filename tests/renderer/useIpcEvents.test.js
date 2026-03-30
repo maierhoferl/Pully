@@ -11,15 +11,13 @@ describe('useIpcEvents', () => {
     result.current.setSettingsOpen(false)
     result.current.setConfig({ outputFolder: '', maxConcurrent: 3 })
     result.current.setDownloads([])
-    result.current.setCurrentBrowserUrl(null)
-    result.current.startMediaScan()
     result.current.setLibraryFiles([])
     result.current.setLibrarySort('date', 'desc')
     result.current.setLibrarySearch('')
     result.current.setActiveNotesFolder(null)
     result.current.setActiveNotesChapter(null)
     result.current.setLibrarySelectedFile(null)
-    result.current.setBrowserActiveChapter(null)
+    result.current.updateBrowserTab(result.current.activeBrowserTabId, { browserActiveChapter: null })
 
     // Reset window.api mocks
     window.api = {
@@ -42,7 +40,10 @@ describe('useIpcEvents', () => {
       expect(window.api.on).toHaveBeenCalledWith('notes:chapter-updated', expect.any(Function))
     })
 
-    it('calls setBrowserActiveChapter when notes:chapter-updated is received', () => {
+    it('updates active tab browserActiveChapter when notes:chapter-updated is received', () => {
+      const { result: storeResult } = renderHook(() => useAppStore())
+      const tabId = storeResult.current.activeBrowserTabId
+
       renderHook(() => useIpcEvents())
 
       const handler = window.api.on.mock.calls.find(
@@ -64,7 +65,8 @@ describe('useIpcEvents', () => {
       handler(chapterData)
 
       const { result } = renderHook(() => useAppStore())
-      expect(result.current.browserActiveChapter).toEqual(chapterData)
+      const activeTab = result.current.browserTabs.find((t) => t.id === tabId)
+      expect(activeTab.browserActiveChapter).toEqual(chapterData)
     })
 
     it('unsubscribes from notes:chapter-updated on cleanup', () => {

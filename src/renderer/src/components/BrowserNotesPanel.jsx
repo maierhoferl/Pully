@@ -3,7 +3,10 @@ import { useAppStore } from '../store/app-store'
 import { ChapterCard } from './ChapterCard'
 
 export function BrowserNotesPanel() {
-  const browserActiveChapter = useAppStore((state) => state.browserActiveChapter)
+  const browserActiveChapter = useAppStore((state) => {
+    const activeTab = state.browserTabs.find((t) => t.id === state.activeBrowserTabId)
+    return activeTab ? activeTab.browserActiveChapter : null
+  })
 
   const handleBulletsChange = async (filePath, bullets) => {
     try {

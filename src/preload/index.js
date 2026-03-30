@@ -74,6 +74,8 @@ contextBridge.exposeInMainWorld('api', {
   // History
   listHistory: () => ipcRenderer.invoke('history:list'),
   upsertHistory: (data) => ipcRenderer.invoke('history:upsert', data),
+  browserTabsRead: () => ipcRenderer.invoke('browser-tabs:read'),
+  browserTabsWrite: (data) => ipcRenderer.invoke('browser-tabs:write', data),
 
   // Generic on() method for subscribing to any IPC event
   on: (channel, callback) => {

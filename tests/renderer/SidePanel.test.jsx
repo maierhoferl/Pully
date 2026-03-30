@@ -21,7 +21,7 @@ describe('SidePanel', () => {
   beforeEach(() => {
     // Reset store state before each test
     const store = useAppStore.getState()
-    store.setBrowserActiveChapter(null)
+    store.updateBrowserTab(store.activeBrowserTabId, { browserActiveChapter: null })
     store.setDownloads([])
   })
 
@@ -45,7 +45,7 @@ describe('SidePanel', () => {
   it('Notes tab is selected by default', () => {
     render(<SidePanel />)
     const notesButton = screen.getByRole('button', { name: /Notes/i })
-    expect(notesButton).toHaveClass('text-blue-600')
+    expect(notesButton).toHaveClass('text-blue-400')
   })
 
   it('switches to ProgressPanel when Progress tab is clicked', () => {
@@ -79,7 +79,7 @@ describe('SidePanel', () => {
 
     fireEvent.click(progressButton)
 
-    expect(progressButton).toHaveClass('text-blue-600')
+    expect(progressButton).toHaveClass('text-blue-400')
   })
 
   it('Notes tab button loses blue styling when Progress tab is active', () => {
@@ -89,8 +89,8 @@ describe('SidePanel', () => {
 
     fireEvent.click(progressButton)
 
-    expect(notesButton).not.toHaveClass('text-blue-600')
-    expect(notesButton).toHaveClass('text-gray-600')
+    expect(notesButton).not.toHaveClass('text-blue-400')
+    expect(notesButton).toHaveClass('text-gray-400')
   })
 
   it('can toggle between tabs multiple times', () => {

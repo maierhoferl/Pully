@@ -594,6 +594,17 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
   downloadManager.on('completed', (d) => mainWindow.webContents.send('download:completed', d))
   downloadManager.on('failed', (d) => mainWindow.webContents.send('download:failed', d))
 
+  // Browser tabs persistence
+  ipcMain.handle('browser-tabs:read', async () => {
+    const cfg = await readConfig()
+    return cfg.browserTabs || null
+  })
+
+  ipcMain.handle('browser-tabs:write', async (_, data) => {
+    const cfg = await readConfig()
+    await writeConfig({ ...cfg, browserTabs: data })
+  })
+
   // Log entries are pushed to renderer via mainWindow.webContents.send('log:entry', entry)
   // No handler needed — logger.js handles sending when debugMode is enabled
 }

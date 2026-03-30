@@ -265,15 +265,21 @@ function MediaEntry({ entry, libraryMatch }) {
 }
 
 export function MediaPanel({ onRememberSite, onDownloadSite }) {
-  const {
-    mediaScanResults,
-    mediaScanLoading,
-    currentBrowserUrl,
-    startMediaScan,
-    setMediaScanResults,
-    libraryFiles,
-    removeLibraryFile
-  } = useAppStore()
+  const { browserTabs, activeBrowserTabId, updateBrowserTab, libraryFiles, removeLibraryFile } =
+    useAppStore()
+  const activeTab = browserTabs.find((t) => t.id === activeBrowserTabId)
+  const mediaScanResults = activeTab?.mediaScanResults ?? null
+  const mediaScanLoading = activeTab?.mediaScanLoading ?? false
+  const currentBrowserUrl = activeTab?.browserUrl ?? null
+
+  function startMediaScan() {
+    if (activeBrowserTabId)
+      updateBrowserTab(activeBrowserTabId, { mediaScanLoading: true, mediaScanResults: null })
+  }
+  function setMediaScanResults(results) {
+    if (activeBrowserTabId)
+      updateBrowserTab(activeBrowserTabId, { mediaScanResults: results, mediaScanLoading: false })
+  }
   const [collapsed, setCollapsed] = useState(false)
   const [rememberingSite, setRememberingSite] = useState(false)
   const [downloadingSite, setDownloadingSite] = useState(false)

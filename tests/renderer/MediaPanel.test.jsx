@@ -4,11 +4,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // vi.hoisted ensures mockState is available inside the vi.mock factory
 const mockState = vi.hoisted(() => ({
-  mediaScanResults: null,
-  mediaScanLoading: false,
-  currentBrowserUrl: 'https://example.com',
-  startMediaScan: vi.fn(),
-  setMediaScanResults: vi.fn(),
+  browserTabs: [
+    {
+      id: 'tab-1',
+      browserUrl: 'https://example.com',
+      mediaScanResults: null,
+      mediaScanLoading: false
+    }
+  ],
+  activeBrowserTabId: 'tab-1',
+  updateBrowserTab: vi.fn(),
+  libraryFiles: [],
+  removeLibraryFile: vi.fn(),
   downloads: []
 }))
 
@@ -36,20 +43,20 @@ const baseEntry = {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  mockState.mediaScanResults = null
-  mockState.mediaScanLoading = false
+  mockState.browserTabs[0].mediaScanResults = null
+  mockState.browserTabs[0].mediaScanLoading = false
   mockState.downloads = []
 })
 
 describe('MediaEntry type indicator', () => {
   it('shows "Single video" when playlist_id is absent', () => {
-    mockState.mediaScanResults = [baseEntry]
+    mockState.browserTabs[0].mediaScanResults = [baseEntry]
     render(<MediaPanel />)
     expect(screen.getByText('Single video')).toBeTruthy()
   })
 
   it('shows "Playlist" when playlist_id is present', () => {
-    mockState.mediaScanResults = [
+    mockState.browserTabs[0].mediaScanResults = [
       { ...baseEntry, playlist_id: 'PL123', playlist_title: 'My Playlist' }
     ]
     render(<MediaPanel />)
@@ -57,13 +64,13 @@ describe('MediaEntry type indicator', () => {
   })
 
   it('renders entry title', () => {
-    mockState.mediaScanResults = [baseEntry]
+    mockState.browserTabs[0].mediaScanResults = [baseEntry]
     render(<MediaPanel />)
     expect(screen.getByText('My Video Title')).toBeTruthy()
   })
 
   it('renders quality options from formats', () => {
-    mockState.mediaScanResults = [baseEntry]
+    mockState.browserTabs[0].mediaScanResults = [baseEntry]
     render(<MediaPanel />)
     expect(screen.getByText('1080p mp4')).toBeTruthy()
     expect(screen.getByText('720p mp4')).toBeTruthy()
