@@ -6,7 +6,7 @@
 
 ## User Preferences
 
-<!-- How the user likes things done. Code style, tools, patterns, communication. -->
+- **Design Consistency:** User prefers Files Tab to match Library Tab's dark theme with indigo/accent colors, not generic light gray styling
 
 ## Key Learnings
 

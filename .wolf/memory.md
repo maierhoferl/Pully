@@ -494,3 +494,13 @@
 | 23:00 | Edited src/renderer/src/components/FilesTab.jsx | 42→46 lines | ~439 |
 | 23:00 | Edited src/renderer/src/components/FileTree.jsx | modified renderNode() | ~343 |
 | 23:01 | Edited src/renderer/src/components/FileList.jsx | modified if() | ~310 |
+
+## Session: 2026-03-30 Design Sync
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+| --- | --- | --- | --- | --- |
+| 22:15 | Set home directory as default starting point for Files Tab | src/main/ipc-handlers.js | Changed files:getLastDir to use os.homedir() | ~100 |
+| 22:15 | Updated FilesTab.jsx design to match LibraryTab dark theme | src/renderer/src/components/FilesTab.jsx | Dark gray-900/950 backgrounds, indigo accent colors, conditional rendering | ~200 |
+| 22:15 | Updated FileTree.jsx styling with dark theme and selection states | src/renderer/src/components/FileTree.jsx | Indigo selection background, hover states, improved text contrast | ~150 |
+| 22:15 | Updated FileList.jsx styling with dark theme matching FileTree | src/renderer/src/components/FileList.jsx | Dark backgrounds, indigo selection, hover effects, consistent spacing | ~150 |
+| 22:16 | Verified build success and committed changes | — | Build completed in 646ms, commit: 1e15ed3 | ~50 |
