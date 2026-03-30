@@ -2,6 +2,8 @@
 
 > Chronological action log. Hooks and AI append to this file automatically.
 > Old sessions are consolidated by the daemon weekly.
+> | 21:50 | Fixed blank white canvas (real issue: handlers registered after window loads) | src/main/index.js, src/main/ipc-handlers.js | Moved handlers before createWindow(), refactored to use getMainWindow() function | ~1200 |
+> | 21:44 | Fixed duplicate IPC handler registration crash on app startup | src/main/index.js | Moved handler registration out of createWindow() to app.whenReady(), added guard flag | ~800 |
 > | 17:54 | Created src/renderer/src/components/icons/ContentTypeIcon.jsx | — | ~427 |
 > | 17:54 | Edited src/main/metadata-store.js | modified createReferenceFile() | ~297 |
 
@@ -401,3 +403,88 @@
 | 18:44 | Created TESTING_REPORT_TASKS_13-17.md | — | ~1628 |
 | 18:50 | Session end: 74 writes across 30 files (zippy-floating-owl.md, SidePanel.test.jsx, browser-notes-flow.test.jsx, buglog.json, app-store.test.js) | 47 reads | ~153545 tok |
 | 18:51 | Session end: 74 writes across 30 files (zippy-floating-owl.md, SidePanel.test.jsx, browser-notes-flow.test.jsx, buglog.json, app-store.test.js) | 49 reads | ~154361 tok |
+| 18:52 | Session end: 74 writes across 30 files (zippy-floating-owl.md, SidePanel.test.jsx, browser-notes-flow.test.jsx, buglog.json, app-store.test.js) | 49 reads | ~154361 tok |
+
+## Session: 2026-03-30 18:53
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 18:53 | Edited electron-builder.yml | "Contents/Resources/{ffmpe" → "Contents/Resources/{ffmpe" | ~50 |
+| 16:48 | Built DMG installer after fixing universal arch issue | electron-builder.yml | Created dist/Pully-1.0.0-mac-universal.dmg (338 MB) | ~45 |
+| 19:07 | Session end: 1 writes across 1 files (electron-builder.yml) | 2 reads | ~1049 tok |
+| 19:07 | Edited electron-builder.yml | 1→2 lines | ~22 |
+| 19:07 | Edited electron-builder.yml | 2→1 lines | ~10 |
+| 20:55 | Edited electron-builder.yml | 13→14 lines | ~134 |
+
+## Session: 2026-03-30 21:26
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-03-30 21:41
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 21:43 | Edited src/main/index.js | modified createWindow() | ~324 |
+| 21:43 | Edited src/main/index.js | modified if() | ~724 |
+| 21:44 | Edited src/main/index.js | 5→6 lines | ~73 |
+| 21:44 | Edited src/main/index.js | 2→3 lines | ~24 |
+| 21:44 | Edited src/main/index.js | added 1 condition(s) | ~76 |
+| 21:46 | Session end: 5 writes across 1 files (index.js) | 2 reads | ~10494 tok |
+| 21:51 | Edited src/renderer/src/assets/main.css | expanded (+13 lines) | ~50 |
+| 21:51 | Session end: 6 writes across 2 files (index.js, main.css) | 8 reads | ~12258 tok |
+| 21:54 | Edited src/main/index.js | modified createWindow() | ~324 |
+| 21:54 | Edited src/main/index.js | modified if() | ~123 |
+| 21:54 | Edited src/main/ipc-handlers.js | added 1 condition(s) | ~119 |
+| 21:54 | Edited src/main/ipc-handlers.js | added 1 condition(s) | ~93 |
+| 21:54 | Edited src/main/ipc-handlers.js | modified registerIpcHandlers() | ~170 |
+| 21:55 | Edited src/main/index.js | modified so() | ~123 |
+| 21:56 | Session end: 12 writes across 3 files (index.js, main.css, ipc-handlers.js) | 13 reads | ~26489 tok |
+| 22:46 | Session end: 12 writes across 3 files (index.js, main.css, ipc-handlers.js) | 13 reads | ~26489 tok |
+| 22:47 | Edited src/main/ipc-handlers.js | sendToRenderer() → send() | ~70 |
+| 22:47 | Session end: 13 writes across 3 files (index.js, main.css, ipc-handlers.js) | 13 reads | ~26606 tok |
+
+## Session: 2026-03-30 22:53
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-03-30 22:54
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 22:54 | Edited src/main/index.js | modified if() | ~62 |
+| 22:54 | Session end: 1 writes across 1 files (index.js) | 1 reads | ~1956 tok |
+
+## Session: 2026-03-30 22:54
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-03-30 22:55
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-03-30 22:56
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 22:56 | Edited src/renderer/src/components/FilesTab.jsx | modified FilesTab() | ~231 |
+| 22:56 | Edited src/main/index.js | modified if() | ~32 |
+| 22:56 | Session end: 2 writes across 2 files (FilesTab.jsx, index.js) | 1 reads | ~1203 tok |
+
+## Session: 2026-03-30 22:56
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-03-30 22:57
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-03-30 22:58
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|

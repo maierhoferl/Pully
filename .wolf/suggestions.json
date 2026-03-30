@@ -1,4 +1,38 @@
 {
-  "suggestions": [],
-  "generated_at": null
+  "generated_at": "2026-03-30T20:58:29.808Z",
+  "achievements": [
+    "Files Tab fully implemented (Tasks 1–17): FileTree, FileList, FilesTab, FolderImportDialog, file-processor.js — all committed and building",
+    "Browser multi-tab support shipped: BrowserTabBar with drag-to-reorder, tab suspension, keyboard shortcuts, merged to main",
+    "File extraction pipeline: LiteParse (PDF) + officeparser (Office) with .ref/.md storage integrated",
+    "7 new IPC handlers for file browser (listRoots, listDir, getLastDir, setLastDir, rememberFile, rememberFolder, isFileRemembered)",
+    "AI summary page-content flow fixed (bug-010): h1/h2/p DOM content now flows through IPC → Gemini prompt",
+    "AI summaries render Markdown via ReactMarkdown in ChapterCard",
+    "Bookmarks and History stores added, browser URL autocomplete wired up",
+    "Notes headings clickable — open LibraryDetailPanel side panel from Notes tab",
+    "YouTube detection fixed: JS DOM extraction as primary, yt-dlp as fallback",
+    "DMG installer built: Pully-1.0.0-mac-universal.dmg (338 MB)"
+  ],
+  "improvements": [
+    "FileTree, FileList, FilesTab, FolderImportDialog have no renderer tests — add Vitest/JSDOM coverage matching ChapterCard.test.jsx pattern",
+    "file-processor.js has only 4 tests (detection + rejection) — no tests for actual PDF/Office extraction paths or the .ref file write logic",
+    "LibraryDetailPanel error handling was added ad-hoc; edge cases (missing originalPath, permission errors, binary files) may be untested",
+    "pageCapture.js compiles to 139k tokens — likely bundles a large parser (LiteParse?); verify it is not accidentally included in renderer bundle",
+    "FolderImportDialog is a stub (~296 tok) — may lack validation, progress feedback, and error states for slow/large folders",
+    "Uncommitted changes across 5 source files (index.js, ipc-handlers.js, FilesTab.jsx, main.css, electron-builder.yml) — these should be reviewed and committed or reverted"
+  ],
+  "next_tasks": [
+    "Task 18 (Test Cleanup & Edge Cases): TASK_18_MANUAL_TEST_CHECKLIST.md exists — work through and automate what can be automated",
+    "Commit or discard the 5 pending source-file changes (especially ipc-handlers.js +28 lines and FilesTab.jsx +20 lines)",
+    "Clean up temp docs: TESTING_REPORT_TASKS_13-17.md and TASK_18_MANUAL_TEST_CHECKLIST.md from repo root",
+    "Write renderer tests for Files tab components (FileTree, FileList, FilesTab)",
+    "Verify FolderImportDialog UX end-to-end: large folder with mixed types, permission-denied paths, already-imported files",
+    "Publish GitHub release using the existing release.yml workflow with the built DMG"
+  ],
+  "risks": [
+    "5 uncommitted source-file changes on main — including ipc-handlers.js and index.js, which are critical infrastructure; accidental loss or conflict risk",
+    "pageCapture.js in renderer bundle (139k tok compiled) — suspect it may be bundling LiteParse into the renderer, causing large bundle size and potentially wrong execution context (LiteParse should run in main process only)",
+    "officeparser/liteparse are native-ish Node modules — they work in main process but would break if ever imported in renderer; no guard currently enforces this boundary",
+    "BrowserTabBar drag-to-reorder uses HTML5 drag events — untested on macOS with Electron's webview compositing, known to have issues with overlay hit-testing",
+    "No integration tests for the full Files tab flow (browse → select → remember → appears in Library) — currently only manual checklist coverage"
+  ]
 }

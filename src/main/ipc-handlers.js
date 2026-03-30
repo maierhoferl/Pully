@@ -42,14 +42,22 @@ function isHelperFile(fileName) {
   return false
 }
 
-export function registerIpcHandlers(downloadManager, mainWindow, logger) {
+export function registerIpcHandlers(downloadManager, logger, getMainWindow) {
+  // Helper to send IPC events to renderer (safe if mainWindow not ready)
+  const sendToRenderer = (channel, ...args) => {
+    const mainWindow = getMainWindow()
+    if (mainWindow) {
+      mainWindow.webContents.send(channel, ...args)
+    }
+  }
+
   // Create event emitter for notes events
   const notesEmitter = new EventEmitter()
   setNotesEventEmitter(notesEmitter)
 
   // Forward notes events to renderer
   notesEmitter.on('notes:chapter-updated', (data) => {
-    mainWindow.webContents.send('notes:chapter-updated', data)
+    sendToRenderer('notes:chapter-updated', data)
   })
 
   ipcMain.handle('log:renderer', (_, { level, category, message, meta }) => {
@@ -66,6 +74,8 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
   })
 
   ipcMain.handle('dialog:openFolder', async () => {
+    const mainWindow = getMainWindow()
+    if (!mainWindow) throw new Error('Main window not available')
     const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
       properties: ['openDirectory']
     })
@@ -246,7 +256,7 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
       }
 
       // Emit library:changed event so renderer refreshes
-      mainWindow.webContents.send('library:changed')
+      sendToRenderer('library:changed')
 
       // Return the new file entry
       return {
@@ -588,11 +598,11 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
 
   // Forward download manager events to renderer
   downloadManager.on('queue-updated', (q) =>
-    mainWindow.webContents.send('download:queue-updated', q)
+    sendToRenderer('download:queue-updated', q)
   )
-  downloadManager.on('progress', (d) => mainWindow.webContents.send('download:progress', d))
-  downloadManager.on('completed', (d) => mainWindow.webContents.send('download:completed', d))
-  downloadManager.on('failed', (d) => mainWindow.webContents.send('download:failed', d))
+  downloadManager.on('progress', (d) => sendToRenderer('download:progress', d))
+  downloadManager.on('completed', (d) => sendToRenderer('download:completed', d))
+  downloadManager.on('failed', (d) => sendToRenderer('download:failed', d))
 
   // Browser tabs persistence
   ipcMain.handle('browser-tabs:read', async () => {
@@ -605,7 +615,7 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
     await writeConfig({ ...cfg, browserTabs: data })
   })
 
-  // Log entries are pushed to renderer via mainWindow.webContents.send('log:entry', entry)
+  // Log entries are pushed to renderer via sendToRenderer('log:entry', entry)
   // No handler needed — logger.js handles sending when debugMode is enabled
 
   // File Browser Handlers
@@ -748,7 +758,7 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
         /* don't block on notes errors */
       }
 
-      mainWindow.webContents.send('library:changed')
+      sendToRenderer('library:changed')
 
       return { success: true, title, contentType, outputPath: finalPath }
     } catch (error) {

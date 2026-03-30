@@ -754,6 +754,88 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-03-30T16:40:29.078Z"
+    },
+    {
+      "id": "bug-048",
+      "timestamp": "2026-03-30T16:53:51.637Z",
+      "error_message": "Incorrect value in code",
+      "file": "electron-builder.yml",
+      "root_cause": "Had 'Contents/Resources/{ffmpeg,app.asar.unpacked/node",
+      "fix": "Changed to 'Contents/Resources/{ffmpeg,app.asar.unpacked/node",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "yml"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-30T16:53:51.637Z"
+    },
+    {
+      "id": "bug-049",
+      "timestamp": "2026-03-30T21:44:17.000Z",
+      "error_message": "A JavaScript error occurred in the main process: Uncaught Exception: Error: Attempted to register a second handler for 'log:renderer' at IpcMainImpl.handle",
+      "file": "src/main/index.js",
+      "root_cause": "IPC handlers were registered inside createWindow() function, which is called multiple times (once at startup, again when app is re-activated on macOS). IPC handlers are global and should only be registered once, not once per window.",
+      "fix": "1. Removed registerIpcHandlers() call from createWindow() function. 2. Added ipcHandlersRegistered flag at module level. 3. Moved handler registration to app.whenReady() after window creation, with guard clause to ensure handlers are only registered once. 4. DownloadManager is now also initialized once at startup instead of per-window.",
+      "tags": [
+        "ipc-handler",
+        "duplicate-registration",
+        "electron-lifecycle",
+        "crash-on-startup"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-30T21:44:17.000Z"
+    },
+    {
+      "id": "bug-050",
+      "timestamp": "2026-03-30T21:47:00.000Z",
+      "error_message": "App starts but shows blank white canvas — no UI visible after loading screen",
+      "file": "src/main/index.js, src/main/ipc-handlers.js",
+      "root_cause": "IPC handlers were registered AFTER the window loaded and started the renderer. The sequence was: (1) createWindow() called, (2) window.loadURL() immediately loads renderer, (3) renderer mounts and calls window.api.readConfig() in useIpcEvents.js, (4) IPC handler hasn't been registered yet! → all IPC calls fail silently → nothing renders. Additionally, mainWindow parameter was passed to handlers before being set, so handlers couldn't send events back to renderer.",
+      "fix": "1. Moved handler registration to BEFORE createWindow() in app.whenReady(). 2. Changed handler signature from registerIpcHandlers(downloadManager, mainWindow, logger) to registerIpcHandlers(downloadManager, logger, getMainWindow) where getMainWindow returns the global mainWindow reference. 3. Created sendToRenderer() helper that safely calls getMainWindow() before sending IPC events. 4. Replaced all mainWindow.webContents.send() calls with sendToRenderer().",
+      "tags": [
+        "ipc-initialization",
+        "window-lifecycle",
+        "render-blank-screen",
+        "race-condition"
+      ],
+      "related_bugs": ["bug-049"],
+      "occurrences": 1,
+      "last_seen": "2026-03-30T21:50:00.000Z"
+    },
+    {
+      "id": "bug-051",
+      "timestamp": "2026-03-30T19:54:34.543Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/main/index.js",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 8→10 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "js"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-30T19:54:34.543Z"
+    },
+    {
+      "id": "bug-052",
+      "timestamp": "2026-03-30T19:54:46.433Z",
+      "error_message": "Missing guard clause",
+      "file": "src/main/ipc-handlers.js",
+      "root_cause": "No early return/throw for edge case: !mainWindow",
+      "fix": "Added guard clause: if (!mainWindow)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "js"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-30T19:54:46.433Z"
     }
   ]
 }

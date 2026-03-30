@@ -7,25 +7,25 @@ import { LibraryNotesPanel } from './LibraryNotesPanel'
 import FolderImportDialog from './FolderImportDialog'
 
 export default function FilesTab() {
-  const store = useAppStore()
-  const [currentFolder, setCurrentFolder] = useState(store.filesLastDir || '/')
+  const { filesLastDir, filesSideWidth, filesSideSplitPct, setFilesLastDir, setFilesSideWidth, setFilesSideSplitPct } = useAppStore()
+  const [currentFolder, setCurrentFolder] = useState(filesLastDir || '/')
   const [selectedFile, setSelectedFile] = useState(null)
-  const [sideWidth, setSideWidth] = useState(store.filesSideWidth || 320)
-  const [sideSplitPct, setSideSplitPct] = useState(store.filesSideSplitPct || 60)
+  const [sideWidth, setSideWidth] = useState(filesSideWidth || 320)
+  const [sideSplitPct, setSideSplitPct] = useState(filesSideSplitPct || 60)
   const [rememberedPaths, setRememberedPaths] = useState([])
   const [folderImportDialog, setFolderImportDialog] = useState(null)
 
   useEffect(() => {
-    store.setFilesLastDir(currentFolder)
-  }, [currentFolder, store])
+    setFilesLastDir(currentFolder)
+  }, [currentFolder])
 
   useEffect(() => {
-    store.setFilesSideWidth(sideWidth)
-  }, [sideWidth, store])
+    setFilesSideWidth(sideWidth)
+  }, [sideWidth])
 
   useEffect(() => {
-    store.setFilesSideSplitPct(sideSplitPct)
-  }, [sideSplitPct, store])
+    setFilesSideSplitPct(sideSplitPct)
+  }, [sideSplitPct])
 
   async function handleSelectFile(file) {
     setSelectedFile(file)

@@ -40,6 +40,7 @@ app.setName('Pully')
 
 let mainWindow = null
 let downloadManager = null
+let ipcHandlersRegistered = false
 
 // Increase max listeners for webContents to prevent warning spam during navigation
 app.on('web-contents-created', (_, webContents) => {
@@ -70,8 +71,8 @@ function createWindow() {
     logger.error('app', 'Failed to initialize binaries', { error: err.message })
   }
 
-  downloadManager = new DownloadManager()
-  registerIpcHandlers(downloadManager, win, logger)
+  mainWindow = win
+  logger.setWindow(mainWindow)
 
   if (process.env.NODE_ENV === 'development') {
     win.loadURL(process.env['ELECTRON_RENDERER_URL'])
@@ -79,8 +80,6 @@ function createWindow() {
     win.loadFile(path.join(__dirname, '../renderer/index.html'))
   }
 
-  mainWindow = win
-  logger.setWindow(mainWindow)
   logger.info('app', 'Application started', { isDev })
   return win
 }
@@ -151,6 +150,15 @@ app.whenReady().then(() => {
       }
     })
   })
+
+  // Initialize download manager and register IPC handlers BEFORE creating the window
+  // (the renderer immediately calls window.api methods on mount)
+  if (!ipcHandlersRegistered) {
+    downloadManager = new DownloadManager()
+    // Pass a getter function so handlers can access mainWindow when it's ready
+    registerIpcHandlers(downloadManager, logger, () => mainWindow)
+    ipcHandlersRegistered = true
+  }
 
   createWindow()
 

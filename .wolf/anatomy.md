@@ -1,19 +1,19 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-03-30T16:44:52.826Z
-> Files: 169 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-03-30T20:56:36.295Z
+> Files: 171 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
 - `.DS_Store` (~4371 tok)
 - `.editorconfig` — Editor configuration (~42 tok)
-- `.eslintcache` (~147620 tok)
+- `.eslintcache` (~37201 tok)
 - `.gitignore` — Git ignore rules (~30 tok)
 - `.prettierignore` (~18 tok)
 - `.prettierrc.yaml` (~19 tok)
 - `CLAUDE.md` — OpenWolf (~800 tok)
 - `dev-server.log` (~1728 tok)
-- `electron-builder.yml` (~378 tok)
+- `electron-builder.yml` (~389 tok)
 - `electron.vite.config.mjs` (~109 tok)
 - `eslint.config.mjs` — ESLint flat configuration (~235 tok)
 - `LICENSE` — Project license (~3029 tok)
@@ -25,13 +25,13 @@
 - `TASK_18_MANUAL_TEST_CHECKLIST.md` — Task 18: Test Cleanup and Edge Cases - Manual Testing Checklist (~1910 tok)
 - `test-output.log` (~210 tok)
 - `TESTING_REPORT_TASKS_13-17.md` — Testing Report: Tasks 13-17 (Files Tab Integration & Testing) (~1526 tok)
-- `vitest.main.config.js` — /\*.test.js'], (~59 tok)
-- `vitest.renderer.config.js` — /_.test.{js,jsx}', 'tests/renderer/\*\*/_.test.{js,jsx}', 'tests/integration/\*_/_.test.{js,jsx}'], (~142 tok)
+- `vitest.main.config.js` — /*.test.js'], (~59 tok)
+- `vitest.renderer.config.js` — /*.test.{js,jsx}', (~149 tok)
 
 ## .claude/
 
-- `settings.json` (~441 tok)
-- `settings.local.json` (~541 tok)
+- `settings.json` (~442 tok)
+- `settings.local.json` (~646 tok)
 
 ## .claude/rules/
 
@@ -116,7 +116,7 @@
 - `2026-03-28-library-sort-search-folders.md` — Library Sort, Search & Folder Management — Implementation Plan (~7824 tok)
 - `2026-03-29-browser-media-entry-redesign.md` — Browser Media Entry Redesign Implementation Plan (~2313 tok)
 - `2026-03-29-browser-notes-panel.md` — Browser Notes Panel Implementation Plan (~10068 tok)
-- `2026-03-30-files-tab-implementation.md` — Files Tab Implementation Plan (~11409 tok)
+- `2026-03-30-files-tab-implementation.md` — Files Tab Implementation Plan (~11580 tok)
 
 ## docs/superpowers/specs/
 
@@ -128,15 +128,15 @@
 - `2026-03-28-library-sort-search-folders-design.md` — Library: Sort, Search & Folder Management (~1519 tok)
 - `2026-03-29-browser-media-entry-redesign.md` — Browser Tab Media Entry Redesign (~1430 tok)
 - `2026-03-29-browser-notes-panel-design.md` — Browser Notes Panel — Design Spec (~2008 tok)
-- `2026-03-30-files-tab-design.md` — Files Tab Design — Pully (~2882 tok)
+- `2026-03-30-files-tab-design.md` — Files Tab Design — Pully (~3169 tok)
 
 ## out/main/
 
-- `index.js` — electron: createLogger, writeEntry, info + 20 more (~26440 tok)
+- `index.js` — electron: createLogger, writeEntry, info + 20 more (~27800 tok)
 
 ## out/preload/
 
-- `index.js` — Declares electron (~1352 tok)
+- `index.js` — Declares electron (~1562 tok)
 
 ## out/renderer/
 
@@ -144,14 +144,16 @@
 
 ## out/renderer/assets/
 
-- `BrowserTab-BZfCwMan.js` — formatSize: PlaylistIcon, getBestFormats, DownloadButton + 10 more (~12453 tok)
-- `DebugTab-D-B_AnO3.js` — CATEGORIES: DebugTab (~2862 tok)
-- `index-DTWQGcpl.css` — tw-border-spacing-x: 0; (~11041 tok)
-- `index-tu3kAT8w.js` — **vite**mapDeps: getDefaultExportFromCjs, requireReactJsxRuntime_production, jsxProd + 16 more (~170265 tok)
-- `LibraryDetailPanel-CKCGJ6te.js` — SPEEDS: fmt, VideoPlayer (~8520 tok)
-- `LibraryTab-Cgkd7dBA.js` — SORT_CYCLE: LibraryToolbar, cycleSort, LibraryNotesPanel + 12 more (~10235 tok)
-- `NotesTab-D3gNqotw.js` — NotesFolderList: NotesChapterView, resolveFilePath, NotesTab + 3 more (~1935 tok)
-- `pageCapture-CFB4kwRE.js` — ok: unreachable, name, whitespace + 6 more (~139220 tok)
+- `BrowserTab-BsjvC0H9.js` — formatSize: PlaylistIcon, getBestFormats, DownloadButton + 12 more (~15644 tok)
+- `DebugTab-DY7cbmjT.js` — CATEGORIES: DebugTab (~2924 tok)
+- `FilesTab-b3NQ2mZF.js` — ChevronIcon: FileTree, loadRoots, expandFolder + 12 more (~3531 tok)
+- `index-C3ynoNPK.css` — tw-border-spacing-x: 0; (~11811 tok)
+- `index-CVc8jmo9.js` — __vite__mapDeps: getDefaultExportFromCjs, requireReactJsxRuntime_production, jsxProd + 16 more (~170989 tok)
+- `LibraryDetailPanel-CpFxo553.js` — SPEEDS: fmt, VideoPlayer (~9992 tok)
+- `LibraryNotesPanel-j5l_VJEl.js` — Declares LibraryNotesPanel (~377 tok)
+- `LibraryTab-CE6yJeLR.js` — SORT_CYCLE: LibraryToolbar, cycleSort, folderColor + 11 more (~10096 tok)
+- `NotesTab-BwY299oZ.js` — NotesFolderList: NotesChapterView, resolveFilePath, NotesTab + 3 more (~1935 tok)
+- `pageCapture-MLN3fYGV.js` — ok: unreachable, name, whitespace + 6 more (~139271 tok)
 
 ## scripts/
 
@@ -166,16 +168,16 @@
 
 - `adblock-manager.js` — Extra YouTube cosmetic selectors to supplement the prebuilt uBlock Origin lists. (~1073 tok)
 - `ai-client.js` — Call an LLM with a messages array. Returns the response text string. (~1399 tok)
-- `ai-summarizer.js` — Generate a summary for a video. Returns the summary string. (~1278 tok)
-- `auto-classifier.js` — Exports classifyVideo, \_resetEmbeddingCache, fetchProviderModels (~3244 tok)
-- `bookmarks-store.js` — Exports listBookmarks, addBookmark, removeBookmark (~373 tok)
+- `ai-summarizer.js` — Generate a summary for a video. Returns the summary string. (~1281 tok)
+- `auto-classifier.js` — Exports classifyVideo, _resetEmbeddingCache, fetchProviderModels (~3244 tok)
+- `bookmarks-store.js` — Exports listBookmarks, addBookmark, removeBookmark (~374 tok)
 - `config-store.js` — Exports readConfig, writeConfig (~461 tok)
 - `download-manager.js` — Exports DownloadManager (~2451 tok)
 - `file-processor.js` — Determine content type from file extension (~904 tok)
-- `folder-curator.js` — Main orchestrator: runs all 5 curation tasks sequentially. (~3777 tok)
-- `history-store.js` — Exports listHistory, upsertHistory (~519 tok)
-- `index.js` — API routes: GET (1 endpoints) (~1793 tok)
-- `ipc-handlers.js` — Exports registerIpcHandlers (~7480 tok)
+- `folder-curator.js` — Main orchestrator: runs all 5 curation tasks sequentially. (~3792 tok)
+- `history-store.js` — Exports listHistory, upsertHistory (~520 tok)
+- `index.js` — API routes: GET (1 endpoints) (~1894 tok)
+- `ipc-handlers.js` — Exports registerIpcHandlers (~7552 tok)
 - `logger.js` — Creates a logger instance that writes to daily JSON Lines files. (~1020 tok)
 - `metadata-store.js` — Exports readMetadataIndex, writeMetadataEntry, deleteMetadataEntry, moveMetadataEntry + 6 more (~1350 tok)
 - `notes-store.js` — Set the event emitter for notes events. (~3806 tok)
@@ -191,41 +193,41 @@
 
 ## src/renderer/src/
 
-- `App.jsx` — BrowserTab (~627 tok)
+- `App.jsx` — BrowserTab — uses useEffect (~627 tok)
 - `main.jsx` (~69 tok)
 
 ## src/renderer/src/assets/
 
 - `base.css` — Styles: 22 vars (~404 tok)
-- `main.css` — Styles: 3 rules (~17 tok)
+- `main.css` — Styles: 4 rules (~50 tok)
 
 ## src/renderer/src/components/
 
 - `BrowserNotesPanel.jsx` — BrowserNotesPanel (~431 tok)
-- `BrowserTab.jsx` — HOME — uses useRef, useState, useEffect, useCallback (~6708 tok)
+- `BrowserTab.jsx` — HOME — uses useRef, useState, useEffect, useCallback (~7146 tok)
 - `BrowserTabBar.jsx` — BrowserTabBar — uses useRef (~1025 tok)
-- `ChapterCard.jsx` — safeHostname — uses useState, useEffect (~2389 tok)
+- `ChapterCard.jsx` — safeHostname — uses useState, useEffect (~2480 tok)
 - `ContentViewer.jsx` — ContentViewer dispatches the right renderer based on: (~420 tok)
-- `DebugTab.jsx` — src/renderer/src/components/DebugTab.jsx (~2558 tok)
+- `DebugTab.jsx` — src/renderer/src/components/DebugTab.jsx (~2573 tok)
 - `DownloadRow.jsx` — STATUS_COLOR — uses useState (~817 tok)
-- `FileList.jsx` — FileIcon (~884 tok)
-- `FilesTab.jsx` — FilesTab with Remember button and folder import dialog (~1040 tok)
-- `FileTree.jsx` — ChevronIcon (~816 tok)
-- `FolderImportDialog.jsx` — FolderImportDialog - modal for confirming folder imports (~296 tok)
-- `IframePlayer.jsx` — IframePlayer embeds video content in iframe or webview (~628 tok)
+- `FileList.jsx` — FileIcon — uses useState, useEffect (~884 tok)
+- `FilesTab.jsx` — FilesTab (~953 tok)
+- `FileTree.jsx` — ChevronIcon — uses useState, useEffect (~816 tok)
+- `FolderImportDialog.jsx` — FolderImportDialog (~296 tok)
+- `IframePlayer.jsx` — IframePlayer embeds video content in iframe or webview (~627 tok)
 - `LibraryDetailPanel.jsx` — fmtDateTime (~2115 tok)
 - `LibraryNotesPanel.jsx` — LibraryNotesPanel (~391 tok)
-- `LibraryTab.jsx` — Stable color per folder name (derived from name hash so colors don't shift when folders are added) (~7733 tok)
+- `LibraryTab.jsx` — Stable color per folder name (derived from name hash so colors don't shift when folders are added) (~7821 tok)
 - `LibraryToolbar.jsx` — SORT_CYCLE (~1029 tok)
-- `LivePageView.jsx` — LivePageView fetches and renders a live page from a URL (~1155 tok)
-- `MarkdownPageView.jsx` — MarkdownPageView renders a markdown file (.md) with base64-embedded images (~1246 tok)
-- `MediaPanel.jsx` — formatSize — renders chart — uses useRef, useEffect, useState (~4214 tok)
+- `LivePageView.jsx` — LivePageView fetches and renders a live page from a URL (~1218 tok)
+- `MarkdownPageView.jsx` — MarkdownPageView renders a markdown file (.md) with base64-embedded images (~1308 tok)
+- `MediaPanel.jsx` — formatSize — renders chart — uses useRef, useEffect, useState (~4330 tok)
 - `NotesChapterView.jsx` — src/renderer/src/components/NotesChapterView.jsx (~818 tok)
 - `NotesFolderList.jsx` — src/renderer/src/components/NotesFolderList.jsx (~191 tok)
 - `NotesTab.jsx` — src/renderer/src/components/NotesTab.jsx (~874 tok)
 - `ProgressPanel.jsx` — ProgressPanel — uses useState, useEffect (~359 tok)
 - `ProgressPanel.test.jsx` — Mock DownloadRow to avoid complex rendering (~572 tok)
-- `SettingsPanel.jsx` — DEFAULT_MODELS — uses useState (~7011 tok)
+- `SettingsPanel.jsx` — DEFAULT_MODELS — uses useState (~7015 tok)
 - `SidePanel.jsx` — SidePanel — uses useState, useRef (~820 tok)
 - `SidePanel.test.jsx` — Stub heavy sub-components (~347 tok)
 - `TabBar.jsx` — TABS (~878 tok)
@@ -242,7 +244,7 @@
 
 ## src/renderer/src/store/
 
-- `app-store.js` — Exports useAppStore (~1485 tok)
+- `app-store.js` — Zustand store (~1487 tok)
 
 ## src/renderer/src/utils/
 
@@ -272,10 +274,10 @@
 
 ## tests/renderer/
 
-- `app-store.test.js` — Declares tabs (~1315 tok)
-- `BrowserNotesPanel.test.jsx` — tabId (~988 tok)
+- `app-store.test.js` — Declares tabs (~1323 tok)
+- `BrowserNotesPanel.test.jsx` — tabId (~997 tok)
 - `ChapterCard.test.jsx` — mockLibraryFiles (~4595 tok)
 - `MediaPanel.test.jsx` — vi.hoisted ensures mockState is available inside the vi.mock factory (~662 tok)
 - `NotesTab.test.jsx` — Use vi.hoisted so these refs are available inside the vi.mock factory (which is hoisted before imports) (~724 tok)
 - `SidePanel.test.jsx` — Mock the child components (~1200 tok)
-- `useIpcEvents.test.js` — Declares tabId (~1125 tok)
+- `useIpcEvents.test.js` — Declares tabId (~1128 tok)
