@@ -135,7 +135,8 @@ export const useAppStore = create((set) => ({
   bookmarks: [],
   setBookmarks: (bookmarks) => set({ bookmarks }),
   addBookmarkLocal: (bm) => set((s) => ({ bookmarks: [...s.bookmarks, bm] })),
-  removeBookmarkLocal: (url) => set((s) => ({ bookmarks: s.bookmarks.filter(b => b.url !== url) })),
+  removeBookmarkLocal: (url) =>
+    set((s) => ({ bookmarks: s.bookmarks.filter((b) => b.url !== url) })),
 
   // History
   historyUrls: [],
@@ -147,5 +148,14 @@ export const useAppStore = create((set) => ({
         return { historyUrls: s.historyUrls.map((h) => (h.url === url ? { ...h, title } : h)) }
       }
       return { historyUrls: [...s.historyUrls, { url, title }] }
-    })
+    }),
+
+  // File browser state
+  filesLastDir: null, // Path to last browsed folder
+  filesSideWidth: 320, // Right panel width (default 320px)
+  filesSideSplitPct: 60, // Preview/summary split (60% preview, 40% summary)
+
+  setFilesLastDir: (path) => set({ filesLastDir: path }),
+  setFilesSideWidth: (width) => set({ filesSideWidth: width }),
+  setFilesSideSplitPct: (pct) => set({ filesSideSplitPct: pct })
 }))
