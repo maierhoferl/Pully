@@ -63,12 +63,12 @@ Files are categorized by extension:
 
 ### Document Types (Converted to `.md`)
 
-| Extension | Handler | Output |
-|---|---|---|
-| `.pdf` | `@llamaindex/liteparse` | Extracted markdown |
-| `.docx`, `.docm`, `.doc`, `.odt`, `.rtf` | `officeparser` | Extracted markdown |
-| `.pptx`, `.pptm`, `.ppt`, `.odp` | `officeparser` | Extracted markdown |
-| `.xlsx`, `.xlsm`, `.xls`, `.ods` | `officeparser` | Extracted markdown |
+| Extension                                | Handler                 | Output             |
+| ---------------------------------------- | ----------------------- | ------------------ |
+| `.pdf`                                   | `@llamaindex/liteparse` | Extracted markdown |
+| `.docx`, `.docm`, `.doc`, `.odt`, `.rtf` | `officeparser`          | Extracted markdown |
+| `.pptx`, `.pptm`, `.ppt`, `.odp`         | `officeparser`          | Extracted markdown |
+| `.xlsx`, `.xlsm`, `.xls`, `.ods`         | `officeparser`          | Extracted markdown |
 
 These are extracted to `.md` files and stored in the Pully folder. The original file path is kept in metadata (`originalPath`) for native preview and file reveal-in-finder.
 
@@ -76,10 +76,10 @@ These are extracted to `.md` files and stored in the Pully folder. The original 
 
 Images and plain text are stored as reference files (no conversion):
 
-| Extension | Content Type | Storage |
-|---|---|---|
-| `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.bmp`, `.svg`, `.tiff`, `.heic`, `.ico`, `.avif` | `image` | `.ref` file (reference only) |
-| `.txt`, `.csv`, `.json`, `.xml`, `.yaml`, `.md`, `.html` | `text` | `.ref` file (reference only) |
+| Extension                                                                                   | Content Type | Storage                      |
+| ------------------------------------------------------------------------------------------- | ------------ | ---------------------------- |
+| `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.bmp`, `.svg`, `.tiff`, `.heic`, `.ico`, `.avif` | `image`      | `.ref` file (reference only) |
+| `.txt`, `.csv`, `.json`, `.xml`, `.yaml`, `.md`, `.html`                                    | `text`       | `.ref` file (reference only) |
 
 ### Unsupported
 
@@ -132,17 +132,20 @@ Other file types (e.g., `.exe`, `.dmg`, `.zip`, binaries) are greyed out and can
 ## State & Persistence
 
 **Local state** (FilesTab component):
+
 - `selectedPath` — currently selected file path
 - `currentFolder` — currently browsing folder path
 - `sideWidth` — right panel width (draggable, persisted to store)
 - `sideSplitPct` — preview/summary split ratio (draggable, persisted to store)
 
 **Persisted state** (Zustand):
+
 - `filesLastDir` — last browsed folder path (restored on tab re-open)
 - `filesSideWidth` — right panel width
 - `filesSideSplitPct` — preview/summary split
 
 **Filesystem helpers:**
+
 - New IPC handler `files:getLastDir()` — read from config
 - New IPC handler `files:setLastDir(path)` — persist to config
 
@@ -159,10 +162,12 @@ Shows native preview based on content type:
 **Images:** Native `<img>` element, aspect-ratio-fit
 
 **Documents (PDFs, DOCX, etc.):**
+
 - If `.md` file exists in pully folder (converted), show a **read-only markdown preview** (using existing markdown renderer)
 - **Metadata bar** below: original filename, import date, file size, original file path (click to reveal in Finder)
 
 **Text/Reference files:**
+
 - Show **read-only markdown preview** of the `.ref` file content
 - **Metadata bar:** original filename, import date, file size
 
@@ -184,13 +189,13 @@ Updated `isHelperFile` logic:
 
 ```javascript
 const isHelperFile = (fileName) => {
-  if (fileName === 'notes.md') return true;  // Folder-level notes file
-  if (fileName === '.pully.json') return true;
-  if (fileName === '.gitignore') return true;
-  if (/\.thumb(\.[a-z]+)?$/i.test(fileName)) return true;  // Thumbnails
-  if (/\.nfo$/i.test(fileName)) return true;  // Info files
-  return false;
-};
+  if (fileName === 'notes.md') return true // Folder-level notes file
+  if (fileName === '.pully.json') return true
+  if (fileName === '.gitignore') return true
+  if (/\.thumb(\.[a-z]+)?$/i.test(fileName)) return true // Thumbnails
+  if (/\.nfo$/i.test(fileName)) return true // Info files
+  return false
+}
 ```
 
 This allows imported documents (stored as `.md`) to appear in the library listing, while keeping internal helper files hidden.
@@ -222,6 +227,7 @@ No cross-tab concerns.
 ## Testing Checklist
 
 **File Selection & Navigation:**
+
 - [ ] Folder tree is collapsible and navigable
 - [ ] Breadcrumb updates as you navigate
 - [ ] Last folder is restored on tab re-open
@@ -229,6 +235,7 @@ No cross-tab concerns.
 - [ ] Files already in library show ✓ badge
 
 **Single File Import:**
+
 - [ ] PDF → extracted `.md` + reference metadata
 - [ ] DOCX → extracted `.md` + reference metadata
 - [ ] Image → `.ref` file + metadata
@@ -237,6 +244,7 @@ No cross-tab concerns.
 - [ ] File deletion via right panel works
 
 **Folder Import:**
+
 - [ ] Folder with ≤10 files: imports without dialog
 - [ ] Folder with >10 files: shows confirmation dialog
 - [ ] Cancel dialog prevents import
@@ -244,6 +252,7 @@ No cross-tab concerns.
 - [ ] All imported files appear in Library
 
 **Right Panel Preview:**
+
 - [ ] Images render natively
 - [ ] Documents show markdown preview
 - [ ] AI summary loads and displays
@@ -251,11 +260,13 @@ No cross-tab concerns.
 - [ ] Reveal in Finder opens the original file location
 
 **Metadata & Sync:**
+
 - [ ] Library tab shows all imported files
 - [ ] Metadata-index.json has correct entries
 - [ ] Exported markdown content is AI-friendly (no binary junk)
 
 **Edge Cases:**
+
 - [ ] Unsupported file types are greyed out
 - [ ] File with no extension is handled gracefully
 - [ ] Very large PDFs don't freeze the app
@@ -266,27 +277,29 @@ No cross-tab concerns.
 
 ## Critical Files to Modify
 
-| File | Role | Changes |
-|---|---|---|
-| `src/renderer/src/components/FilesTab.jsx` | New tab component | Create with tree + file list + detail panel |
-| `src/renderer/src/components/FileTree.jsx` | New sub-component | Recursive folder tree, collapsible |
-| `src/renderer/src/components/FileList.jsx` | New sub-component | File listing for current folder |
-| `src/renderer/src/store/app-store.js` | State | Add `filesLastDir`, `filesSideWidth`, `filesSideSplitPct` |
-| `src/preload/index.js` | IPC bridge | Expose new file handlers |
-| `src/main/ipc-handlers.js` | IPC handlers | Add `files:*` handlers |
-| `src/main/file-processor.js` | New module | Orchestrate LiteParse + officeparser extraction |
-| `src/renderer/src/components/TabBar.jsx` | Tab list | Add Files tab to `TABS` constant |
-| `src/renderer/src/components/LibraryDetailPanel.jsx` | Existing | Adapt to show `originalPath` preview |
-| `src/main/ipc-handlers.js` | Existing | Update `isHelperFile` to allow `.md` imports |
+| File                                                 | Role              | Changes                                                   |
+| ---------------------------------------------------- | ----------------- | --------------------------------------------------------- |
+| `src/renderer/src/components/FilesTab.jsx`           | New tab component | Create with tree + file list + detail panel               |
+| `src/renderer/src/components/FileTree.jsx`           | New sub-component | Recursive folder tree, collapsible                        |
+| `src/renderer/src/components/FileList.jsx`           | New sub-component | File listing for current folder                           |
+| `src/renderer/src/store/app-store.js`                | State             | Add `filesLastDir`, `filesSideWidth`, `filesSideSplitPct` |
+| `src/preload/index.js`                               | IPC bridge        | Expose new file handlers                                  |
+| `src/main/ipc-handlers.js`                           | IPC handlers      | Add `files:*` handlers                                    |
+| `src/main/file-processor.js`                         | New module        | Orchestrate LiteParse + officeparser extraction           |
+| `src/renderer/src/components/TabBar.jsx`             | Tab list          | Add Files tab to `TABS` constant                          |
+| `src/renderer/src/components/LibraryDetailPanel.jsx` | Existing          | Adapt to show `originalPath` preview                      |
+| `src/main/ipc-handlers.js`                           | Existing          | Update `isHelperFile` to allow `.md` imports              |
 
 ---
 
 ## System Dependencies
 
 **Optional:**
+
 - `@llamaindex/liteparse` (already npm package, no system deps for PDFs)
 
 **Required:**
+
 - `officeparser` (pure Node.js, handles DOCX/PPTX/XLSX/ODT/RTF)
 
 ---

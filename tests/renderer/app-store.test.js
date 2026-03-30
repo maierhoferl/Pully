@@ -111,7 +111,10 @@ describe('useAppStore', () => {
       const tabId = result.current.activeBrowserTabId
 
       act(() => {
-        result.current.updateBrowserTab(tabId, { title: 'Updated Title', browserUrl: 'https://new.com' })
+        result.current.updateBrowserTab(tabId, {
+          title: 'Updated Title',
+          browserUrl: 'https://new.com'
+        })
       })
 
       const tab = result.current.browserTabs.find((t) => t.id === tabId)

@@ -59,7 +59,7 @@ export default function BrowserTab() {
   const [suggestionIndex, setSuggestionIndex] = useState(-1)
   const suggestionsTimeoutRef = useRef(null)
   const scanDebounceRefs = useRef({}) // Map<tabId, timeoutId>
-  const currentUrlRefs = useRef({})   // Map<tabId, string>
+  const currentUrlRefs = useRef({}) // Map<tabId, string>
 
   const {
     browserTabs,
@@ -95,14 +95,20 @@ export default function BrowserTab() {
 
   // Load persisted tabs on mount
   useEffect(() => {
-    window.api.browserTabsRead().then((data) => {
-      if (!data?.tabs?.length) return
-      const { setActiveBrowserTab: setActive, reorderBrowserTabs } = useAppStore.getState()
-      // All tabs start suspended; active tab will be unsuspended by the webview mount
-      const restored = data.tabs.map((t) => ({ ...t, suspended: t.id !== data.activeBrowserTabId }))
-      reorderBrowserTabs(restored)
-      setActive(data.activeBrowserTabId)
-    }).catch(() => {})
+    window.api
+      .browserTabsRead()
+      .then((data) => {
+        if (!data?.tabs?.length) return
+        const { setActiveBrowserTab: setActive, reorderBrowserTabs } = useAppStore.getState()
+        // All tabs start suspended; active tab will be unsuspended by the webview mount
+        const restored = data.tabs.map((t) => ({
+          ...t,
+          suspended: t.id !== data.activeBrowserTabId
+        }))
+        reorderBrowserTabs(restored)
+        setActive(data.activeBrowserTabId)
+      })
+      .catch(() => {})
   }, [])
 
   // Suspension timer: suspend tabs idle > 30 min
@@ -152,132 +158,138 @@ export default function BrowserTab() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [])
 
-  const scanPage = useCallback(
-    async (tabId, pageUrl) => {
-      const { updateBrowserTab: update } = useAppStore.getState()
-      try {
-        const wv = webviewRefs.current[tabId]
-        if (!wv) return
-        if (pageUrl && pageUrl.includes('youtube.com')) {
-          try {
-            const pageVideos = await wv.executeJavaScript(YOUTUBE_EXTRACT_SCRIPT)
-            if (pageVideos && pageVideos.length > 0) {
-              update(tabId, { mediaScanResults: pageVideos, mediaScanLoading: false })
-              return
-            }
-          } catch (_) {}
-        }
-        const results = await window.api.extractInfo(pageUrl)
-        update(tabId, { mediaScanResults: results, mediaScanLoading: false })
-      } catch {
-        update(tabId, { mediaScanResults: [], mediaScanLoading: false })
+  const scanPage = useCallback(async (tabId, pageUrl) => {
+    const { updateBrowserTab: update } = useAppStore.getState()
+    try {
+      const wv = webviewRefs.current[tabId]
+      if (!wv) return
+      if (pageUrl && pageUrl.includes('youtube.com')) {
+        try {
+          const pageVideos = await wv.executeJavaScript(YOUTUBE_EXTRACT_SCRIPT)
+          if (pageVideos && pageVideos.length > 0) {
+            update(tabId, { mediaScanResults: pageVideos, mediaScanLoading: false })
+            return
+          }
+        } catch (_) {}
       }
-    },
-    []
-  )
+      const results = await window.api.extractInfo(pageUrl)
+      update(tabId, { mediaScanResults: results, mediaScanLoading: false })
+    } catch {
+      update(tabId, { mediaScanResults: [], mediaScanLoading: false })
+    }
+  }, [])
 
   // Attach webview event listeners when a new (non-suspended) webview mounts
-  const attachWebviewEvents = useCallback((tabId, wv) => {
-    if (!wv || webviewRefs.current[tabId] === wv) return
-    webviewRefs.current[tabId] = wv
+  const attachWebviewEvents = useCallback(
+    (tabId, wv) => {
+      if (!wv || webviewRefs.current[tabId] === wv) return
+      webviewRefs.current[tabId] = wv
 
-    const { updateBrowserTab: update, upsertHistoryLocal: upsertHistory } = useAppStore.getState()
+      const { updateBrowserTab: update, upsertHistoryLocal: upsertHistory } = useAppStore.getState()
 
-    function updateNav() {
-      update(tabId, {
-        browserUrl: wv.getURL(),
-        canGoBack: wv.canGoBack(),
-        canGoForward: wv.canGoForward()
-      })
-      const { activeBrowserTabId: activeId } = useAppStore.getState()
-      if (tabId === activeId) setInputUrl(wv.getURL())
-    }
+      function updateNav() {
+        update(tabId, {
+          browserUrl: wv.getURL(),
+          canGoBack: wv.canGoBack(),
+          canGoForward: wv.canGoForward()
+        })
+        const { activeBrowserTabId: activeId } = useAppStore.getState()
+        if (tabId === activeId) setInputUrl(wv.getURL())
+      }
 
-    function onNavigate() { updateNav() }
+      function onNavigate() {
+        updateNav()
+      }
 
-    function onInPageNavigate() {
-      const url = wv.getURL()
-      updateNav()
-      if (url !== currentUrlRefs.current[tabId]) {
+      function onInPageNavigate() {
+        const url = wv.getURL()
+        updateNav()
+        if (url !== currentUrlRefs.current[tabId]) {
+          clearTimeout(scanDebounceRefs.current[tabId])
+          scanDebounceRefs.current[tabId] = setTimeout(() => {
+            currentUrlRefs.current[tabId] = url
+            update(tabId, { browserUrl: url, mediaScanLoading: true, mediaScanResults: null })
+            scanPage(tabId, url)
+          }, 500)
+        }
+      }
+
+      function onStartLoading() {
         clearTimeout(scanDebounceRefs.current[tabId])
-        scanDebounceRefs.current[tabId] = setTimeout(() => {
-          currentUrlRefs.current[tabId] = url
-          update(tabId, { browserUrl: url, mediaScanLoading: true, mediaScanResults: null })
-          scanPage(tabId, url)
-        }, 500)
+        update(tabId, { mediaScanLoading: true, mediaScanResults: null })
       }
-    }
 
-    function onStartLoading() {
-      clearTimeout(scanDebounceRefs.current[tabId])
-      update(tabId, { mediaScanLoading: true, mediaScanResults: null })
-    }
+      function onFinishLoad() {
+        const url = wv.getURL()
+        const title = wv.getTitle()
+        currentUrlRefs.current[tabId] = url
+        update(tabId, {
+          browserUrl: url,
+          title: title || 'New Tab',
+          canGoBack: wv.canGoBack(),
+          canGoForward: wv.canGoForward()
+        })
+        const { activeBrowserTabId: activeId } = useAppStore.getState()
+        if (tabId === activeId) setInputUrl(url)
 
-    function onFinishLoad() {
-      const url = wv.getURL()
-      const title = wv.getTitle()
-      currentUrlRefs.current[tabId] = url
-      update(tabId, {
-        browserUrl: url,
-        title: title || 'New Tab',
-        canGoBack: wv.canGoBack(),
-        canGoForward: wv.canGoForward()
-      })
-      const { activeBrowserTabId: activeId } = useAppStore.getState()
-      if (tabId === activeId) setInputUrl(url)
+        window.api.upsertHistory({ url, title }).catch(() => {})
+        upsertHistory({ url, title })
+        scanPage(tabId, url)
 
-      window.api.upsertHistory({ url, title }).catch(() => {})
-      upsertHistory({ url, title })
-      scanPage(tabId, url)
-
-      if (url.includes('youtube.com')) {
+        if (url.includes('youtube.com')) {
+          wv.executeJavaScript(
+            `localStorage.setItem('yt-player-autoplay-preference', JSON.stringify({data:"false",creation:Date.now()}))`
+          ).catch(() => {})
+        }
         wv.executeJavaScript(
-          `localStorage.setItem('yt-player-autoplay-preference', JSON.stringify({data:"false",creation:Date.now()}))`
+          `document.addEventListener('contextmenu', (e) => { if (e.target.tagName === 'VIDEO' || e.target.closest('video')) { e.preventDefault() } }, true)`
         ).catch(() => {})
-      }
-      wv.executeJavaScript(
-        `document.addEventListener('contextmenu', (e) => { if (e.target.tagName === 'VIDEO' || e.target.closest('video')) { e.preventDefault() } }, true)`
-      ).catch(() => {})
 
-      // Capture favicon
-      wv.executeJavaScript(`
+        // Capture favicon
+        wv.executeJavaScript(
+          `
         (function() {
           const link = document.querySelector('link[rel~="icon"]');
           return link ? link.href : null;
         })()
-      `).then((faviconUrl) => {
-        if (faviconUrl) update(tabId, { favicon: faviconUrl })
-      }).catch(() => {})
-    }
+      `
+        )
+          .then((faviconUrl) => {
+            if (faviconUrl) update(tabId, { favicon: faviconUrl })
+          })
+          .catch(() => {})
+      }
 
-    function onContextMenu(e) {
-      const { mediaType, srcURL, x, y } = e.params
-      if (mediaType !== 'video' || !srcURL) return
-      const rect = wv.getBoundingClientRect()
-      setContextMenu({ x: rect.left + x, y: rect.top + y, srcURL })
-    }
+      function onContextMenu(e) {
+        const { mediaType, srcURL, x, y } = e.params
+        if (mediaType !== 'video' || !srcURL) return
+        const rect = wv.getBoundingClientRect()
+        setContextMenu({ x: rect.left + x, y: rect.top + y, srcURL })
+      }
 
-    const intervalId = setInterval(() => {
-      const url = wv.getURL()
-      if (url && url !== 'about:blank') scanPage(tabId, url)
-    }, RESCAN_INTERVAL_MS)
+      const intervalId = setInterval(() => {
+        const url = wv.getURL()
+        if (url && url !== 'about:blank') scanPage(tabId, url)
+      }, RESCAN_INTERVAL_MS)
 
-    wv.addEventListener('did-navigate', onNavigate)
-    wv.addEventListener('did-navigate-in-page', onInPageNavigate)
-    wv.addEventListener('did-start-loading', onStartLoading)
-    wv.addEventListener('did-finish-load', onFinishLoad)
-    wv.addEventListener('context-menu', onContextMenu)
+      wv.addEventListener('did-navigate', onNavigate)
+      wv.addEventListener('did-navigate-in-page', onInPageNavigate)
+      wv.addEventListener('did-start-loading', onStartLoading)
+      wv.addEventListener('did-finish-load', onFinishLoad)
+      wv.addEventListener('context-menu', onContextMenu)
 
-    wv._pullyCleanup = () => {
-      wv.removeEventListener('did-navigate', onNavigate)
-      wv.removeEventListener('did-navigate-in-page', onInPageNavigate)
-      wv.removeEventListener('did-start-loading', onStartLoading)
-      wv.removeEventListener('did-finish-load', onFinishLoad)
-      wv.removeEventListener('context-menu', onContextMenu)
-      clearTimeout(scanDebounceRefs.current[tabId])
-      clearInterval(intervalId)
-    }
-  }, [scanPage])
+      wv._pullyCleanup = () => {
+        wv.removeEventListener('did-navigate', onNavigate)
+        wv.removeEventListener('did-navigate-in-page', onInPageNavigate)
+        wv.removeEventListener('did-start-loading', onStartLoading)
+        wv.removeEventListener('did-finish-load', onFinishLoad)
+        wv.removeEventListener('context-menu', onContextMenu)
+        clearTimeout(scanDebounceRefs.current[tabId])
+        clearInterval(intervalId)
+      }
+    },
+    [scanPage]
+  )
 
   // Cleanup webview refs for removed/suspended tabs
   useEffect(() => {
@@ -314,7 +326,11 @@ export default function BrowserTab() {
   }, [bookmarkPanelOpen])
 
   useEffect(() => {
-    if (suggestions.length > 0 && inputRef.current && !inputRef.current.value.match(/^https?:\/\//)) {
+    if (
+      suggestions.length > 0 &&
+      inputRef.current &&
+      !inputRef.current.value.match(/^https?:\/\//)
+    ) {
       const firstUrl = suggestions[0].url
       inputRef.current.value = firstUrl
       const typed = inputUrl
@@ -326,7 +342,11 @@ export default function BrowserTab() {
 
   function handleContextDownload(srcURL) {
     let title
-    try { title = new URL(srcURL).hostname } catch { title = 'video' }
+    try {
+      title = new URL(srcURL).hostname
+    } catch {
+      title = 'video'
+    }
     window.api.addDownload(srcURL, 'best', title, { url: srcURL })
     setContextMenu(null)
   }
@@ -378,7 +398,9 @@ export default function BrowserTab() {
       const lower = value.toLowerCase()
       setSuggestions(
         historyUrls
-          .filter((h) => h.url.toLowerCase().includes(lower) || h.title.toLowerCase().includes(lower))
+          .filter(
+            (h) => h.url.toLowerCase().includes(lower) || h.title.toLowerCase().includes(lower)
+          )
           .slice(0, 8)
       )
       setSuggestionIndex(-1)
@@ -390,31 +412,49 @@ export default function BrowserTab() {
 
   function handleUrlInputKeyDown(e) {
     if (suggestions.length === 0) {
-      if (e.key === 'Enter') { navigate(inputUrl); setSuggestions([]) }
+      if (e.key === 'Enter') {
+        navigate(inputUrl)
+        setSuggestions([])
+      }
       return
     }
     switch (e.key) {
-      case 'ArrowDown': e.preventDefault(); setSuggestionIndex((p) => (p + 1) % suggestions.length); break
-      case 'ArrowUp': e.preventDefault(); setSuggestionIndex((p) => (p - 1 + suggestions.length) % suggestions.length); break
+      case 'ArrowDown':
+        e.preventDefault()
+        setSuggestionIndex((p) => (p + 1) % suggestions.length)
+        break
+      case 'ArrowUp':
+        e.preventDefault()
+        setSuggestionIndex((p) => (p - 1 + suggestions.length) % suggestions.length)
+        break
       case 'Enter':
         e.preventDefault()
         navigate(suggestionIndex >= 0 ? suggestions[suggestionIndex].url : inputUrl)
         setSuggestions([])
         break
-      case 'Escape': setSuggestions([]); setSuggestionIndex(-1); break
-      default: break
+      case 'Escape':
+        setSuggestions([])
+        setSuggestionIndex(-1)
+        break
+      default:
+        break
     }
   }
 
   function handleUrlInputBlur() {
-    suggestionsTimeoutRef.current = setTimeout(() => { setSuggestions([]); setSuggestionIndex(-1) }, 150)
+    suggestionsTimeoutRef.current = setTimeout(() => {
+      setSuggestions([])
+      setSuggestionIndex(-1)
+    }, 150)
   }
 
   function handleUrlInputFocus() {
     if (suggestionsTimeoutRef.current) clearTimeout(suggestionsTimeoutRef.current)
     if (inputUrl.trim().length > 0) {
       const lower = inputUrl.toLowerCase()
-      const matches = historyUrls.filter((h) => h.url.toLowerCase().includes(lower) || h.title.toLowerCase().includes(lower)).slice(0, 8)
+      const matches = historyUrls
+        .filter((h) => h.url.toLowerCase().includes(lower) || h.title.toLowerCase().includes(lower))
+        .slice(0, 8)
       if (matches.length > 0) setSuggestions(matches)
     }
   }
@@ -434,9 +474,16 @@ export default function BrowserTab() {
           return { title: getMetaContent('og:title') || document.title, description: getMetaContent('og:description') || getMetaContent('description'), thumbnailUrl: getMetaContent('og:image'), siteName: getMetaContent('og:site_name') || new URL(location.href).hostname, url: location.href, page: pageText }
         })()
       `)
-      await window.api.rememberMedia({ title: meta.title, uploader: meta.siteName, description: meta.description, thumbnailUrl: meta.thumbnailUrl, url: meta.url, contentType: 'page', page: meta.page })
-    } catch {
-    }
+      await window.api.rememberMedia({
+        title: meta.title,
+        uploader: meta.siteName,
+        description: meta.description,
+        thumbnailUrl: meta.thumbnailUrl,
+        url: meta.url,
+        contentType: 'page',
+        page: meta.page
+      })
+    } catch {}
   }, [activeBrowserTabId])
 
   const handleDownloadSite = useCallback(async () => {
@@ -445,21 +492,26 @@ export default function BrowserTab() {
     try {
       const { title, siteName, url, markdown } = await captureFromWebview(wv)
       await window.api.savePage({ title, siteName, url, markdown, contentType: 'page' })
-    } catch {
-    }
+    } catch {}
   }, [activeBrowserTabId])
 
   function handleSideDragStart(e) {
-    e.preventDefault(); e.stopPropagation()
-    const startX = e.clientX; const startWidth = sideWidth
+    e.preventDefault()
+    e.stopPropagation()
+    const startX = e.clientX
+    const startWidth = sideWidth
     const wv = webviewRefs.current[activeBrowserTabId]
     if (wv) wv.style.pointerEvents = 'none'
-    function onMove(ev) { setSideWidth(Math.max(1, startWidth + (startX - ev.clientX))) }
+    function onMove(ev) {
+      setSideWidth(Math.max(1, startWidth + (startX - ev.clientX)))
+    }
     function onUp() {
-      window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp)
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
       if (wv) wv.style.pointerEvents = 'auto'
     }
-    window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp)
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
   }
 
   const isBookmarked = bookmarks.some((b) => b.url === activeTab?.browserUrl)
@@ -472,9 +524,22 @@ export default function BrowserTab() {
           style={{ left: contextMenu.x, top: contextMenu.y }}
           onMouseDown={(e) => e.stopPropagation()}
         >
-          <button className="w-full text-left px-3 py-1.5 font-bold text-white hover:bg-blue-600" onClick={() => handleContextDownload(contextMenu.srcURL)}>Download Video</button>
+          <button
+            className="w-full text-left px-3 py-1.5 font-bold text-white hover:bg-blue-600"
+            onClick={() => handleContextDownload(contextMenu.srcURL)}
+          >
+            Download Video
+          </button>
           <hr className="border-gray-600 my-1" />
-          <button className="w-full text-left px-3 py-1.5 text-gray-300 hover:bg-gray-700" onClick={() => { navigator.clipboard.writeText(contextMenu.srcURL); setContextMenu(null) }}>Copy Video URL</button>
+          <button
+            className="w-full text-left px-3 py-1.5 text-gray-300 hover:bg-gray-700"
+            onClick={() => {
+              navigator.clipboard.writeText(contextMenu.srcURL)
+              setContextMenu(null)
+            }}
+          >
+            Copy Video URL
+          </button>
         </div>
       )}
 
@@ -483,16 +548,51 @@ export default function BrowserTab() {
 
       {/* Navigation bar */}
       <div className="flex items-center gap-1 px-2 py-1 bg-gray-900 border-b border-gray-700">
-        <button onClick={() => webviewRefs.current[activeBrowserTabId]?.goBack()} disabled={!activeTab?.canGoBack} className="p-1 rounded text-gray-400 hover:text-white disabled:opacity-30 hover:bg-gray-700">←</button>
-        <button onClick={() => webviewRefs.current[activeBrowserTabId]?.goForward()} disabled={!activeTab?.canGoForward} className="p-1 rounded text-gray-400 hover:text-white disabled:opacity-30 hover:bg-gray-700">→</button>
-        <button onClick={toggleBookmark} className="p-1 rounded text-gray-400 hover:text-white hover:bg-gray-700 text-lg" title={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}>{isBookmarked ? '★' : '☆'}</button>
-        <button onClick={() => setBookmarkPanelOpen(!bookmarkPanelOpen)} className="p-1 rounded text-gray-400 hover:text-white hover:bg-gray-700" title="View bookmarks">⊟</button>
+        <button
+          onClick={() => webviewRefs.current[activeBrowserTabId]?.goBack()}
+          disabled={!activeTab?.canGoBack}
+          className="p-1 rounded text-gray-400 hover:text-white disabled:opacity-30 hover:bg-gray-700"
+        >
+          ←
+        </button>
+        <button
+          onClick={() => webviewRefs.current[activeBrowserTabId]?.goForward()}
+          disabled={!activeTab?.canGoForward}
+          className="p-1 rounded text-gray-400 hover:text-white disabled:opacity-30 hover:bg-gray-700"
+        >
+          →
+        </button>
+        <button
+          onClick={toggleBookmark}
+          className="p-1 rounded text-gray-400 hover:text-white hover:bg-gray-700 text-lg"
+          title={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
+        >
+          {isBookmarked ? '★' : '☆'}
+        </button>
+        <button
+          onClick={() => setBookmarkPanelOpen(!bookmarkPanelOpen)}
+          className="p-1 rounded text-gray-400 hover:text-white hover:bg-gray-700"
+          title="View bookmarks"
+        >
+          ⊟
+        </button>
         <div className="flex-1 relative">
-          <form onSubmit={(e) => { e.preventDefault(); navigate(inputUrl); setSuggestions([]) }} className="w-full">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              navigate(inputUrl)
+              setSuggestions([])
+            }}
+            className="w-full"
+          >
             <input
-              ref={inputRef} type="text" value={inputUrl}
-              onChange={handleUrlInputChange} onKeyDown={handleUrlInputKeyDown}
-              onFocus={handleUrlInputFocus} onBlur={handleUrlInputBlur}
+              ref={inputRef}
+              type="text"
+              value={inputUrl}
+              onChange={handleUrlInputChange}
+              onKeyDown={handleUrlInputKeyDown}
+              onFocus={handleUrlInputFocus}
+              onBlur={handleUrlInputBlur}
               className="w-full bg-gray-800 text-white text-sm px-3 py-1 rounded border border-gray-600 focus:outline-none focus:border-blue-500"
               placeholder="Enter URL or search..."
             />
@@ -500,7 +600,11 @@ export default function BrowserTab() {
           {suggestions.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-600 rounded shadow-lg z-40 max-h-60 overflow-y-auto">
               {suggestions.map((s, idx) => (
-                <div key={idx} onMouseDown={() => handleBookmarkClick(s.url)} className={`px-3 py-2 cursor-pointer text-sm ${idx === suggestionIndex ? 'bg-blue-600' : 'hover:bg-gray-700'}`}>
+                <div
+                  key={idx}
+                  onMouseDown={() => handleBookmarkClick(s.url)}
+                  className={`px-3 py-2 cursor-pointer text-sm ${idx === suggestionIndex ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
+                >
                   <div className="text-white truncate">{s.title || s.url}</div>
                   <div className="text-gray-400 text-xs truncate">{s.url}</div>
                 </div>
@@ -517,13 +621,27 @@ export default function BrowserTab() {
             <div className="px-4 py-3 text-gray-400 text-sm">No bookmarks yet</div>
           ) : (
             bookmarks.map((bookmark, idx) => (
-              <div key={idx} className="flex items-center gap-2 px-3 py-2 hover:bg-gray-700 cursor-pointer group border-b border-gray-700 last:border-b-0" onMouseDown={() => handleBookmarkClick(bookmark.url)}>
+              <div
+                key={idx}
+                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-700 cursor-pointer group border-b border-gray-700 last:border-b-0"
+                onMouseDown={() => handleBookmarkClick(bookmark.url)}
+              >
                 <span className="text-lg flex-shrink-0">🔖</span>
                 <div className="flex-1 min-w-0">
                   <div className="text-white text-sm truncate">{bookmark.title}</div>
                   <div className="text-gray-400 text-xs truncate">{bookmark.url}</div>
                 </div>
-                <button onClick={(e) => { e.stopPropagation(); window.api.removeBookmark(bookmark.url).catch(() => {}); removeBookmarkLocal(bookmark.url) }} className="hidden group-hover:block text-gray-400 hover:text-red-400 flex-shrink-0" title="Remove bookmark">✕</button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    window.api.removeBookmark(bookmark.url).catch(() => {})
+                    removeBookmarkLocal(bookmark.url)
+                  }}
+                  className="hidden group-hover:block text-gray-400 hover:text-red-400 flex-shrink-0"
+                  title="Remove bookmark"
+                >
+                  ✕
+                </button>
               </div>
             ))
           )}
@@ -534,22 +652,32 @@ export default function BrowserTab() {
       <div className="flex flex-1 min-h-0 relative">
         {/* Render one webview per non-suspended tab */}
         <div className="flex-1 min-w-0 relative">
-          {browserTabs.filter((t) => !t.suspended).map((tab) => (
-            <webview
-              key={tab.id}
-              ref={(el) => { if (el) attachWebviewEvents(tab.id, el) }}
-              src={tab.browserUrl || HOME}
-              partition="persist:main"
-              allowpopups="true"
-              style={{
-                position: 'absolute', inset: 0,
-                display: tab.id === activeBrowserTabId ? 'flex' : 'none',
-                height: '100%', width: '100%'
-              }}
-            />
-          ))}
+          {browserTabs
+            .filter((t) => !t.suspended)
+            .map((tab) => (
+              <webview
+                key={tab.id}
+                ref={(el) => {
+                  if (el) attachWebviewEvents(tab.id, el)
+                }}
+                src={tab.browserUrl || HOME}
+                partition="persist:main"
+                allowpopups="true"
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: tab.id === activeBrowserTabId ? 'flex' : 'none',
+                  height: '100%',
+                  width: '100%'
+                }}
+              />
+            ))}
         </div>
-        <div role="separator" className="w-1 bg-gray-800 hover:bg-blue-600 cursor-col-resize flex-shrink-0 flex items-center justify-center transition-colors" onMouseDown={handleSideDragStart}>
+        <div
+          role="separator"
+          className="w-1 bg-gray-800 hover:bg-blue-600 cursor-col-resize flex-shrink-0 flex items-center justify-center transition-colors"
+          onMouseDown={handleSideDragStart}
+        >
           <div className="h-6 w-0.5 bg-gray-600 rounded pointer-events-none" />
         </div>
         <div style={{ width: sideWidth }} className="flex-shrink-0 h-full">

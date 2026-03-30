@@ -27,7 +27,7 @@ export function addBookmark(data, bookmarksPath) {
   const bookmarks = readBookmarksFile(p)
 
   // Avoid duplicates: remove if URL already exists, then add
-  const filtered = bookmarks.filter(b => b.url !== data.url)
+  const filtered = bookmarks.filter((b) => b.url !== data.url)
   const newBookmark = {
     url: data.url,
     title: data.title || '',
@@ -43,6 +43,6 @@ export function addBookmark(data, bookmarksPath) {
 export function removeBookmark(url, bookmarksPath) {
   const p = bookmarksPath || defaultPath()
   const bookmarks = readBookmarksFile(p)
-  const filtered = bookmarks.filter(b => b.url !== url)
+  const filtered = bookmarks.filter((b) => b.url !== url)
   fs.writeFileSync(p, JSON.stringify(filtered, null, 2))
 }

@@ -85,7 +85,8 @@ contextBridge.exposeInMainWorld('api', {
     setLastDir: (dirPath) => ipcRenderer.invoke('files:setLastDir', dirPath),
     rememberFile: (filePath) => ipcRenderer.invoke('files:rememberFile', filePath),
     rememberFolder: (folderPath) => ipcRenderer.invoke('files:rememberFolder', folderPath),
-    isFileRemembered: (filePath) => ipcRenderer.invoke('files:isFileRemembered', filePath)
+    isFileRemembered: (filePath) => ipcRenderer.invoke('files:isFileRemembered', filePath),
+    checkOriginalExists: (path) => ipcRenderer.invoke('files:checkOriginalExists', path)
   },
 
   // Generic on() method for subscribing to any IPC event

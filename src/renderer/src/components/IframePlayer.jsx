@@ -46,8 +46,7 @@ export function IframePlayer({ url, onClose }) {
   }
 
   // Check if this is an embed URL (YouTube or Vimeo)
-  const isEmbedUrl =
-    embedUrl.includes('youtube.com/embed') || embedUrl.includes('player.vimeo.com')
+  const isEmbedUrl = embedUrl.includes('youtube.com/embed') || embedUrl.includes('player.vimeo.com')
 
   return (
     <div className="w-full flex flex-col gap-2">

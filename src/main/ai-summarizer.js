@@ -20,7 +20,9 @@ export async function generateSummary(filePath, metadata, config) {
     const { aiProvider, aiApiKey, defaultSummaryPrompt, outputFolder } = config
     const folderPath = path.dirname(filePath)
     const customPromptPath = path.join(folderPath, 'summary-prompt.md')
-    const agentCommandPath = outputFolder ? path.join(outputFolder, '.agent', 'commands', 'summarize.md') : null
+    const agentCommandPath = outputFolder
+      ? path.join(outputFolder, '.agent', 'commands', 'summarize.md')
+      : null
 
     let prompt =
       defaultSummaryPrompt ||

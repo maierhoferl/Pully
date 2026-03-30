@@ -225,9 +225,7 @@ export function SettingsPanel() {
                 </label>
                 <select
                   value={local.searchEngine || 'google'}
-                  onChange={(e) =>
-                    setLocal((c) => ({ ...c, searchEngine: e.target.value }))
-                  }
+                  onChange={(e) => setLocal((c) => ({ ...c, searchEngine: e.target.value }))}
                   className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-700 focus:outline-none focus:border-indigo-600"
                 >
                   <option value="google">Google</option>
@@ -290,9 +288,7 @@ export function SettingsPanel() {
                   {curationRunning ? 'Running…' : 'Maintain Folder Now'}
                 </button>
                 {curationStatus && (
-                  <div className="mt-2 text-xs text-gray-400 text-center">
-                    {curationStatus}
-                  </div>
+                  <div className="mt-2 text-xs text-gray-400 text-center">{curationStatus}</div>
                 )}
               </div>
             </div>
@@ -342,7 +338,9 @@ export function SettingsPanel() {
                   {classifyModels.length > 0 ? (
                     <select
                       value={local.autoClassifyModel || ''}
-                      onChange={(e) => setLocal((c) => ({ ...c, autoClassifyModel: e.target.value }))}
+                      onChange={(e) =>
+                        setLocal((c) => ({ ...c, autoClassifyModel: e.target.value }))
+                      }
                       className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-700 focus:outline-none focus:border-indigo-600"
                     >
                       <option value="">Using AI tab default</option>
@@ -356,7 +354,9 @@ export function SettingsPanel() {
                     <input
                       type="text"
                       value={local.autoClassifyModel || ''}
-                      onChange={(e) => setLocal((c) => ({ ...c, autoClassifyModel: e.target.value }))}
+                      onChange={(e) =>
+                        setLocal((c) => ({ ...c, autoClassifyModel: e.target.value }))
+                      }
                       placeholder="Using AI tab default"
                       className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded border border-gray-700 focus:outline-none focus:border-indigo-600"
                     />

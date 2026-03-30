@@ -789,4 +789,13 @@ export function registerIpcHandlers(downloadManager, mainWindow, logger) {
       return { remembered: false }
     }
   })
+
+  ipcMain.handle('files:checkOriginalExists', async (event, originalPath) => {
+    try {
+      const exists = fs.existsSync(originalPath)
+      return { exists }
+    } catch {
+      return { exists: false }
+    }
+  })
 }

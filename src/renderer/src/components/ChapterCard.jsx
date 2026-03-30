@@ -125,22 +125,38 @@ export function ChapterCard({ chapter, folderName, onGenerateSummary, onUpdateBu
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
-                h1: ({ node, ...props }) => <h3 className="text-base font-semibold mt-2 mb-1" {...props} />,
-                h2: ({ node, ...props }) => <h3 className="text-base font-semibold mt-2 mb-1" {...props} />,
-                h3: ({ node, ...props }) => <h4 className="text-sm font-semibold mt-1.5 mb-0.5" {...props} />,
+                h1: ({ node, ...props }) => (
+                  <h3 className="text-base font-semibold mt-2 mb-1" {...props} />
+                ),
+                h2: ({ node, ...props }) => (
+                  <h3 className="text-base font-semibold mt-2 mb-1" {...props} />
+                ),
+                h3: ({ node, ...props }) => (
+                  <h4 className="text-sm font-semibold mt-1.5 mb-0.5" {...props} />
+                ),
                 p: ({ node, ...props }) => <p className="my-1 leading-relaxed" {...props} />,
                 ul: ({ node, ...props }) => <ul className="my-1 ml-4 list-disc" {...props} />,
                 ol: ({ node, ...props }) => <ol className="my-1 ml-4 list-decimal" {...props} />,
                 li: ({ node, ...props }) => <li className="my-0" {...props} />,
-                strong: ({ node, ...props }) => <strong className="font-semibold text-gray-100" {...props} />,
+                strong: ({ node, ...props }) => (
+                  <strong className="font-semibold text-gray-100" {...props} />
+                ),
                 em: ({ node, ...props }) => <em className="italic text-gray-400" {...props} />,
                 code: ({ node, inline, ...props }) =>
                   inline ? (
-                    <code className="bg-gray-800 px-1 py-0.5 rounded text-xs font-mono text-gray-200" {...props} />
+                    <code
+                      className="bg-gray-800 px-1 py-0.5 rounded text-xs font-mono text-gray-200"
+                      {...props}
+                    />
                   ) : (
-                    <code className="bg-gray-800 p-1 rounded block text-xs font-mono text-gray-200 overflow-auto my-1" {...props} />
+                    <code
+                      className="bg-gray-800 p-1 rounded block text-xs font-mono text-gray-200 overflow-auto my-1"
+                      {...props}
+                    />
                   ),
-                a: ({ node, ...props }) => <a className="text-blue-400 hover:text-blue-300 underline" {...props} />
+                a: ({ node, ...props }) => (
+                  <a className="text-blue-400 hover:text-blue-300 underline" {...props} />
+                )
               }}
             >
               {localSummary}

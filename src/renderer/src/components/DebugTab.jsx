@@ -175,7 +175,10 @@ export function DebugTab() {
             </thead>
             <tbody>
               {[...filtered].reverse().map((entry, idx) => (
-                <tr key={idx} className="border-b border-gray-700 hover:bg-gray-800 transition-colors">
+                <tr
+                  key={idx}
+                  className="border-b border-gray-700 hover:bg-gray-800 transition-colors"
+                >
                   <td className="border border-gray-700 px-3 py-2 text-xs text-gray-500 font-mono whitespace-nowrap">
                     {new Date(entry.ts).toLocaleTimeString()}
                   </td>

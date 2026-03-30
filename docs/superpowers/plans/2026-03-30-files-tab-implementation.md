@@ -7,6 +7,7 @@
 **Architecture:** The Files tab mirrors the Library tab's two-pane layout with a collapsible folder tree on the left, file list in the middle, and detail/preview panel on the right. Files are processed through a plugin-based extraction pipeline (LiteParse for PDFs, officeparser for Office formats), stored as markdown or reference files, and tracked in the metadata index just like videos and bookmarks.
 
 **Tech Stack:**
+
 - Frontend: React 19, Zustand (state), Tailwind (styling)
 - Backend: Node.js, IPC handlers, LiteParse, officeparser
 - Data: metadata-index.json (existing), `.ref` and `.md` files (new storage)
@@ -17,24 +18,24 @@
 
 ### New Files to Create
 
-| File | Purpose |
-|---|---|
-| `src/renderer/src/components/FilesTab.jsx` | Main tab component (layout: tree + list + detail) |
-| `src/renderer/src/components/FileTree.jsx` | Recursive folder tree with collapsible folders |
-| `src/renderer/src/components/FileList.jsx` | File list for current folder + breadcrumb |
-| `src/main/file-processor.js` | Extraction pipeline (LiteParse, officeparser, etc.) |
-| `tests/main/file-processor.test.js` | Tests for extraction logic |
+| File                                       | Purpose                                             |
+| ------------------------------------------ | --------------------------------------------------- |
+| `src/renderer/src/components/FilesTab.jsx` | Main tab component (layout: tree + list + detail)   |
+| `src/renderer/src/components/FileTree.jsx` | Recursive folder tree with collapsible folders      |
+| `src/renderer/src/components/FileList.jsx` | File list for current folder + breadcrumb           |
+| `src/main/file-processor.js`               | Extraction pipeline (LiteParse, officeparser, etc.) |
+| `tests/main/file-processor.test.js`        | Tests for extraction logic                          |
 
 ### Files to Modify
 
-| File | Changes |
-|---|---|
-| `package.json` | Add `@llamaindex/liteparse`, `officeparser` dependencies |
-| `src/main/ipc-handlers.js` | Update `isHelperFile`, add `files:*` handlers |
-| `src/preload/index.js` | Expose `files:*` IPC methods |
-| `src/renderer/src/store/app-store.js` | Add `filesLastDir`, `filesSideWidth`, `filesSideSplitPct` state |
-| `src/renderer/src/components/TabBar.jsx` | Add Files tab to `TABS` constant |
-| `src/renderer/src/components/LibraryDetailPanel.jsx` | Add preview for `originalPath` (non-local files) |
+| File                                                 | Changes                                                         |
+| ---------------------------------------------------- | --------------------------------------------------------------- |
+| `package.json`                                       | Add `@llamaindex/liteparse`, `officeparser` dependencies        |
+| `src/main/ipc-handlers.js`                           | Update `isHelperFile`, add `files:*` handlers                   |
+| `src/preload/index.js`                               | Expose `files:*` IPC methods                                    |
+| `src/renderer/src/store/app-store.js`                | Add `filesLastDir`, `filesSideWidth`, `filesSideSplitPct` state |
+| `src/renderer/src/components/TabBar.jsx`             | Add Files tab to `TABS` constant                                |
+| `src/renderer/src/components/LibraryDetailPanel.jsx` | Add preview for `originalPath` (non-local files)                |
 
 ---
 
@@ -45,11 +46,13 @@
 #### Task 1: Install Dependencies
 
 **Files:**
+
 - Modify: `package.json`
 
 - [ ] **Step 1: Add npm dependencies**
 
 Edit `package.json` and add to `devDependencies`:
+
 ```json
 {
   "dependencies": {
@@ -88,6 +91,7 @@ git commit -m "dep: add liteparse and officeparser for document extraction"
 #### Task 2: Fix isHelperFile to Allow .md Imports
 
 **Files:**
+
 - Modify: `src/main/ipc-handlers.js` (around line 35-43)
 
 - [ ] **Step 1: Read isHelperFile function**
@@ -101,13 +105,13 @@ Replace the existing function with:
 ```javascript
 const isHelperFile = (fileName) => {
   // Only exclude the folder-level notes file, not all .md imports
-  if (fileName === 'notes.md') return true;
-  if (fileName === '.pully.json') return true;
-  if (fileName === '.gitignore') return true;
-  if (/\.thumb(\.[a-z]+)?$/i.test(fileName)) return true;  // Thumbnails: Video.thumb.jpg
-  if (/\.nfo$/i.test(fileName)) return true;  // Info files
-  return false;
-};
+  if (fileName === 'notes.md') return true
+  if (fileName === '.pully.json') return true
+  if (fileName === '.gitignore') return true
+  if (/\.thumb(\.[a-z]+)?$/i.test(fileName)) return true // Thumbnails: Video.thumb.jpg
+  if (/\.nfo$/i.test(fileName)) return true // Info files
+  return false
+}
 ```
 
 - [ ] **Step 3: Test in library:list**
@@ -128,6 +132,7 @@ git commit -m "fix: allow .md imports in library listing (only exclude notes.md)
 #### Task 3: Add File Browser State to Zustand Store
 
 **Files:**
+
 - Modify: `src/renderer/src/store/app-store.js`
 
 - [ ] **Step 1: Locate store definition**
@@ -176,6 +181,7 @@ git commit -m "feat: add file browser state to Zustand store"
 #### Task 4: Add File Browser IPC Handlers (Part 1: List & Navigate)
 
 **Files:**
+
 - Modify: `src/main/ipc-handlers.js` (add new handlers at the end)
 - Modify: `src/preload/index.js` (expose new methods)
 
@@ -192,68 +198,101 @@ ipcMain.handle('files:listRoots', async () => {
   // Windows: ['C:', 'D:', ...]
   // Linux: ['/']
   if (process.platform === 'win32') {
-    const drives = [];
+    const drives = []
     for (let i = 65; i <= 90; i++) {
-      const drive = String.fromCharCode(i) + ':';
-      if (require('fs').existsSync(drive + '\\')) drives.push(drive);
+      const drive = String.fromCharCode(i) + ':'
+      if (require('fs').existsSync(drive + '\\')) drives.push(drive)
     }
-    return drives;
+    return drives
   }
-  return ['/'];
-});
+  return ['/']
+})
 
 ipcMain.handle('files:listDir', async (event, dirPath) => {
   // List immediate children (files + first-level folders) of a directory
-  const fs = require('fs').promises;
-  const path = require('path');
+  const fs = require('fs').promises
+  const path = require('path')
 
   try {
-    const entries = await fs.readdir(dirPath, { withFileTypes: true });
+    const entries = await fs.readdir(dirPath, { withFileTypes: true })
     const items = entries
-      .filter(e => !e.name.startsWith('.')) // Skip hidden files
-      .map(e => ({
+      .filter((e) => !e.name.startsWith('.')) // Skip hidden files
+      .map((e) => ({
         name: e.name,
         path: path.join(dirPath, e.name),
         isDirectory: e.isDirectory(),
-        type: getFileType(e.name),
+        type: getFileType(e.name)
       }))
       .sort((a, b) => {
-        if (a.isDirectory && !b.isDirectory) return -1;
-        if (!a.isDirectory && b.isDirectory) return 1;
-        return a.name.localeCompare(b.name);
-      });
+        if (a.isDirectory && !b.isDirectory) return -1
+        if (!a.isDirectory && b.isDirectory) return 1
+        return a.name.localeCompare(b.name)
+      })
 
-    return items;
+    return items
   } catch (error) {
-    return { error: error.message };
+    return { error: error.message }
   }
-});
+})
 
 ipcMain.handle('files:getLastDir', async () => {
-  const config = await readConfig();
-  return config.filesLastDir || (process.platform === 'win32' ? 'C:' : '/');
-});
+  const config = await readConfig()
+  return config.filesLastDir || (process.platform === 'win32' ? 'C:' : '/')
+})
 
 ipcMain.handle('files:setLastDir', async (event, dirPath) => {
-  const config = await readConfig();
-  config.filesLastDir = dirPath;
-  await writeConfig(config);
-  return true;
-});
+  const config = await readConfig()
+  config.filesLastDir = dirPath
+  await writeConfig(config)
+  return true
+})
 
 // Helper function: determine file type from name
 function getFileType(fileName) {
-  const ext = fileName.slice(fileName.lastIndexOf('.')).toLowerCase();
-  if (['.pdf'].includes(ext)) return 'pdf';
-  if (['.docx', '.doc', '.docm', '.odt', '.rtf', '.xlsx', '.xls', '.xlsm', '.ods', '.pptx', '.ppt', '.pptm', '.odp'].includes(ext)) return 'document';
-  if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg', '.tiff', '.heic', '.ico', '.avif'].includes(ext)) return 'image';
-  if (['.txt', '.csv', '.json', '.xml', '.yaml', '.md', '.html', '.htm'].includes(ext)) return 'text';
-  return 'other';
+  const ext = fileName.slice(fileName.lastIndexOf('.')).toLowerCase()
+  if (['.pdf'].includes(ext)) return 'pdf'
+  if (
+    [
+      '.docx',
+      '.doc',
+      '.docm',
+      '.odt',
+      '.rtf',
+      '.xlsx',
+      '.xls',
+      '.xlsm',
+      '.ods',
+      '.pptx',
+      '.ppt',
+      '.pptm',
+      '.odp'
+    ].includes(ext)
+  )
+    return 'document'
+  if (
+    [
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.gif',
+      '.webp',
+      '.bmp',
+      '.svg',
+      '.tiff',
+      '.heic',
+      '.ico',
+      '.avif'
+    ].includes(ext)
+  )
+    return 'image'
+  if (['.txt', '.csv', '.json', '.xml', '.yaml', '.md', '.html', '.htm'].includes(ext))
+    return 'text'
+  return 'other'
 }
 
 function isSelectableFile(fileName) {
-  const type = getFileType(fileName);
-  return type !== 'other';
+  const type = getFileType(fileName)
+  return type !== 'other'
 }
 ```
 
@@ -277,9 +316,10 @@ npm run dev
 ```
 
 In browser console:
+
 ```javascript
-window.api.files.listRoots().then(r => console.log(r))
-window.api.files.listDir('/Users/lorenzmaierhofer').then(r => console.log(r))
+window.api.files.listRoots().then((r) => console.log(r))
+window.api.files.listDir('/Users/lorenzmaierhofer').then((r) => console.log(r))
 ```
 
 Expected: Both return data. Second call should show folders and files.
@@ -296,6 +336,7 @@ git commit -m "feat: add file listing IPC handlers (listDir, listRoots, getLastD
 #### Task 5: Add File Browser IPC Handlers (Part 2: Import)
 
 **Files:**
+
 - Modify: `src/main/ipc-handlers.js` (add new handlers)
 - Modify: `src/preload/index.js` (expose new methods)
 
@@ -307,94 +348,94 @@ Add after the navigation handlers:
 ipcMain.handle('files:rememberFile', async (event, filePath) => {
   // Import a single file into the library
   // Returns { success: true, title: '...', contentType: '...' } or { error: '...' }
-  const path = require('path');
-  const fs = require('fs').promises;
-  const { processFile } = require('./file-processor');
+  const path = require('path')
+  const fs = require('fs').promises
+  const { processFile } = require('./file-processor')
 
   try {
-    const fileName = path.basename(filePath);
-    const config = await readConfig();
-    const outputFolder = config.outputFolder;
+    const fileName = path.basename(filePath)
+    const config = await readConfig()
+    const outputFolder = config.outputFolder
 
     // Process the file (extract content if needed)
-    const result = await processFile(filePath, outputFolder);
+    const result = await processFile(filePath, outputFolder)
 
     if (result.error) {
-      return { error: result.error };
+      return { error: result.error }
     }
 
     // Write metadata entry
-    const title = path.parse(fileName).name; // Remove extension
-    const contentType = result.contentType; // 'document', 'image', 'text'
-    const outputPath = result.outputPath; // Path where file was stored in pully folder
-    const stat = await fs.stat(filePath);
+    const title = path.parse(fileName).name // Remove extension
+    const contentType = result.contentType // 'document', 'image', 'text'
+    const outputPath = result.outputPath // Path where file was stored in pully folder
+    const stat = await fs.stat(filePath)
 
     const metadataEntry = {
       title,
       contentType,
       originalPath: filePath,
-      downloadedAt: new Date().toISOString(),
-    };
+      downloadedAt: new Date().toISOString()
+    }
 
     // If a thumbnail is available, download it
     if (result.thumbnailUrl) {
-      await downloadAndStoreThumbnail(outputPath, result.thumbnailUrl, metadataStore);
+      await downloadAndStoreThumbnail(outputPath, result.thumbnailUrl, metadataStore)
     }
 
     // Add to metadata index
-    const metadataStore = new MetadataStore(config);
-    await metadataStore.writeEntry(outputPath, metadataEntry);
+    const metadataStore = new MetadataStore(config)
+    await metadataStore.writeEntry(outputPath, metadataEntry)
 
     // Emit library change event
-    mainWindow.webContents.send('library:changed');
+    mainWindow.webContents.send('library:changed')
 
-    return { success: true, title, contentType, outputPath };
+    return { success: true, title, contentType, outputPath }
   } catch (error) {
-    return { error: error.message };
+    return { error: error.message }
   }
-});
+})
 
 ipcMain.handle('files:rememberFolder', async (event, folderPath) => {
   // Count files in folder recursively
   // Returns { count: N, files: [] } for the renderer to show confirmation
-  const fs = require('fs').promises;
-  const path = require('path');
+  const fs = require('fs').promises
+  const path = require('path')
 
   try {
-    const files = [];
+    const files = []
 
     async function walk(dir) {
-      const entries = await fs.readdir(dir, { withFileTypes: true });
+      const entries = await fs.readdir(dir, { withFileTypes: true })
       for (const entry of entries) {
-        if (entry.name.startsWith('.')) continue;
-        const fullPath = path.join(dir, entry.name);
+        if (entry.name.startsWith('.')) continue
+        const fullPath = path.join(dir, entry.name)
         if (entry.isDirectory()) {
-          await walk(fullPath); // Recurse into subdirs
+          await walk(fullPath) // Recurse into subdirs
         } else {
-          files.push(fullPath);
+          files.push(fullPath)
         }
       }
     }
 
-    await walk(folderPath);
-    return { count: files.length, files };
+    await walk(folderPath)
+    return { count: files.length, files }
   } catch (error) {
-    return { error: error.message };
+    return { error: error.message }
   }
-});
+})
 
 ipcMain.handle('files:isFileRemembered', async (event, filePath) => {
   // Check if a file is already in the library
-  const config = await readConfig();
-  const metadataStore = new MetadataStore(config);
+  const config = await readConfig()
+  const metadataStore = new MetadataStore(config)
 
   try {
-    const entry = await metadataStore.readEntry(filePath);
-    return { remembered: !!entry };
+    const entry = await metadataStore.readEntry(filePath)
+    return { remembered: !!entry }
   } catch {
-    return { remembered: false };
+    return { remembered: false }
   }
-});
+})
 ```
 
 - [ ] **Step 2: Update preload.js**
@@ -425,6 +466,7 @@ git commit -m "feat: add file import IPC handlers (rememberFile, rememberFolder,
 #### Task 6: Create file-processor.js Module
 
 **Files:**
+
 - Create: `src/main/file-processor.js`
 - Create: `tests/main/file-processor.test.js`
 
@@ -433,67 +475,67 @@ git commit -m "feat: add file import IPC handlers (rememberFile, rememberFolder,
 Create `tests/main/file-processor.test.js`:
 
 ```javascript
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { processFile } from '../../src/main/file-processor.js';
-import * as fs from 'fs';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { processFile } from '../../src/main/file-processor.js'
+import * as fs from 'fs'
+import * as path from 'path'
+import { fileURLToPath } from 'url'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const TEST_OUTPUT_DIR = path.join(__dirname, '../../.test-output');
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const TEST_OUTPUT_DIR = path.join(__dirname, '../../.test-output')
 
 beforeEach(() => {
   if (!fs.existsSync(TEST_OUTPUT_DIR)) {
-    fs.mkdirSync(TEST_OUTPUT_DIR, { recursive: true });
+    fs.mkdirSync(TEST_OUTPUT_DIR, { recursive: true })
   }
-});
+})
 
 afterEach(() => {
   if (fs.existsSync(TEST_OUTPUT_DIR)) {
-    fs.rmSync(TEST_OUTPUT_DIR, { recursive: true });
+    fs.rmSync(TEST_OUTPUT_DIR, { recursive: true })
   }
-});
+})
 
 describe('file-processor', () => {
   it('detects PDF and returns document type', async () => {
     // Create a dummy PDF file
-    const pdfPath = path.join(TEST_OUTPUT_DIR, 'test.pdf');
-    fs.writeFileSync(pdfPath, '%PDF-1.4\n'); // PDF magic bytes
+    const pdfPath = path.join(TEST_OUTPUT_DIR, 'test.pdf')
+    fs.writeFileSync(pdfPath, '%PDF-1.4\n') // PDF magic bytes
 
-    const result = await processFile(pdfPath, TEST_OUTPUT_DIR);
+    const result = await processFile(pdfPath, TEST_OUTPUT_DIR)
 
-    expect(result.contentType).toBe('document');
-    expect(result.outputPath).toBeDefined();
-  });
+    expect(result.contentType).toBe('document')
+    expect(result.outputPath).toBeDefined()
+  })
 
   it('detects image and returns image type', async () => {
-    const imagePath = path.join(TEST_OUTPUT_DIR, 'test.jpg');
+    const imagePath = path.join(TEST_OUTPUT_DIR, 'test.jpg')
     // Create a minimal JPEG (just magic bytes)
-    fs.writeFileSync(imagePath, Buffer.from([0xFF, 0xD8, 0xFF]));
+    fs.writeFileSync(imagePath, Buffer.from([0xff, 0xd8, 0xff]))
 
-    const result = await processFile(imagePath, TEST_OUTPUT_DIR);
+    const result = await processFile(imagePath, TEST_OUTPUT_DIR)
 
-    expect(result.contentType).toBe('image');
-  });
+    expect(result.contentType).toBe('image')
+  })
 
   it('detects text and returns text type', async () => {
-    const textPath = path.join(TEST_OUTPUT_DIR, 'test.txt');
-    fs.writeFileSync(textPath, 'Hello world');
+    const textPath = path.join(TEST_OUTPUT_DIR, 'test.txt')
+    fs.writeFileSync(textPath, 'Hello world')
 
-    const result = await processFile(textPath, TEST_OUTPUT_DIR);
+    const result = await processFile(textPath, TEST_OUTPUT_DIR)
 
-    expect(result.contentType).toBe('text');
-  });
+    expect(result.contentType).toBe('text')
+  })
 
   it('rejects unsupported file types', async () => {
-    const exePath = path.join(TEST_OUTPUT_DIR, 'test.exe');
-    fs.writeFileSync(exePath, '');
+    const exePath = path.join(TEST_OUTPUT_DIR, 'test.exe')
+    fs.writeFileSync(exePath, '')
 
-    const result = await processFile(exePath, TEST_OUTPUT_DIR);
+    const result = await processFile(exePath, TEST_OUTPUT_DIR)
 
-    expect(result.error).toBeDefined();
-  });
-});
+    expect(result.error).toBeDefined()
+  })
+})
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -509,30 +551,61 @@ Expected: FAIL — `file-processor` not found.
 Create `src/main/file-processor.js`:
 
 ```javascript
-import * as path from 'path';
+import * as path from 'path'
 
 /**
  * Determine content type from file extension
  */
 function getContentTypeFromExt(fileName) {
-  const ext = fileName.slice(fileName.lastIndexOf('.')).toLowerCase();
+  const ext = fileName.slice(fileName.lastIndexOf('.')).toLowerCase()
 
   // Document types
-  if (['.pdf', '.docx', '.doc', '.docm', '.odt', '.rtf', '.xlsx', '.xls', '.xlsm', '.ods', '.pptx', '.ppt', '.pptm', '.odp'].includes(ext)) {
-    return 'document';
+  if (
+    [
+      '.pdf',
+      '.docx',
+      '.doc',
+      '.docm',
+      '.odt',
+      '.rtf',
+      '.xlsx',
+      '.xls',
+      '.xlsm',
+      '.ods',
+      '.pptx',
+      '.ppt',
+      '.pptm',
+      '.odp'
+    ].includes(ext)
+  ) {
+    return 'document'
   }
 
   // Image types
-  if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg', '.tiff', '.heic', '.ico', '.avif'].includes(ext)) {
-    return 'image';
+  if (
+    [
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.gif',
+      '.webp',
+      '.bmp',
+      '.svg',
+      '.tiff',
+      '.heic',
+      '.ico',
+      '.avif'
+    ].includes(ext)
+  ) {
+    return 'image'
   }
 
   // Text types
   if (['.txt', '.csv', '.json', '.xml', '.yaml', '.yml', '.md', '.html', '.htm'].includes(ext)) {
-    return 'text';
+    return 'text'
   }
 
-  return null; // Unsupported
+  return null // Unsupported
 }
 
 /**
@@ -542,19 +615,22 @@ function getContentTypeFromExt(fileName) {
  * @returns {Promise<{ contentType, outputPath, error?, thumbnailUrl? }>}
  */
 export async function processFile(filePath, outputFolder) {
-  const fileName = path.basename(filePath);
-  const contentType = getContentTypeFromExt(fileName);
+  const fileName = path.basename(filePath)
+  const contentType = getContentTypeFromExt(fileName)
 
   if (!contentType) {
-    return { error: `Unsupported file type: ${fileName}` };
+    return { error: `Unsupported file type: ${fileName}` }
   }
 
   // For now, return type detection only
   // Extraction will be implemented in separate tasks
   return {
     contentType,
-    outputPath: path.join(outputFolder, fileName.replace(/\.[^.]+$/, `.${contentType === 'document' ? 'md' : 'ref'}`)),
-  };
+    outputPath: path.join(
+      outputFolder,
+      fileName.replace(/\.[^.]+$/, `.${contentType === 'document' ? 'md' : 'ref'}`)
+    )
+  }
 }
 ```
 
@@ -578,6 +654,7 @@ git commit -m "feat: add file-processor module with content type detection"
 #### Task 7: Add PDF Processing (LiteParse)
 
 **Files:**
+
 - Modify: `src/main/file-processor.js`
 - Modify: `tests/main/file-processor.test.js`
 
@@ -588,7 +665,7 @@ Add to `tests/main/file-processor.test.js`:
 ```javascript
 it('extracts PDF to markdown', async () => {
   // Use a real tiny PDF for testing
-  const pdfPath = path.join(TEST_OUTPUT_DIR, 'test-sample.pdf');
+  const pdfPath = path.join(TEST_OUTPUT_DIR, 'test-sample.pdf')
   // Write a minimal valid PDF
   const pdfContent = `%PDF-1.4
 1 0 obj
@@ -621,15 +698,15 @@ trailer
 << /Size 6 /Root 1 0 R >>
 startxref
 450
-%%EOF`;
-  fs.writeFileSync(pdfPath, pdfContent);
+%%EOF`
+  fs.writeFileSync(pdfPath, pdfContent)
 
-  const result = await processFile(pdfPath, TEST_OUTPUT_DIR);
+  const result = await processFile(pdfPath, TEST_OUTPUT_DIR)
 
-  expect(result.contentType).toBe('document');
-  expect(result.outputPath).toBe(path.join(TEST_OUTPUT_DIR, 'test-sample.md'));
-  expect(fs.existsSync(result.outputPath)).toBe(true); // File should be created
-});
+  expect(result.contentType).toBe('document')
+  expect(result.outputPath).toBe(path.join(TEST_OUTPUT_DIR, 'test-sample.md'))
+  expect(fs.existsSync(result.outputPath)).toBe(true) // File should be created
+})
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -645,54 +722,54 @@ Expected: FAIL — no extraction logic yet.
 Update `src/main/file-processor.js`:
 
 ```javascript
-import { LiteParse } from '@llamaindex/liteparse';
-import * as fs from 'fs/promises';
-import * as fssync from 'fs';
+import { LiteParse } from '@llamaindex/liteparse'
+import * as fs from 'fs/promises'
+import * as fssync from 'fs'
 
-const liteParse = new LiteParse({ ocrEnabled: false });
+const liteParse = new LiteParse({ ocrEnabled: false })
 
 async function extractPdfToMarkdown(filePath, outputPath) {
   try {
-    const result = await liteParse.parse(filePath);
-    await fs.writeFile(outputPath, result.text);
-    return { success: true };
+    const result = await liteParse.parse(filePath)
+    await fs.writeFile(outputPath, result.text)
+    return { success: true }
   } catch (error) {
-    return { error: error.message };
+    return { error: error.message }
   }
 }
 
 export async function processFile(filePath, outputFolder) {
-  const fileName = path.basename(filePath);
-  const contentType = getContentTypeFromExt(fileName);
+  const fileName = path.basename(filePath)
+  const contentType = getContentTypeFromExt(fileName)
 
   if (!contentType) {
-    return { error: `Unsupported file type: ${fileName}` };
+    return { error: `Unsupported file type: ${fileName}` }
   }
 
-  const baseName = fileName.replace(/\.[^.]+$/, ''); // Remove extension
+  const baseName = fileName.replace(/\.[^.]+$/, '') // Remove extension
   const outputPath = path.join(
     outputFolder,
     contentType === 'document' ? `${baseName}.md` : `${baseName}.ref`
-  );
+  )
 
   // Extract PDFs to markdown
   if (fileName.toLowerCase().endsWith('.pdf')) {
-    const extracted = await extractPdfToMarkdown(filePath, outputPath);
+    const extracted = await extractPdfToMarkdown(filePath, outputPath)
     if (extracted.error) {
-      return { error: extracted.error };
+      return { error: extracted.error }
     }
   }
 
   // Extract other documents (handled in next task)
   // Copy reference files (images, text) as-is
   if (contentType === 'image' || contentType === 'text') {
-    await fs.copyFile(filePath, outputPath);
+    await fs.copyFile(filePath, outputPath)
   }
 
   return {
     contentType,
-    outputPath,
-  };
+    outputPath
+  }
 }
 ```
 
@@ -716,6 +793,7 @@ git commit -m "feat: add PDF extraction via LiteParse"
 #### Task 8: Add Office Document Processing (officeparser)
 
 **Files:**
+
 - Modify: `src/main/file-processor.js`
 - Modify: `tests/main/file-processor.test.js`
 
@@ -727,15 +805,15 @@ Add to `tests/main/file-processor.test.js`:
 it('extracts DOCX to markdown', async () => {
   // For this test, we'll just check that the handler is invoked
   // (Actual DOCX requires proper Office file structure, which is complex to mock)
-  const docxPath = path.join(TEST_OUTPUT_DIR, 'test.docx');
+  const docxPath = path.join(TEST_OUTPUT_DIR, 'test.docx')
   // Write a dummy DOCX (it's a ZIP with specific structure)
   // For now, we'll rely on officeparser to handle real files
   // This test will pass once officeparser integration is in place
 
   // Simplified: just verify contentType is detected
-  const result = await processFile(docxPath, TEST_OUTPUT_DIR);
-  expect(result.contentType).toBe('document');
-});
+  const result = await processFile(docxPath, TEST_OUTPUT_DIR)
+  expect(result.contentType).toBe('document')
+})
 ```
 
 - [ ] **Step 2: Run test to verify it fails (or skips)**
@@ -751,70 +829,84 @@ Expected: FAIL — DOCX extraction not yet implemented.
 Update `src/main/file-processor.js`:
 
 ```javascript
-import { parseOffice } from 'officeparser';
+import { parseOffice } from 'officeparser'
 
 async function extractOfficeToMarkdown(filePath, outputPath) {
   try {
-    const result = await parseOffice(filePath);
+    const result = await parseOffice(filePath)
     // officeparser returns an AST; convert to markdown-like text
-    const text = serializeAstToText(result);
-    await fs.writeFile(outputPath, text);
-    return { success: true };
+    const text = serializeAstToText(result)
+    await fs.writeFile(outputPath, text)
+    return { success: true }
   } catch (error) {
-    return { error: error.message };
+    return { error: error.message }
   }
 }
 
 function serializeAstToText(ast) {
   // Simple serialization: just extract text content from AST
-  if (!ast) return '';
-  if (typeof ast === 'string') return ast;
-  if (Array.isArray(ast)) return ast.map(serializeAstToText).join('\n');
-  if (ast.text) return ast.text;
-  if (ast.children) return serializeAstToText(ast.children);
-  return '';
+  if (!ast) return ''
+  if (typeof ast === 'string') return ast
+  if (Array.isArray(ast)) return ast.map(serializeAstToText).join('\n')
+  if (ast.text) return ast.text
+  if (ast.children) return serializeAstToText(ast.children)
+  return ''
 }
 
 export async function processFile(filePath, outputFolder) {
-  const fileName = path.basename(filePath);
-  const contentType = getContentTypeFromExt(fileName);
+  const fileName = path.basename(filePath)
+  const contentType = getContentTypeFromExt(fileName)
 
   if (!contentType) {
-    return { error: `Unsupported file type: ${fileName}` };
+    return { error: `Unsupported file type: ${fileName}` }
   }
 
-  const baseName = fileName.replace(/\.[^.]+$/, '');
+  const baseName = fileName.replace(/\.[^.]+$/, '')
   const outputPath = path.join(
     outputFolder,
     contentType === 'document' ? `${baseName}.md` : `${baseName}.ref`
-  );
+  )
 
   // Extract PDFs to markdown
   if (fileName.toLowerCase().endsWith('.pdf')) {
-    const extracted = await extractPdfToMarkdown(filePath, outputPath);
+    const extracted = await extractPdfToMarkdown(filePath, outputPath)
     if (extracted.error) {
-      return { error: extracted.error };
+      return { error: extracted.error }
     }
   }
 
   // Extract Office documents to markdown
-  const officeExtensions = ['.docx', '.doc', '.docm', '.odt', '.rtf', '.xlsx', '.xls', '.xlsm', '.ods', '.pptx', '.ppt', '.pptm', '.odp'];
-  if (officeExtensions.some(ext => fileName.toLowerCase().endsWith(ext))) {
-    const extracted = await extractOfficeToMarkdown(filePath, outputPath);
+  const officeExtensions = [
+    '.docx',
+    '.doc',
+    '.docm',
+    '.odt',
+    '.rtf',
+    '.xlsx',
+    '.xls',
+    '.xlsm',
+    '.ods',
+    '.pptx',
+    '.ppt',
+    '.pptm',
+    '.odp'
+  ]
+  if (officeExtensions.some((ext) => fileName.toLowerCase().endsWith(ext))) {
+    const extracted = await extractOfficeToMarkdown(filePath, outputPath)
     if (extracted.error) {
-      return { error: extracted.error };
+      return { error: extracted.error }
     }
   }
 
   // Copy reference files (images, text) as-is
   if (contentType === 'image' || contentType === 'text') {
-    await fs.copyFile(filePath, outputPath);
+    await fs.copyFile(filePath, outputPath)
   }
 
   return {
     contentType,
-    outputPath,
-  };
+    outputPath
+  }
 }
 ```
 
@@ -840,58 +932,55 @@ git commit -m "feat: add Office document extraction via officeparser (DOCX, XLSX
 #### Task 9: Create FileTree Component
 
 **Files:**
+
 - Create: `src/renderer/src/components/FileTree.jsx`
 
 - [ ] **Step 1: Write FileTree component**
 
 ```jsx
-import React, { useState } from 'react';
-import { ChevronDown, Folder } from 'lucide-react';
+import React, { useState } from 'react'
+import { ChevronDown, Folder } from 'lucide-react'
 
-export default function FileTree({
-  currentFolder,
-  onNavigate,
-  onSelectFolder,
-}) {
-  const [expanded, setExpanded] = useState(new Set([currentFolder]));
-  const [tree, setTree] = useState([]);
-  const [loading, setLoading] = useState(false);
+export default function FileTree({ currentFolder, onNavigate, onSelectFolder }) {
+  const [expanded, setExpanded] = useState(new Set([currentFolder]))
+  const [tree, setTree] = useState([])
+  const [loading, setLoading] = useState(false)
 
   // Load roots on mount
   React.useEffect(() => {
-    loadRoots();
-  }, []);
+    loadRoots()
+  }, [])
 
   async function loadRoots() {
-    setLoading(true);
+    setLoading(true)
     try {
-      const roots = await window.api.files.listRoots();
-      setTree(roots.map(root => ({ name: root, path: root, isDirectory: true, children: [] })));
+      const roots = await window.api.files.listRoots()
+      setTree(roots.map((root) => ({ name: root, path: root, isDirectory: true, children: [] })))
     } catch (error) {
-      console.error('Failed to load roots:', error);
+      console.error('Failed to load roots:', error)
     }
-    setLoading(false);
+    setLoading(false)
   }
 
   async function expandFolder(folderPath) {
     if (expanded.has(folderPath)) {
-      setExpanded(new Set([...expanded].filter(p => p !== folderPath)));
-      return;
+      setExpanded(new Set([...expanded].filter((p) => p !== folderPath)))
+      return
     }
 
     try {
-      const items = await window.api.files.listDir(folderPath);
-      const folders = items.filter(i => i.isDirectory);
+      const items = await window.api.files.listDir(folderPath)
+      const folders = items.filter((i) => i.isDirectory)
 
       // Update tree structure (simplified for now)
-      setExpanded(new Set([...expanded, folderPath]));
+      setExpanded(new Set([...expanded, folderPath]))
     } catch (error) {
-      console.error('Failed to expand folder:', error);
+      console.error('Failed to expand folder:', error)
     }
   }
 
   function renderNode(folder, depth = 0) {
-    const isExpanded = expanded.has(folder.path);
+    const isExpanded = expanded.has(folder.path)
 
     return (
       <div key={folder.path}>
@@ -900,8 +989,8 @@ export default function FileTree({
             currentFolder === folder.path ? 'bg-blue-100' : ''
           }`}
           onClick={() => {
-            expandFolder(folder.path);
-            onNavigate(folder.path);
+            expandFolder(folder.path)
+            onNavigate(folder.path)
           }}
           style={{ paddingLeft: `${depth * 16}px` }}
         >
@@ -916,17 +1005,17 @@ export default function FileTree({
         </div>
         {/* Children would be rendered here when expanded */}
       </div>
-    );
+    )
   }
 
-  if (loading) return <div className="p-4">Loading...</div>;
+  if (loading) return <div className="p-4">Loading...</div>
 
   return (
     <div className="h-full overflow-y-auto bg-gray-50 p-2 text-sm">
       <div className="font-semibold mb-2 text-gray-600">Places</div>
-      {tree.map(root => renderNode(root))}
+      {tree.map((root) => renderNode(root))}
     </div>
-  );
+  )
 }
 ```
 
@@ -935,22 +1024,22 @@ export default function FileTree({
 Create a simple test file `tests/renderer/FileTree.test.jsx`:
 
 ```javascript
-import { render, screen } from '@testing-library/react';
-import FileTree from '../../src/renderer/src/components/FileTree';
-import { expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react'
+import FileTree from '../../src/renderer/src/components/FileTree'
+import { expect, it, vi } from 'vitest'
 
 // Mock window.api
 global.window.api = {
   files: {
     listRoots: vi.fn().mockResolvedValue(['/']),
-    listDir: vi.fn().mockResolvedValue([]),
-  },
-};
+    listDir: vi.fn().mockResolvedValue([])
+  }
+}
 
 it('renders without crashing', () => {
-  render(<FileTree currentFolder="/" onNavigate={() => {}} onSelectFolder={() => {}} />);
-  expect(screen.getByText('Places')).toBeInTheDocument();
-});
+  render(<FileTree currentFolder="/" onNavigate={() => {}} onSelectFolder={() => {}} />)
+  expect(screen.getByText('Places')).toBeInTheDocument()
+})
 ```
 
 - [ ] **Step 3: Run test**
@@ -973,13 +1062,14 @@ git commit -m "feat: add FileTree component for folder navigation"
 #### Task 10: Create FileList Component
 
 **Files:**
+
 - Create: `src/renderer/src/components/FileList.jsx`
 
 - [ ] **Step 1: Write FileList component**
 
 ```jsx
-import React, { useState, useEffect } from 'react';
-import { File, Image, FileText, Folder, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { File, Image, FileText, Folder, Check } from 'lucide-react'
 
 const ICON_MAP = {
   pdf: <File size={16} className="text-red-500" />,
@@ -987,54 +1077,54 @@ const ICON_MAP = {
   image: <Image size={16} className="text-green-500" />,
   text: <FileText size={16} className="text-gray-500" />,
   folder: <Folder size={16} className="text-yellow-500" />,
-  other: <File size={16} className="text-gray-400" />,
-};
+  other: <File size={16} className="text-gray-400" />
+}
 
 export default function FileList({
   currentFolder,
   selectedPath,
   onSelectFile,
   onNavigateFolder,
-  rememberedPaths,
+  rememberedPaths
 }) {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    loadFolder();
-  }, [currentFolder]);
+    loadFolder()
+  }, [currentFolder])
 
   async function loadFolder() {
-    setLoading(true);
+    setLoading(true)
     try {
-      const result = await window.api.files.listDir(currentFolder);
+      const result = await window.api.files.listDir(currentFolder)
       if (result.error) {
-        console.error(result.error);
-        setItems([]);
+        console.error(result.error)
+        setItems([])
       } else {
-        setItems(result);
+        setItems(result)
       }
     } catch (error) {
-      console.error('Failed to list folder:', error);
+      console.error('Failed to list folder:', error)
     }
-    setLoading(false);
+    setLoading(false)
   }
 
   function getIcon(item) {
-    if (item.isDirectory) return ICON_MAP.folder;
-    return ICON_MAP[item.type] || ICON_MAP.other;
+    if (item.isDirectory) return ICON_MAP.folder
+    return ICON_MAP[item.type] || ICON_MAP.other
   }
 
   function isSelectable(item) {
-    return !item.isDirectory && item.type !== 'other';
+    return !item.isDirectory && item.type !== 'other'
   }
 
-  if (loading) return <div className="p-4">Loading...</div>;
+  if (loading) return <div className="p-4">Loading...</div>
 
   return (
     <div className="h-full flex flex-col bg-white">
       <div className="flex-1 overflow-y-auto">
-        {items.map(item => (
+        {items.map((item) => (
           <div
             key={item.path}
             className={`flex items-center gap-2 p-2 border-b hover:bg-gray-100 cursor-pointer ${
@@ -1042,40 +1132,38 @@ export default function FileList({
             } ${!isSelectable(item) ? 'opacity-50 cursor-default' : ''}`}
             onClick={() => {
               if (item.isDirectory) {
-                onNavigateFolder(item.path);
+                onNavigateFolder(item.path)
               } else if (isSelectable(item)) {
-                onSelectFile(item);
+                onSelectFile(item)
               }
             }}
           >
             {getIcon(item)}
             <span className="flex-1 text-sm">{item.name}</span>
-            {rememberedPaths?.includes(item.path) && (
-              <Check size={16} className="text-green-500" />
-            )}
+            {rememberedPaths?.includes(item.path) && <Check size={16} className="text-green-500" />}
           </div>
         ))}
       </div>
     </div>
-  );
+  )
 }
 ```
 
 - [ ] **Step 2: Create test**
 
 ```javascript
-import { render, screen } from '@testing-library/react';
-import FileList from '../../src/renderer/src/components/FileList';
-import { expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react'
+import FileList from '../../src/renderer/src/components/FileList'
+import { expect, it, vi } from 'vitest'
 
 global.window.api = {
   files: {
     listDir: vi.fn().mockResolvedValue([
       { name: 'file.pdf', path: '/test/file.pdf', type: 'pdf', isDirectory: false },
-      { name: 'folder', path: '/test/folder', type: 'folder', isDirectory: true },
-    ]),
-  },
-};
+      { name: 'folder', path: '/test/folder', type: 'folder', isDirectory: true }
+    ])
+  }
+}
 
 it('renders file list', async () => {
   render(
@@ -1086,11 +1174,11 @@ it('renders file list', async () => {
       onNavigateFolder={() => {}}
       rememberedPaths={[]}
     />
-  );
+  )
 
-  await new Promise(r => setTimeout(r, 100)); // Wait for async
-  expect(screen.getByText('file.pdf')).toBeInTheDocument();
-});
+  await new Promise((r) => setTimeout(r, 100)) // Wait for async
+  expect(screen.getByText('file.pdf')).toBeInTheDocument()
+})
 ```
 
 - [ ] **Step 3: Run test**
@@ -1113,43 +1201,44 @@ git commit -m "feat: add FileList component with file selection"
 #### Task 11: Create FilesTab Main Component
 
 **Files:**
+
 - Create: `src/renderer/src/components/FilesTab.jsx`
 
 - [ ] **Step 1: Write FilesTab component**
 
 ```jsx
-import React, { useState, useEffect } from 'react';
-import { useAppStore } from '../store/app-store';
-import FileTree from './FileTree';
-import FileList from './FileList';
-import LibraryDetailPanel from './LibraryDetailPanel';
-import LibraryNotesPanel from './LibraryNotesPanel';
+import React, { useState, useEffect } from 'react'
+import { useAppStore } from '../store/app-store'
+import FileTree from './FileTree'
+import FileList from './FileList'
+import LibraryDetailPanel from './LibraryDetailPanel'
+import LibraryNotesPanel from './LibraryNotesPanel'
 
 export default function FilesTab() {
-  const store = useAppStore();
-  const [currentFolder, setCurrentFolder] = useState(store.filesLastDir || '/');
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [sideWidth, setSideWidth] = useState(store.filesSideWidth || 320);
-  const [sideSplitPct, setSideSplitPct] = useState(store.filesSideSplitPct || 60);
-  const [rememberedPaths, setRememberedPaths] = useState([]);
+  const store = useAppStore()
+  const [currentFolder, setCurrentFolder] = useState(store.filesLastDir || '/')
+  const [selectedFile, setSelectedFile] = useState(null)
+  const [sideWidth, setSideWidth] = useState(store.filesSideWidth || 320)
+  const [sideSplitPct, setSideSplitPct] = useState(store.filesSideSplitPct || 60)
+  const [rememberedPaths, setRememberedPaths] = useState([])
 
   // Persist state
   useEffect(() => {
-    store.setFilesLastDir(currentFolder);
-  }, [currentFolder, store]);
+    store.setFilesLastDir(currentFolder)
+  }, [currentFolder, store])
 
   useEffect(() => {
-    store.setFilesSideWidth(sideWidth);
-  }, [sideWidth, store]);
+    store.setFilesSideWidth(sideWidth)
+  }, [sideWidth, store])
 
   useEffect(() => {
-    store.setFilesSideSplitPct(sideSplitPct);
-  }, [sideSplitPct, store]);
+    store.setFilesSideSplitPct(sideSplitPct)
+  }, [sideSplitPct, store])
 
   async function handleSelectFile(file) {
-    setSelectedFile(file);
+    setSelectedFile(file)
     // Check if already remembered
-    const result = await window.api.files.isFileRemembered(file.path);
+    const result = await window.api.files.isFileRemembered(file.path)
     // Track remembered files for badge display
   }
 
@@ -1157,10 +1246,7 @@ export default function FilesTab() {
     <div className="h-full flex gap-0">
       {/* Left: Folder Tree */}
       <div className="bg-gray-50 border-r" style={{ width: '200px' }}>
-        <FileTree
-          currentFolder={currentFolder}
-          onNavigate={setCurrentFolder}
-        />
+        <FileTree currentFolder={currentFolder} onNavigate={setCurrentFolder} />
       </div>
 
       {/* Middle: File List */}
@@ -1175,17 +1261,11 @@ export default function FilesTab() {
       </div>
 
       {/* Right: Detail Panel */}
-      <div
-        className="border-l bg-white flex flex-col"
-        style={{ width: `${sideWidth}px` }}
-      >
+      <div className="border-l bg-white flex flex-col" style={{ width: `${sideWidth}px` }}>
         {selectedFile ? (
           <>
             <div style={{ height: `${sideSplitPct}%` }} className="border-b overflow-y-auto">
-              <LibraryDetailPanel
-                file={selectedFile}
-                isFileImport={true}
-              />
+              <LibraryDetailPanel file={selectedFile} isFileImport={true} />
             </div>
             <div style={{ height: `${100 - sideSplitPct}%` }} className="overflow-y-auto">
               <LibraryNotesPanel file={selectedFile} />
@@ -1198,42 +1278,42 @@ export default function FilesTab() {
         )}
       </div>
     </div>
-  );
+  )
 }
 ```
 
 - [ ] **Step 2: Test component renders**
 
 ```javascript
-import { render, screen } from '@testing-library/react';
-import FilesTab from '../../src/renderer/src/components/FilesTab';
-import { expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react'
+import FilesTab from '../../src/renderer/src/components/FilesTab'
+import { expect, it, vi } from 'vitest'
 
 // Mock child components
 vi.mock('./FileTree', () => ({
-  default: () => <div>FileTree</div>,
-}));
+  default: () => <div>FileTree</div>
+}))
 vi.mock('./FileList', () => ({
-  default: () => <div>FileList</div>,
-}));
+  default: () => <div>FileList</div>
+}))
 vi.mock('./LibraryDetailPanel', () => ({
-  default: () => <div>DetailPanel</div>,
-}));
+  default: () => <div>DetailPanel</div>
+}))
 vi.mock('./LibraryNotesPanel', () => ({
-  default: () => <div>NotesPanel</div>,
-}));
+  default: () => <div>NotesPanel</div>
+}))
 
 global.window.api = {
   files: {
-    isFileRemembered: vi.fn().mockResolvedValue({ remembered: false }),
-  },
-};
+    isFileRemembered: vi.fn().mockResolvedValue({ remembered: false })
+  }
+}
 
 it('renders FilesTab layout', () => {
-  render(<FilesTab />);
-  expect(screen.getByText('FileTree')).toBeInTheDocument();
-  expect(screen.getByText('FileList')).toBeInTheDocument();
-});
+  render(<FilesTab />)
+  expect(screen.getByText('FileTree')).toBeInTheDocument()
+  expect(screen.getByText('FileList')).toBeInTheDocument()
+})
 ```
 
 - [ ] **Step 3: Run test**
@@ -1256,6 +1336,7 @@ git commit -m "feat: add FilesTab main component with three-pane layout"
 #### Task 12: Add Files Tab to TabBar
 
 **Files:**
+
 - Modify: `src/renderer/src/components/TabBar.jsx`
 
 - [ ] **Step 1: Locate the TABS constant**
@@ -1269,10 +1350,10 @@ Update the `TABS` constant to include:
 ```javascript
 const TABS = [
   { id: 'browser', label: 'Browser', icon: Globe },
-  { id: 'files', label: 'Files', icon: FolderOpen },  // NEW
+  { id: 'files', label: 'Files', icon: FolderOpen }, // NEW
   { id: 'library', label: 'Library', icon: BookMarked },
-  { id: 'notes', label: 'Notes', icon: FileText },
-];
+  { id: 'notes', label: 'Notes', icon: FileText }
+]
 ```
 
 Add import for `FolderOpen` icon (from `lucide-react`).
@@ -1282,7 +1363,7 @@ Add import for `FolderOpen` icon (from `lucide-react`).
 In `App.jsx`, add to the lazy-loaded tabs:
 
 ```javascript
-const FilesTab = React.lazy(() => import('./components/FilesTab'));
+const FilesTab = React.lazy(() => import('./components/FilesTab'))
 ```
 
 - [ ] **Step 4: Add Files tab render clause**
@@ -1290,7 +1371,9 @@ const FilesTab = React.lazy(() => import('./components/FilesTab'));
 In the tab rendering logic, add:
 
 ```javascript
-{activeTab === 'files' && <FilesTab />}
+{
+  activeTab === 'files' && <FilesTab />
+}
 ```
 
 - [ ] **Step 5: Test in dev**
@@ -1315,6 +1398,7 @@ git commit -m "feat: add Files tab to tab bar"
 #### Task 13: Adapt LibraryDetailPanel for File Imports
 
 **Files:**
+
 - Modify: `src/renderer/src/components/LibraryDetailPanel.jsx`
 
 - [ ] **Step 1: Review current LibraryDetailPanel**
@@ -1335,7 +1419,7 @@ export default function LibraryDetailPanel({ file, isFileImport }) {
           <img src={file.path} alt={file.name} className="max-w-full h-auto" />
           <MetadataBar file={file} isFileImport={true} />
         </div>
-      );
+      )
     } else if (file.type === 'pdf' || file.type === 'document') {
       return (
         <div className="p-4">
@@ -1346,16 +1430,16 @@ export default function LibraryDetailPanel({ file, isFileImport }) {
           </div>
           <MetadataBar file={file} isFileImport={true} />
         </div>
-      );
+      )
     }
   }
 
   // Default behavior for library files...
-  return <>{/* existing code */}</>;
+  return <>{/* existing code */}</>
 }
 
 function MetadataBar({ file, isFileImport }) {
-  const stat = require('fs').statSync(file.path);
+  const stat = require('fs').statSync(file.path)
 
   return (
     <div className="mt-4 text-xs text-gray-600 space-y-1">
@@ -1371,7 +1455,7 @@ function MetadataBar({ file, isFileImport }) {
         </button>
       </div>
     </div>
-  );
+  )
 }
 ```
 
@@ -1393,6 +1477,7 @@ git commit -m "feat: adapt LibraryDetailPanel to preview file imports"
 #### Task 14: Add File Remember Button & Folder Import Dialog
 
 **Files:**
+
 - Modify: `src/renderer/src/components/FilesTab.jsx`
 - Create: `src/renderer/src/components/FolderImportDialog.jsx`
 
@@ -1416,17 +1501,17 @@ In `FilesTab.jsx`:
 ```javascript
 async function handleRememberFile(file) {
   try {
-    const result = await window.api.files.rememberFile(file.path);
+    const result = await window.api.files.rememberFile(file.path)
     if (result.error) {
-      alert(`Error: ${result.error}`);
+      alert(`Error: ${result.error}`)
     } else {
-      alert(`Successfully remembered: ${result.title}`);
-      setRememberedPaths([...rememberedPaths, file.path]);
+      alert(`Successfully remembered: ${result.title}`)
+      setRememberedPaths([...rememberedPaths, file.path])
       // Trigger library refresh
-      store.setLibraryFiles(store.libraryFiles); // Force refresh
+      store.setLibraryFiles(store.libraryFiles) // Force refresh
     }
   } catch (error) {
-    alert(`Failed to remember file: ${error.message}`);
+    alert(`Failed to remember file: ${error.message}`)
   }
 }
 ```
@@ -1438,7 +1523,7 @@ Pass handler to `LibraryDetailPanel` via prop.
 Create `src/renderer/src/components/FolderImportDialog.jsx`:
 
 ```jsx
-import React from 'react';
+import React from 'react'
 
 export default function FolderImportDialog({ folderPath, fileCount, onConfirm, onCancel }) {
   return (
@@ -1449,10 +1534,7 @@ export default function FolderImportDialog({ folderPath, fileCount, onConfirm, o
           This folder contains <strong>{fileCount} files</strong>. Processing may take a moment.
         </p>
         <div className="flex gap-4">
-          <button
-            onClick={onCancel}
-            className="flex-1 px-4 py-2 border rounded hover:bg-gray-50"
-          >
+          <button onClick={onCancel} className="flex-1 px-4 py-2 border rounded hover:bg-gray-50">
             Cancel
           </button>
           <button
@@ -1464,7 +1546,7 @@ export default function FolderImportDialog({ folderPath, fileCount, onConfirm, o
         </div>
       </div>
     </div>
-  );
+  )
 }
 ```
 
@@ -1474,13 +1556,13 @@ Update FileList to show a context menu option "Import Folder":
 
 ```javascript
 function handleFolderImport(folderPath) {
-  window.api.files.rememberFolder(folderPath).then(result => {
+  window.api.files.rememberFolder(folderPath).then((result) => {
     if (result.count > 10) {
-      setFolderImportDialog({ path: folderPath, count: result.count });
+      setFolderImportDialog({ path: folderPath, count: result.count })
     } else {
-      proceedWithImport(folderPath, result.files);
+      proceedWithImport(folderPath, result.files)
     }
-  });
+  })
 }
 ```
 
@@ -1504,6 +1586,7 @@ git commit -m "feat: add file remember button and folder import dialog"
 #### Task 15: Add Error Handling for Missing Original Files
 
 **Files:**
+
 - Modify: `src/renderer/src/components/LibraryDetailPanel.jsx`
 - Modify: `src/main/ipc-handlers.js`
 
@@ -1513,9 +1596,9 @@ In `ipc-handlers.js`, add:
 
 ```javascript
 ipcMain.handle('files:checkOriginalExists', async (event, originalPath) => {
-  const fs = require('fs');
-  return { exists: fs.existsSync(originalPath) };
-});
+  const fs = require('fs')
+  return { exists: fs.existsSync(originalPath) }
+})
 ```
 
 - [ ] **Step 2: Update preload**
@@ -1533,11 +1616,11 @@ Update the detail panel to check original file existence:
 ```jsx
 React.useEffect(() => {
   if (metadata?.originalPath) {
-    window.api.files.checkOriginalExists(metadata.originalPath).then(result => {
-      setOriginalExists(result.exists);
-    });
+    window.api.files.checkOriginalExists(metadata.originalPath).then((result) => {
+      setOriginalExists(result.exists)
+    })
   }
-}, [metadata]);
+}, [metadata])
 
 if (metadata?.originalPath && !originalExists) {
   return (
@@ -1551,7 +1634,7 @@ if (metadata?.originalPath && !originalExists) {
         Delete This Entry
       </button>
     </div>
-  );
+  )
 }
 ```
 
@@ -1571,6 +1654,7 @@ git commit -m "feat: add error handling for missing original files"
 #### Task 16: Sync Library After File Import
 
 **Files:**
+
 - Modify: `src/renderer/src/store/app-store.js`
 - Modify: `src/renderer/src/hooks/useIpcEvents.js`
 
@@ -1581,10 +1665,10 @@ In `useIpcEvents.js`, verify that `library:changed` event listener updates `libr
 ```javascript
 window.api.on('library:changed', () => {
   // Fetch updated library
-  window.api.listLibrary().then(files => {
-    store.setLibraryFiles(files);
-  });
-});
+  window.api.listLibrary().then((files) => {
+    store.setLibraryFiles(files)
+  })
+})
 ```
 
 - [ ] **Step 2: Test in dev**
@@ -1632,6 +1716,7 @@ git commit -m "test: manual verification of Files tab implementation"
 ## Verification & Rollout
 
 **Build & Package:**
+
 ```bash
 npm run build
 npm run test:all
@@ -1639,6 +1724,7 @@ npm run package
 ```
 
 **Expected outcomes:**
+
 - No build errors
 - All tests pass
 - App packages successfully for current OS

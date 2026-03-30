@@ -11,7 +11,27 @@ function fmtDateTime(iso) {
   )
 }
 
-export default function LibraryDetailPanel({ file, onClose, onDelete, style }) {
+function MetadataBar({ file }) {
+  let size = 'Unknown'
+  try {
+    // Note: In electron renderer context, we cannot directly use fs.statSync
+    // This would be called from the main process instead
+    size = '—'
+  } catch (e) {
+    size = '—'
+  }
+
+  return (
+    <div className="mt-4 text-xs text-gray-600 space-y-1 border-t pt-2">
+      <div><strong>File:</strong> {file.name || 'Unknown'}</div>
+      <div><strong>Size:</strong> {size}</div>
+      <div><strong>Path:</strong> {file.path || '—'}</div>
+      {file.type && <div><strong>Type:</strong> {file.type}</div>}
+    </div>
+  )
+}
+
+export default function LibraryDetailPanel({ file, onClose, onDelete, style, isFileImport, onRememberFile }) {
   const setActiveTab = useAppStore((s) => s.setActiveTab)
   const setActiveNotesFolder = useAppStore((s) => s.setActiveNotesFolder)
   const setActiveNotesChapter = useAppStore((s) => s.setActiveNotesChapter)
@@ -22,6 +42,95 @@ export default function LibraryDetailPanel({ file, onClose, onDelete, style }) {
     setActiveTab('notes')
   }
 
+  // When viewing files from the Files tab, show file preview instead of library view
+  if (isFileImport && file) {
+    const title = file.name?.replace(/\.[^/.]+$/, '') || 'Unknown'
+
+    return (
+      <div className="flex-shrink-0 bg-white flex flex-col h-full overflow-hidden">
+        <div className="flex items-start justify-between gap-2 p-4 flex-shrink-0">
+          <div className="min-w-0">
+            <h2 className="text-sm font-bold text-gray-900 leading-snug">{title}</h2>
+            <p className="text-xs text-gray-500 mt-0.5">{file.type || 'file'}</p>
+          </div>
+          {onRememberFile && (
+            <button
+              onClick={() => onRememberFile(file)}
+              className="text-blue-600 hover:text-blue-700 text-xs px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+              title="Remember this file to library"
+            >
+              ✓ Remember
+            </button>
+          )}
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-4 pb-4">
+          {/* Image preview */}
+          {file.type === 'image' && file.path && (
+            <div>
+              <img
+                src={`file://${file.path}`}
+                alt={file.name}
+                className="max-w-full h-auto rounded mb-4"
+                onError={(e) => {
+                  e.target.style.display = 'none'
+                  const fallback = document.createElement('div')
+                  fallback.className = 'bg-gray-100 p-4 rounded text-gray-600 text-sm'
+                  fallback.textContent = '[Image preview unavailable]'
+                  e.target.parentNode.appendChild(fallback)
+                }}
+              />
+              <MetadataBar file={file} />
+            </div>
+          )}
+
+          {/* PDF/Document preview */}
+          {(file.type === 'pdf' || file.type === 'document') && (
+            <div>
+              <div className="bg-gray-100 p-4 rounded text-gray-600 text-sm mb-4">
+                [Document Preview]
+                <br />
+                Remember to library to see full preview with AI summary
+              </div>
+              <MetadataBar file={file} />
+            </div>
+          )}
+
+          {/* Text file preview */}
+          {file.type === 'text' && file.path && (
+            <div>
+              <div className="bg-gray-50 p-4 rounded text-gray-700 text-xs font-mono whitespace-pre-wrap overflow-auto max-h-48 mb-4 border">
+                [Text preview loading...]
+              </div>
+              <MetadataBar file={file} />
+            </div>
+          )}
+
+          {/* Other file types */}
+          {file.type === 'other' && (
+            <div>
+              <div className="bg-gray-100 p-4 rounded text-gray-600 text-sm mb-4">
+                [Preview not available for this file type]
+              </div>
+              <MetadataBar file={file} />
+            </div>
+          )}
+
+          {/* Fallback if no type specified */}
+          {!file.type && (
+            <div>
+              <div className="bg-gray-100 p-4 rounded text-gray-600 text-sm mb-4">
+                [Select a file to preview]
+              </div>
+              <MetadataBar file={file} />
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Default library view (for Library tab)
   const title = file.title || file.name.replace(/\.[^/.]+$/, '')
   const uploader = file.uploader || '—'
   const description = file.description || '—'
@@ -39,7 +148,11 @@ export default function LibraryDetailPanel({ file, onClose, onDelete, style }) {
     >
       <div className="flex items-start justify-between gap-2 p-4 flex-shrink-0">
         <div className="min-w-0 flex items-start gap-2">
-          <ContentTypeIcon type={file.contentType || 'video'} size={16} className="flex-shrink-0 mt-0.5 text-gray-500" />
+          <ContentTypeIcon
+            type={file.contentType || 'video'}
+            size={16}
+            className="flex-shrink-0 mt-0.5 text-gray-500"
+          />
           <div className="min-w-0">
             <h2 className="text-sm font-bold text-white leading-snug">{title}</h2>
             <p className="text-xs text-gray-400 mt-0.5 truncate">{subtitle}</p>

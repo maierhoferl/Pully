@@ -17,7 +17,9 @@ describe('useIpcEvents', () => {
     result.current.setActiveNotesFolder(null)
     result.current.setActiveNotesChapter(null)
     result.current.setLibrarySelectedFile(null)
-    result.current.updateBrowserTab(result.current.activeBrowserTabId, { browserActiveChapter: null })
+    result.current.updateBrowserTab(result.current.activeBrowserTabId, {
+      browserActiveChapter: null
+    })
 
     // Reset window.api mocks
     window.api = {

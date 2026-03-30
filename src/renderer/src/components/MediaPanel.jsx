@@ -242,7 +242,11 @@ function MediaEntry({ entry, libraryMatch }) {
             <button
               onClick={handleRemember}
               disabled={rememberState !== 'idle'}
-              title={rememberState === 'exists' ? 'Already in library' : 'Save reference without downloading'}
+              title={
+                rememberState === 'exists'
+                  ? 'Already in library'
+                  : 'Save reference without downloading'
+              }
               className={`text-xs font-semibold px-2 py-1 rounded transition-colors ${rememberStyle}`}
             >
               {rememberLabel}
@@ -411,8 +415,16 @@ export function MediaPanel({ onRememberSite, onDownloadSite }) {
               </div>
               <div className="flex flex-col gap-1">
                 {videos.map((entry) => {
-                  const libraryMatch = libraryFiles?.find((f) => f.url === (entry.webpage_url || entry.url))
-                  return <MediaEntry key={entry.id || entry.url} entry={entry} libraryMatch={libraryMatch} />
+                  const libraryMatch = libraryFiles?.find(
+                    (f) => f.url === (entry.webpage_url || entry.url)
+                  )
+                  return (
+                    <MediaEntry
+                      key={entry.id || entry.url}
+                      entry={entry}
+                      libraryMatch={libraryMatch}
+                    />
+                  )
                 })}
               </div>
             </>
@@ -424,8 +436,16 @@ export function MediaPanel({ onRememberSite, onDownloadSite }) {
               </div>
               <div className="flex flex-col gap-1">
                 {playlists.map((entry) => {
-                  const libraryMatch = libraryFiles?.find((f) => f.url === (entry.webpage_url || entry.url))
-                  return <MediaEntry key={entry.id || entry.url} entry={entry} libraryMatch={libraryMatch} />
+                  const libraryMatch = libraryFiles?.find(
+                    (f) => f.url === (entry.webpage_url || entry.url)
+                  )
+                  return (
+                    <MediaEntry
+                      key={entry.id || entry.url}
+                      entry={entry}
+                      libraryMatch={libraryMatch}
+                    />
+                  )
                 })}
               </div>
             </>

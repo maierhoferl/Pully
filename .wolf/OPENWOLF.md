@@ -25,6 +25,7 @@ You are working in an OpenWolf-managed project. These rules apply every turn.
 OpenWolf's value comes from learning across sessions. You MUST update `.wolf/cerebrum.md` whenever you learn something useful. This is not optional.
 
 **Update `## User Preferences` when the user:**
+
 - Corrects your approach ("no, do it this way instead")
 - Expresses a style preference (naming, structure, formatting)
 - Shows a preferred workflow or tool choice
@@ -32,18 +33,21 @@ OpenWolf's value comes from learning across sessions. You MUST update `.wolf/cer
 - Asks for more/less detail, verbosity, explanation
 
 **Update `## Key Learnings` when you discover:**
-- A project convention not obvious from the code (e.g., "tests go in __tests__/ not test/")
+
+- A project convention not obvious from the code (e.g., "tests go in **tests**/ not test/")
 - A framework-specific pattern this project uses
 - An API behavior that surprised you
 - A dependency quirk or version constraint
 - How modules connect or data flows through the system
 
 **Update `## Do-Not-Repeat` (with date) when:**
+
 - The user corrects a mistake you made
 - You try something that fails and find the right approach
 - You discover a gotcha that would trip up a fresh session
 
 **Update `## Decision Log` when:**
+
 - A significant architectural or technical choice is made
 - The user explains why they chose approach A over B
 - A trade-off is explicitly discussed
@@ -53,6 +57,7 @@ OpenWolf's value comes from learning across sessions. You MUST update `.wolf/cer
 ## Bug Logging (MANDATORY)
 
 **Log a bug to `.wolf/buglog.json` whenever ANY of these happen:**
+
 - The user reports an error, bug, or problem
 - A test fails or a command produces an error
 - You fix something that was broken
@@ -67,6 +72,7 @@ OpenWolf's value comes from learning across sessions. You MUST update `.wolf/cer
 **Before fixing:** Read `.wolf/buglog.json` first — the fix may already be known.
 
 **After fixing:** ALWAYS append to `.wolf/buglog.json` with this structure:
+
 ```json
 {
   "id": "bug-NNN",

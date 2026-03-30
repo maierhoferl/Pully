@@ -14,33 +14,33 @@ Ask these in order. Stop early if the answer narrows to 1-2 frameworks.
 
 ## Quick Selection Guide
 
-| Priority | Recommended |
-|----------|-------------|
-| Fastest setup | DaisyUI, Preline UI |
-| Stunning animations | Aceternity UI, Magic UI |
-| Maximum control | shadcn/ui, Headless UI |
-| Most free components | Origin UI (400+) |
+| Priority                               | Recommended                |
+| -------------------------------------- | -------------------------- |
+| Fastest setup                          | DaisyUI, Preline UI        |
+| Stunning animations                    | Aceternity UI, Magic UI    |
+| Maximum control                        | shadcn/ui, Headless UI     |
+| Most free components                   | Origin UI (400+)           |
 | Multi-framework (React + Vue + Svelte) | Park UI, DaisyUI, Flowbite |
-| AI product aesthetic | Cult UI |
-| Polished defaults + accessibility | HeroUI, Chakra UI |
-| Business/enterprise | Flowbite, shadcn/ui |
+| AI product aesthetic                   | Cult UI                    |
+| Polished defaults + accessibility      | HeroUI, Chakra UI          |
+| Business/enterprise                    | Flowbite, shadcn/ui        |
 
 ## Comparison Matrix
 
-| Framework | Styling | Animation | Setup | Best For | Cost |
-|-----------|---------|-----------|-------|----------|------|
-| shadcn/ui | Tailwind + Radix | Minimal | Medium | Full apps, dashboards | Free |
-| Aceternity UI | Tailwind + Framer Motion | Heavy, cinematic | Easy (copy-paste) | Animated landing pages | Free / Pro |
-| Magic UI | Tailwind + Motion | Purposeful, polished | Easy (shadcn CLI) | SaaS marketing | Free / Pro |
-| DaisyUI | Tailwind plugin | CSS transitions | Very easy | Rapid prototyping | Free |
-| HeroUI | Tailwind + React Aria | Smooth built-in | Easy | React apps, accessible | Free |
-| Chakra UI | CSS-in-JS (Emotion) | Built-in transitions | Easy | Themed React apps | Free |
-| Flowbite | Tailwind plugin | CSS transitions | Very easy | Multi-framework, business | Free / Pro |
-| Preline UI | Tailwind plugin | CSS + minimal JS | Very easy | Speed-focused builds | Free / Pro |
-| Park UI | Tailwind + Ark UI | Minimal | Medium | Multi-framework, design systems | Free |
-| Origin UI | Tailwind + shadcn | Minimal | Easy (copy-paste) | Max component variety | Free |
-| Headless UI | Custom Tailwind | Custom (Transition) | Medium-Hard | Full design control | Free |
-| Cult UI | Tailwind + shadcn | Modern, subtle | Medium | AI apps, full-stack | Free |
+| Framework     | Styling                  | Animation            | Setup             | Best For                        | Cost       |
+| ------------- | ------------------------ | -------------------- | ----------------- | ------------------------------- | ---------- |
+| shadcn/ui     | Tailwind + Radix         | Minimal              | Medium            | Full apps, dashboards           | Free       |
+| Aceternity UI | Tailwind + Framer Motion | Heavy, cinematic     | Easy (copy-paste) | Animated landing pages          | Free / Pro |
+| Magic UI      | Tailwind + Motion        | Purposeful, polished | Easy (shadcn CLI) | SaaS marketing                  | Free / Pro |
+| DaisyUI       | Tailwind plugin          | CSS transitions      | Very easy         | Rapid prototyping               | Free       |
+| HeroUI        | Tailwind + React Aria    | Smooth built-in      | Easy              | React apps, accessible          | Free       |
+| Chakra UI     | CSS-in-JS (Emotion)      | Built-in transitions | Easy              | Themed React apps               | Free       |
+| Flowbite      | Tailwind plugin          | CSS transitions      | Very easy         | Multi-framework, business       | Free / Pro |
+| Preline UI    | Tailwind plugin          | CSS + minimal JS     | Very easy         | Speed-focused builds            | Free / Pro |
+| Park UI       | Tailwind + Ark UI        | Minimal              | Medium            | Multi-framework, design systems | Free       |
+| Origin UI     | Tailwind + shadcn        | Minimal              | Easy (copy-paste) | Max component variety           | Free       |
+| Headless UI   | Custom Tailwind          | Custom (Transition)  | Medium-Hard       | Full design control             | Free       |
+| Cult UI       | Tailwind + shadcn        | Modern, subtle       | Medium            | AI apps, full-stack             | Free       |
 
 ---
 

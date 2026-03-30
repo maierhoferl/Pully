@@ -4,6 +4,7 @@ import FileTree from './FileTree'
 import FileList from './FileList'
 import LibraryDetailPanel from './LibraryDetailPanel'
 import { LibraryNotesPanel } from './LibraryNotesPanel'
+import FolderImportDialog from './FolderImportDialog'
 
 export default function FilesTab() {
   const store = useAppStore()
@@ -12,6 +13,7 @@ export default function FilesTab() {
   const [sideWidth, setSideWidth] = useState(store.filesSideWidth || 320)
   const [sideSplitPct, setSideSplitPct] = useState(store.filesSideSplitPct || 60)
   const [rememberedPaths, setRememberedPaths] = useState([])
+  const [folderImportDialog, setFolderImportDialog] = useState(null)
 
   useEffect(() => {
     store.setFilesLastDir(currentFolder)
@@ -27,6 +29,20 @@ export default function FilesTab() {
 
   async function handleSelectFile(file) {
     setSelectedFile(file)
+  }
+
+  async function handleRememberFile(file) {
+    try {
+      const result = await window.api.files.rememberFile(file.path)
+      if (result.error) {
+        alert(`Error: ${result.error}`)
+      } else {
+        alert(`✓ Imported: ${result.title}`)
+        setRememberedPaths([...rememberedPaths, file.path])
+      }
+    } catch (error) {
+      alert(`Failed: ${error.message}`)
+    }
   }
 
   return (
@@ -55,7 +71,11 @@ export default function FilesTab() {
         {selectedFile ? (
           <>
             <div style={{ height: `${sideSplitPct}%` }} className="border-b overflow-y-auto">
-              <LibraryDetailPanel file={selectedFile} isFileImport={true} />
+              <LibraryDetailPanel
+                file={selectedFile}
+                isFileImport={true}
+                onRememberFile={handleRememberFile}
+              />
             </div>
             <div style={{ height: `${100 - sideSplitPct}%` }} className="overflow-y-auto">
               <LibraryNotesPanel file={selectedFile} />
@@ -67,6 +87,18 @@ export default function FilesTab() {
           </div>
         )}
       </div>
+
+      {folderImportDialog && (
+        <FolderImportDialog
+          folderPath={folderImportDialog.path}
+          fileCount={folderImportDialog.count}
+          onConfirm={() => {
+            // Implement folder import logic in next phase
+            setFolderImportDialog(null)
+          }}
+          onCancel={() => setFolderImportDialog(null)}
+        />
+      )}
     </div>
   )
 }

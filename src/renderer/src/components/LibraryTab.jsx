@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../store/app-store.js'
 import LibraryDetailPanel from './LibraryDetailPanel.jsx'
 import LibraryToolbar from './LibraryToolbar.jsx'
+import { LibraryNotesPanel } from './LibraryNotesPanel.jsx'
 import { ContentTypeIcon } from './icons/ContentTypeIcon.jsx'
 
 // Stable color per folder name (derived from name hash so colors don't shift when folders are added)
@@ -90,7 +91,8 @@ export default function LibraryTab() {
     setLibrarySort,
     setLibrarySearch,
     librarySelectedFile,
-    setLibrarySelectedFile
+    setLibrarySelectedFile,
+    setLibraryActiveChapter
   } = useAppStore()
   const [allFolders, setAllFolders] = useState([])
   const [selectedPath, setSelectedPath] = useState(null)
@@ -108,6 +110,7 @@ export default function LibraryTab() {
   const [deletingFolder, setDeletingFolder] = useState(null) // { name, count }
   const [classifyStatus, setClassifyStatus] = useState(null) // null | 'running' | result string
   const [sideWidth, setSideWidth] = useState(400)
+  const [sideSplitPct, setSideSplitPct] = useState(60) // Percentage for detail panel (top) vs notes (bottom)
 
   function handleSideDragStart(e) {
     e.preventDefault()
@@ -120,6 +123,28 @@ export default function LibraryTab() {
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onUp)
     }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
+
+  function handleDetailNotesDragStart(e) {
+    e.preventDefault()
+    const startY = e.clientY
+    const startPct = sideSplitPct
+    const container = e.currentTarget.parentElement
+    const containerHeight = container.getBoundingClientRect().height
+
+    function onMove(ev) {
+      if (containerHeight === 0) return
+      const deltaPct = ((ev.clientY - startY) / containerHeight) * 100
+      setSideSplitPct(Math.max(20, Math.min(80, startPct + deltaPct)))
+    }
+
+    function onUp() {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
   }
@@ -288,7 +313,10 @@ export default function LibraryTab() {
     }
     await window.api.deleteFile(file.path)
     setLibraryFiles(libraryFiles.filter((f) => f.path !== file.path))
-    if (selectedPath === file.path) setSelectedPath(null)
+    if (selectedPath === file.path) {
+      setSelectedPath(null)
+      setLibraryActiveChapter(null)
+    }
     if (file.url) removeDownloadByUrl(file.url)
   }
 
@@ -476,9 +504,22 @@ export default function LibraryTab() {
                         >
                           <button
                             className="flex items-center gap-3 text-left flex-1 min-w-0"
-                            onClick={() =>
-                              setSelectedPath((prev) => (prev === file.path ? null : file.path))
-                            }
+                            onClick={() => {
+                              const isCurrentlySelected = selectedPath === file.path
+                              if (isCurrentlySelected) {
+                                setSelectedPath(null)
+                                setLibraryActiveChapter(null)
+                              } else {
+                                setSelectedPath(file.path)
+                                setLibraryActiveChapter({
+                                  chapter: {
+                                    filePath: file.path,
+                                    name: file.name,
+                                    title: file.title
+                                  }
+                                })
+                              }
+                            }}
                           >
                             <div className="w-16 aspect-video bg-gray-700 rounded overflow-hidden flex-shrink-0 flex items-center justify-center text-gray-500">
                               <ContentTypeIcon type={file.contentType || 'video'} size={20} />
@@ -663,12 +704,41 @@ export default function LibraryTab() {
         <div className="h-6 w-0.5 bg-gray-600 rounded pointer-events-none" />
       </div>
       {selected ? (
-        <LibraryDetailPanel
-          file={selected}
-          onClose={() => setSelectedPath(null)}
-          onDelete={handleDelete}
+        <div
           style={{ width: sideWidth }}
-        />
+          className="flex-shrink-0 h-full flex flex-col bg-gray-900 border-l border-gray-700 overflow-hidden"
+        >
+          {/* Detail panel */}
+          <div
+            style={{ height: `${sideSplitPct}%` }}
+            className="overflow-hidden flex-shrink-0 border-b border-gray-700"
+          >
+            <LibraryDetailPanel
+              file={selected}
+              onClose={() => {
+                setSelectedPath(null)
+                setLibraryActiveChapter(null)
+              }}
+              onDelete={handleDelete}
+              style={{ width: '100%', height: '100%' }}
+            />
+          </div>
+          {/* Divider */}
+          <div
+            role="separator"
+            className="h-1 bg-gray-800 hover:bg-blue-600 cursor-row-resize flex-shrink-0 flex items-center justify-center transition-colors"
+            onMouseDown={handleDetailNotesDragStart}
+          >
+            <div className="w-6 h-0.5 bg-gray-600 rounded pointer-events-none" />
+          </div>
+          {/* Notes panel */}
+          <div
+            style={{ height: `${100 - sideSplitPct}%` }}
+            className="overflow-hidden flex-1 min-h-0"
+          >
+            <LibraryNotesPanel />
+          </div>
+        </div>
       ) : (
         <div
           style={{ width: sideWidth }}

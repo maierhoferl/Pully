@@ -22,7 +22,7 @@ function pruneOldEntries(entries) {
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-  return entries.filter(entry => {
+  return entries.filter((entry) => {
     const lastVisited = new Date(entry.lastVisited)
     return lastVisited >= thirtyDaysAgo
   })
@@ -46,7 +46,7 @@ export function upsertHistory(data, historyPath) {
   let entries = readHistoryFile(p)
 
   // Find existing entry by URL
-  const existingIndex = entries.findIndex(e => e.url === data.url)
+  const existingIndex = entries.findIndex((e) => e.url === data.url)
 
   if (existingIndex >= 0) {
     // Update lastVisited and title

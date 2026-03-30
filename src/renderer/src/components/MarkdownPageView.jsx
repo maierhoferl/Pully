@@ -78,9 +78,13 @@ export function MarkdownPageView({ videoUrl, onClose }) {
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
-              h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mt-4 mb-2" {...props} />,
+              h1: ({ node, ...props }) => (
+                <h1 className="text-2xl font-bold mt-4 mb-2" {...props} />
+              ),
               h2: ({ node, ...props }) => <h2 className="text-xl font-bold mt-3 mb-2" {...props} />,
-              h3: ({ node, ...props }) => <h3 className="text-lg font-semibold mt-2 mb-2" {...props} />,
+              h3: ({ node, ...props }) => (
+                <h3 className="text-lg font-semibold mt-2 mb-2" {...props} />
+              ),
               p: ({ node, ...props }) => <p className="mb-3 leading-relaxed" {...props} />,
               ul: ({ node, ...props }) => <ul className="mb-3 ml-4 list-disc" {...props} />,
               ol: ({ node, ...props }) => <ol className="mb-3 ml-4 list-decimal" {...props} />,
@@ -93,14 +97,22 @@ export function MarkdownPageView({ videoUrl, onClose }) {
               ),
               code: ({ node, inline, ...props }) =>
                 inline ? (
-                  <code className="bg-gray-900 px-1.5 py-0.5 rounded text-sm font-mono text-gray-200" {...props} />
+                  <code
+                    className="bg-gray-900 px-1.5 py-0.5 rounded text-sm font-mono text-gray-200"
+                    {...props}
+                  />
                 ) : (
-                  <code className="bg-gray-900 p-2 rounded block text-sm font-mono text-gray-200 overflow-auto mb-3" {...props} />
+                  <code
+                    className="bg-gray-900 p-2 rounded block text-sm font-mono text-gray-200 overflow-auto mb-3"
+                    {...props}
+                  />
                 ),
               img: ({ node, ...props }) => (
                 <img className="max-w-full h-auto rounded my-3" {...props} />
               ),
-              a: ({ node, ...props }) => <a className="text-blue-400 hover:text-blue-300 underline" {...props} />
+              a: ({ node, ...props }) => (
+                <a className="text-blue-400 hover:text-blue-300 underline" {...props} />
+              )
             }}
           >
             {content}

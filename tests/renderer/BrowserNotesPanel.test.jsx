@@ -50,7 +50,9 @@ describe('BrowserNotesPanel', () => {
       }
     }
 
-    result.current.updateBrowserTab(result.current.activeBrowserTabId, { browserActiveChapter: mockChapter })
+    result.current.updateBrowserTab(result.current.activeBrowserTabId, {
+      browserActiveChapter: mockChapter
+    })
 
     render(<BrowserNotesPanel />)
 
@@ -74,7 +76,9 @@ describe('BrowserNotesPanel', () => {
       }
     }
 
-    result.current.updateBrowserTab(result.current.activeBrowserTabId, { browserActiveChapter: mockChapter })
+    result.current.updateBrowserTab(result.current.activeBrowserTabId, {
+      browserActiveChapter: mockChapter
+    })
 
     render(<BrowserNotesPanel />)
 
@@ -97,7 +101,9 @@ describe('BrowserNotesPanel', () => {
       }
     }
 
-    result.current.updateBrowserTab(result.current.activeBrowserTabId, { browserActiveChapter: mockChapter })
+    result.current.updateBrowserTab(result.current.activeBrowserTabId, {
+      browserActiveChapter: mockChapter
+    })
 
     const { container } = render(<BrowserNotesPanel />)
 

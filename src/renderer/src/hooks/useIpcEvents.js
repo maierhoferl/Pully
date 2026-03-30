@@ -33,6 +33,10 @@ export function useIpcEvents() {
     }
     const unsubChapterUpdated = window.api.on('notes:chapter-updated', handleChapterUpdated)
 
+    const unsubLibraryChanged = window.api.on('library:changed', () => {
+      window.api.listLibrary().then(setLibraryFiles)
+    })
+
     window.api.getAllDownloads().then(setDownloads)
     window.api.readConfig().then((cfg) => {
       setConfig(cfg)
@@ -49,6 +53,7 @@ export function useIpcEvents() {
       unsubFailed()
       unsubLogEntry()
       unsubChapterUpdated()
+      unsubLibraryChanged()
     }
   }, [])
 }

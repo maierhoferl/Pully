@@ -153,7 +153,8 @@ async function validateNotes(outputFolder) {
           fs.renameSync(notesPath, backup)
           details.push(`Backed up invalid notes.md to ${path.basename(backup)}`)
 
-          const dirName = path.basename(dir) === path.basename(outputFolder) ? 'Library' : path.basename(dir)
+          const dirName =
+            path.basename(dir) === path.basename(outputFolder) ? 'Library' : path.basename(dir)
           const repaired = `# ${dirName}\n\n`
           fs.writeFileSync(notesPath, repaired)
           details.push(`Created clean notes.md for ${dirName}`)
@@ -332,10 +333,15 @@ async function scanUntracked(outputFolder, metadataIndexPath) {
 
       let lines = content.split('\n')
       let startIdx = lines.findIndex((l) => l.includes(blockStart))
-      let endIdx = startIdx !== -1 ? lines.findIndex((l, i) => i > startIdx && l.includes(blockEnd)) : -1
+      let endIdx =
+        startIdx !== -1 ? lines.findIndex((l, i) => i > startIdx && l.includes(blockEnd)) : -1
 
       // Build new block
-      const pullyLines = [blockStart, ...untracked.map((p) => path.relative(outputFolder, p)), blockEnd]
+      const pullyLines = [
+        blockStart,
+        ...untracked.map((p) => path.relative(outputFolder, p)),
+        blockEnd
+      ]
 
       if (startIdx !== -1 && endIdx !== -1) {
         // Replace existing block
