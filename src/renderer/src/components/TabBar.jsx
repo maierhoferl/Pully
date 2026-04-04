@@ -87,6 +87,21 @@ export function TabBar() {
           <ShieldIcon enabled={adblockEnabled} />
         </button>
         <button
+          onClick={() => {
+            if (window.api?.toggleDevTools) {
+              window.api.toggleDevTools().catch((err) => {
+                console.error('Failed to toggle DevTools:', err)
+              })
+            }
+          }}
+          className="text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-gray-700"
+          title="Toggle DevTools"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm0 1v10h12V3H2zm2 2l2 2-2 2-.7-.7L4.6 7 3.3 5.7 4 5zm4 4h4v1H6v-1z" />
+          </svg>
+        </button>
+        <button
           onClick={() => setSettingsOpen(true)}
           className="text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-gray-700 text-lg"
           title="Settings"

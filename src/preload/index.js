@@ -65,6 +65,7 @@ contextBridge.exposeInMainWorld('api', {
   },
   logError: (category, message, meta) =>
     ipcRenderer.invoke('log:renderer', { level: 'error', category, message, meta }),
+  toggleDevTools: () => ipcRenderer.invoke('devtools:toggle'),
 
   // Bookmarks
   listBookmarks: () => ipcRenderer.invoke('bookmarks:list'),

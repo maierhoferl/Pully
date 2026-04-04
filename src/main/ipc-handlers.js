@@ -74,6 +74,16 @@ export function registerIpcHandlers(downloadManager, logger, getMainWindow) {
     return updated
   })
 
+  ipcMain.handle('devtools:toggle', () => {
+    const win = getMainWindow()
+    if (!win) return
+    if (win.webContents.isDevToolsOpened()) {
+      win.webContents.closeDevTools()
+    } else {
+      win.webContents.openDevTools()
+    }
+  })
+
   ipcMain.handle('dialog:openFolder', async () => {
     const mainWindow = getMainWindow()
     if (!mainWindow) throw new Error('Main window not available')
