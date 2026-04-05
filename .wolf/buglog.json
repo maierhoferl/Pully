@@ -96,6 +96,54 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-03-30T21:53:39.448Z"
+    },
+    {
+      "id": "bug-007",
+      "timestamp": "2026-04-05T06:28:20.965Z",
+      "error_message": "CSS fix: on",
+      "file": "src/renderer/src/components/ContentViewer.jsx",
+      "root_cause": "on: * - isRef: whether this is a referenced (.ref) item or downloaded → * - isRef: whether this is a referenced (Obsidian note / old .ref) item",
+      "fix": "Changed on: * - isRef: whether this is a referenced (.ref) item or downloaded → * - isRef: whether this is a referenced (Obsidian note / old .ref) item",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "jsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T06:28:20.965Z"
+    },
+    {
+      "id": "bug-008",
+      "timestamp": "2026-04-05T06:28:41.213Z",
+      "error_message": "Missing guard clause",
+      "file": "src/renderer/src/components/MarkdownPageView.jsx",
+      "root_cause": "No early return/throw for edge case: !content || !content.startsWith('---\\n'",
+      "fix": "Added guard clause: if (!content || !content.startsWith('---\\n')",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "jsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T06:28:41.213Z"
+    },
+    {
+      "id": "bug-009",
+      "timestamp": "2026-04-05T06:31:00.688Z",
+      "error_message": "Incorrect value in code",
+      "file": "tests/main/notes-store.test.js",
+      "root_cause": "Had 'url: https://youtube.com/watch?v=abc'",
+      "fix": "Changed to 'youtube.com/watch?v=abc'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "js"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T06:31:00.688Z"
     }
   ]
 }

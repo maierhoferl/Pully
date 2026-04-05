@@ -567,3 +567,47 @@
 | 23:42 | Edited src/renderer/src/components/BrowserTab.jsx | reduced (-6 lines) | ~96 |
 | 23:43 | Session end: 1 writes across 1 files (BrowserTab.jsx) | 1 reads | ~7289 tok |
 | 23:53 | Edited src/renderer/src/components/ChapterCard.jsx | added optional chaining | ~197 |
+
+## Session: 2026-04-05 08:15
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-04-05 08:15
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-04-05 08:15
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 08:23 | Created src/main/obsidian-store.js | — | ~2838 |
+| 08:23 | Created src/main/metadata-store.js | — | ~2978 |
+| 08:24 | Created src/main/notes-store.js | — | ~2451 |
+| 08:26 | Created src/main/ipc-handlers.js | — | ~8907 |
+| 08:27 | Created src/main/folder-curator.js | — | ~2892 |
+| 08:28 | Edited src/renderer/src/components/ContentViewer.jsx | item() → flag() | ~263 |
+| 08:28 | Edited src/renderer/src/components/MarkdownPageView.jsx | added 2 condition(s) | ~204 |
+| 08:28 | Edited src/renderer/src/components/MarkdownPageView.jsx | inline fix | ~15 |
+| 08:29 | Created tests/main/metadata-store.test.js | — | ~1534 |
+| 08:30 | Created tests/main/notes-store.test.js | — | ~2012 |
+| 08:31 | Edited tests/main/notes-store.test.js | "url: https://youtube.com/" → "youtube.com/watch?v=abc" | ~26 |
+| 08:31 | Obsidian vault storage backend: replaced metadata-index.json + notes.md with individual .md notes per item, each with YAML frontmatter + AI Summary + My Notes sections | obsidian-store.js (new), metadata-store.js, notes-store.js, ipc-handlers.js, folder-curator.js, ContentViewer.jsx, MarkdownPageView.jsx | All main tests pass (88/93; 5 pre-existing Electron install failures) | ~8000 |
+| 08:31 | Session end: 11 writes across 9 files (obsidian-store.js, metadata-store.js, notes-store.js, ipc-handlers.js, folder-curator.js) | 12 reads | ~50714 tok |
+| 08:32 | Session end: 11 writes across 9 files (obsidian-store.js, metadata-store.js, notes-store.js, ipc-handlers.js, folder-curator.js) | 12 reads | ~50714 tok |
+
+## Session: 2026-04-05 08:35
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-04-05 08:35
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-04-05 08:37
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
