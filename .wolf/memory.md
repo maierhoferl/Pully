@@ -596,3 +596,18 @@
 | 08:31 | Obsidian vault storage backend: replaced metadata-index.json + notes.md with individual .md notes per item, each with YAML frontmatter + AI Summary + My Notes sections | obsidian-store.js (new), metadata-store.js, notes-store.js, ipc-handlers.js, folder-curator.js, ContentViewer.jsx, MarkdownPageView.jsx | All main tests pass (88/93; 5 pre-existing Electron install failures) | ~8000 |
 | 08:31 | Session end: 11 writes across 9 files (obsidian-store.js, metadata-store.js, notes-store.js, ipc-handlers.js, folder-curator.js) | 12 reads | ~50714 tok |
 | 08:32 | Session end: 11 writes across 9 files (obsidian-store.js, metadata-store.js, notes-store.js, ipc-handlers.js, folder-curator.js) | 12 reads | ~50714 tok |
+
+## Session: 2026-04-05 08:35
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-04-05 08:35
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-04-05 08:37
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
