@@ -2,14 +2,14 @@
   "version": 1,
   "created_at": "2026-03-29T15:52:14.972Z",
   "lifetime": {
-    "total_tokens_estimated": 2460576,
-    "total_reads": 920,
-    "total_writes": 906,
-    "total_sessions": 36,
-    "anatomy_hits": 842,
+    "total_tokens_estimated": 2511290,
+    "total_reads": 932,
+    "total_writes": 917,
+    "total_sessions": 39,
+    "anatomy_hits": 854,
     "anatomy_misses": 78,
-    "repeated_reads_blocked": 727,
-    "estimated_savings_vs_bare_cli": 1886945
+    "repeated_reads_blocked": 732,
+    "estimated_savings_vs_bare_cli": 1898354
   },
   "sessions": [
     {
@@ -11561,6 +11561,150 @@
         "writes_count": 1,
         "repeated_reads_blocked": 0,
         "anatomy_lookups": 1
+      }
+    },
+    {
+      "id": "session-2026-04-05-0815",
+      "started": "2026-04-05T06:15:34.617Z",
+      "ended": "2026-04-05T06:31:55.143Z",
+      "reads": [
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/src/main/metadata-store.js",
+          "tokens_estimated": 1350,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 3806,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/src/main/config-store.js",
+          "tokens_estimated": 461,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 7615,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/src/main/ai-summarizer.js",
+          "tokens_estimated": 1281,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/src/main/download-manager.js",
+          "tokens_estimated": 2451,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/src/main/folder-curator.js",
+          "tokens_estimated": 3792,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/tests/main/metadata-store.test.js",
+          "tokens_estimated": 1396,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/tests/main/notes-store.test.js",
+          "tokens_estimated": 2013,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/src/renderer/src/components/ContentViewer.jsx",
+          "tokens_estimated": 483,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/src/renderer/src/components/MarkdownPageView.jsx",
+          "tokens_estimated": 1325,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/package.json",
+          "tokens_estimated": 621,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/src/main/obsidian-store.js",
+          "tokens_estimated": 2838,
+          "action": "create"
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/src/main/metadata-store.js",
+          "tokens_estimated": 2978,
+          "action": "create"
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/src/main/notes-store.js",
+          "tokens_estimated": 2451,
+          "action": "create"
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/src/main/ipc-handlers.js",
+          "tokens_estimated": 8907,
+          "action": "create"
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/src/main/folder-curator.js",
+          "tokens_estimated": 2892,
+          "action": "create"
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/src/renderer/src/components/ContentViewer.jsx",
+          "tokens_estimated": 263,
+          "action": "edit"
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/src/renderer/src/components/MarkdownPageView.jsx",
+          "tokens_estimated": 204,
+          "action": "edit"
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/src/renderer/src/components/MarkdownPageView.jsx",
+          "tokens_estimated": 15,
+          "action": "edit"
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/tests/main/metadata-store.test.js",
+          "tokens_estimated": 1534,
+          "action": "create"
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/tests/main/notes-store.test.js",
+          "tokens_estimated": 2012,
+          "action": "create"
+        },
+        {
+          "file": "/private/var/folders/g3/l4q0tnmx4_q0y1lhdh1ftnn80000gn/T/vibe-kanban/worktrees/7d0f-standard-obsidia/VideoDownloader/tests/main/notes-store.test.js",
+          "tokens_estimated": 26,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 26594,
+        "output_tokens_estimated": 24120,
+        "reads_count": 12,
+        "writes_count": 11,
+        "repeated_reads_blocked": 5,
+        "anatomy_lookups": 12
       }
     }
   ],

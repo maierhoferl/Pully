@@ -1,99 +1,177 @@
+/**
+ * metadata-store.js — Metadata persistence backed by Obsidian notes.
+ *
+ * Each content item is represented by a companion .md note in the vault:
+ *   /vault/folder/video.mp4  →  /vault/folder/video.md
+ *   /vault/Title.md          →  reference note (no media file)
+ *
+ * The old metadata-index.json is no longer written; the YAML frontmatter
+ * of each note IS the metadata index.  readMetadataIndex() scans the vault
+ * and rebuilds the index on demand.
+ */
+
 import fs from 'fs'
 import path from 'path'
 import { pathToFileURL } from 'url'
 import { createRequire } from 'module'
+import {
+  getNotePath,
+  readNote,
+  writeNote,
+  scanFolderNotes
+} from './obsidian-store.js'
 
 const _require = createRequire(import.meta.url)
 
-function defaultPath() {
+function getVaultPath() {
   const { app } = _require('electron')
-  return path.join(app.getPath('userData'), 'metadata-index.json')
+  const { readConfig } = _require('./config-store.js')
+  return readConfig().outputFolder || app.getPath('downloads')
 }
 
-export function readMetadataIndex(indexPath) {
-  const p = indexPath || defaultPath()
+// ---------------------------------------------------------------------------
+// readMetadataIndex
+// ---------------------------------------------------------------------------
+
+/**
+ * Build and return a metadata index by scanning the vault for .md notes.
+ *
+ * @param {string} [vaultPath]  Vault root directory.  If omitted, reads from config.
+ * @returns {{ [filePath: string]: object }}  Map from absolute file/note path → metadata.
+ */
+export function readMetadataIndex(vaultPath) {
+  const vault = vaultPath || getVaultPath()
+  if (!vault || !fs.existsSync(vault)) return {}
+
+  const index = {}
+
+  function processFolder(folderPath, folderName) {
+    const notes = scanFolderNotes(folderPath)
+    for (const { notePath, frontmatter } of notes) {
+      const meta = frontmatterToMeta(frontmatter)
+      // Derive the index key
+      const key = frontmatter.file
+        ? path.join(folderPath, frontmatter.file) // absolute path to media file
+        : notePath // reference/page — key is the note itself
+      index[key] = meta
+    }
+  }
+
+  // Root level
+  processFolder(vault, null)
+
+  // One level of subdirectories
   try {
-    return JSON.parse(fs.readFileSync(p, 'utf8'))
-  } catch {
-    return {}
-  }
-}
-
-export function writeMetadataEntry(filePath, metadata, indexPath) {
-  const p = indexPath || defaultPath()
-  const index = readMetadataIndex(p)
-  index[filePath] = metadata
-  fs.writeFileSync(p, JSON.stringify(index, null, 2))
-}
-
-export function deleteMetadataEntry(filePath, indexPath) {
-  const p = indexPath || defaultPath()
-  const index = readMetadataIndex(p)
-  delete index[filePath]
-  fs.writeFileSync(p, JSON.stringify(index, null, 2))
-}
-
-export function moveMetadataEntry(oldPath, newPath, indexPath) {
-  const p = indexPath || defaultPath()
-  const index = readMetadataIndex(p)
-  if (index[oldPath]) {
-    index[newPath] = index[oldPath]
-    delete index[oldPath]
-    fs.writeFileSync(p, JSON.stringify(index, null, 2))
-  }
-}
-
-// Moves the .thumb.jpg sidecar alongside a relocated video.
-export function moveThumbnailSidecar(oldVideoPath, newVideoPath) {
-  const oldThumb = oldVideoPath.replace(/\.[^.]+$/, '.thumb.jpg')
-  const newThumb = newVideoPath.replace(/\.[^.]+$/, '.thumb.jpg')
-  if (oldThumb !== newThumb && fs.existsSync(oldThumb)) {
-    try {
-      fs.renameSync(oldThumb, newThumb)
-    } catch {
-      /* best-effort */
-    }
-  }
-}
-
-// Converts an absolute local file path to a pully:// URL for use in the renderer
-export function toPullyUrl(localPath) {
-  return 'pully:' + pathToFileURL(localPath).href.slice('file:'.length)
-}
-
-export function renameFolderInIndex(oldDirPath, newDirPath, indexPath) {
-  const p = indexPath || defaultPath()
-  const index = readMetadataIndex(p)
-  const sep = path.sep
-  const prefix = oldDirPath + sep
-  const updated = {}
-  for (const [fp, meta] of Object.entries(index)) {
-    if (fp.startsWith(prefix)) {
-      const newMeta = { ...meta }
-      if (newMeta.thumbnailLocalPath && newMeta.thumbnailLocalPath.startsWith(prefix)) {
-        newMeta.thumbnailLocalPath =
-          newDirPath + sep + newMeta.thumbnailLocalPath.slice(prefix.length)
+    for (const name of fs.readdirSync(vault)) {
+      if (name.startsWith('.')) continue
+      const dirPath = path.join(vault, name)
+      try {
+        if (fs.statSync(dirPath).isDirectory()) {
+          processFolder(dirPath, name)
+        }
+      } catch {
+        // skip unreadable directories
       }
-      updated[newDirPath + sep + fp.slice(prefix.length)] = newMeta
-    } else {
-      updated[fp] = meta
     }
+  } catch {
+    // skip unreadable vault
   }
-  fs.writeFileSync(p, JSON.stringify(updated, null, 2))
+
+  return index
 }
 
-export function deleteFolderFromIndex(dirPath, indexPath) {
-  const p = indexPath || defaultPath()
-  const index = readMetadataIndex(p)
-  const prefix = dirPath + path.sep
-  for (const fp of Object.keys(index)) {
-    if (fp.startsWith(prefix)) delete index[fp]
-  }
-  fs.writeFileSync(p, JSON.stringify(index, null, 2))
+// ---------------------------------------------------------------------------
+// writeMetadataEntry
+// ---------------------------------------------------------------------------
+
+/**
+ * Write (or merge) metadata into the companion .md note for a file.
+ *
+ * @param {string} filePath   Absolute path to the media file (or .md note for references).
+ * @param {object} metadata   Metadata fields (title, uploader, url, contentType, …).
+ * @param {string} [_unused]  Ignored — kept for backwards-compatibility with old API.
+ */
+export function writeMetadataEntry(filePath, metadata, _unused) {
+  const notePath = getNotePath(filePath)
+  const fm = metaToFrontmatter(filePath, metadata)
+  writeNote(notePath, { frontmatter: fm })
 }
 
-// Creates a .ref stub file representing a remembered (not downloaded) online video or page.
-// Writes metadata to the index and fire-and-forgets the thumbnail sidecar download.
+// ---------------------------------------------------------------------------
+// deleteMetadataEntry
+// ---------------------------------------------------------------------------
+
+/**
+ * Delete the companion .md note for a file.
+ */
+export function deleteMetadataEntry(filePath, _unused) {
+  const notePath = getNotePath(filePath)
+  try {
+    if (fs.existsSync(notePath)) fs.unlinkSync(notePath)
+  } catch {
+    // best-effort
+  }
+}
+
+// ---------------------------------------------------------------------------
+// moveMetadataEntry
+// ---------------------------------------------------------------------------
+
+/**
+ * Move (rename) the companion note when a media file is moved.
+ */
+export function moveMetadataEntry(oldFilePath, newFilePath, _unused) {
+  const oldNote = getNotePath(oldFilePath)
+  const newNote = getNotePath(newFilePath)
+  if (oldNote === newNote) return
+  try {
+    if (fs.existsSync(oldNote)) {
+      fs.mkdirSync(path.dirname(newNote), { recursive: true })
+      // Update the `file` frontmatter field to reflect the new filename
+      const note = readNote(oldNote)
+      if (note) {
+        const newFilename = path.basename(newFilePath)
+        const newThumb = newFilename.replace(/\.[^.]+$/, '.thumb.jpg')
+        const updatedFm = { ...note.frontmatter, file: newFilename }
+        if (note.frontmatter.thumbnail) updatedFm.thumbnail = newThumb
+        writeNote(oldNote, { frontmatter: updatedFm })
+      }
+      fs.renameSync(oldNote, newNote)
+    }
+  } catch {
+    // best-effort
+  }
+}
+
+// ---------------------------------------------------------------------------
+// renameFolderInIndex / deleteFolderFromIndex
+// ---------------------------------------------------------------------------
+
+/**
+ * After a folder is renamed via fs.renameSync, the .md notes move with it
+ * automatically — no index file to update.  This function is a no-op kept
+ * for API compatibility.
+ */
+export function renameFolderInIndex(_oldDirPath, _newDirPath, _unused) {
+  // Notes are physical files; they moved with the folder.  Nothing to do.
+}
+
+/**
+ * Notes inside a deleted folder are removed with the folder itself.
+ * This function is a no-op kept for API compatibility.
+ */
+export function deleteFolderFromIndex(_dirPath, _unused) {
+  // Notes are physical files; they are removed when the folder is deleted.
+}
+
+// ---------------------------------------------------------------------------
+// createReferenceFile  (replaces the old .ref stub)
+// ---------------------------------------------------------------------------
+
+/**
+ * Create an Obsidian note representing a remembered (but not downloaded) item.
+ * Returns the absolute path to the created .md note.
+ */
 export async function createReferenceFile(
   outputFolder,
   { title, uploader, description, thumbnailUrl, url, contentType = 'video' }
@@ -103,35 +181,46 @@ export async function createReferenceFile(
       .replace(/[/\\:*?"<>|]/g, '')
       .replace(/\s+/g, ' ')
       .trim() || 'Untitled'
-  let refPath = path.join(outputFolder, `${safe}.ref`)
+
+  let notePath = path.join(outputFolder, `${safe}.md`)
   let counter = 1
-  while (fs.existsSync(refPath)) {
-    refPath = path.join(outputFolder, `${safe} (${counter}).ref`)
+  while (fs.existsSync(notePath)) {
+    notePath = path.join(outputFolder, `${safe} (${counter}).md`)
     counter++
   }
-  const downloadedAt = new Date().toISOString()
-  fs.writeFileSync(refPath, JSON.stringify({ type: 'reference', url }))
-  writeMetadataEntry(refPath, {
-    title,
-    uploader,
-    description,
-    thumbnailUrl,
-    url,
-    downloadedAt,
-    contentType,
-    isReference: true
+
+  const savedAt = new Date().toISOString()
+  writeNote(notePath, {
+    frontmatter: {
+      title: title || 'Untitled',
+      url: url || null,
+      uploader: uploader || null,
+      description: description ? description.slice(0, 500) : null,
+      saved_at: savedAt,
+      content_type: contentType,
+      type: 'reference',
+      thumbnail_url: thumbnailUrl || null,
+      tags: []
+    }
   })
+
   if (thumbnailUrl) {
-    downloadAndStoreThumbnail(thumbnailUrl, refPath).catch(() => {})
+    downloadAndStoreThumbnail(thumbnailUrl, notePath).catch(() => {})
   }
-  return refPath
+
+  return notePath
 }
 
-// In-progress set to avoid duplicate concurrent downloads
+// ---------------------------------------------------------------------------
+// Thumbnail helpers  (unchanged from original)
+// ---------------------------------------------------------------------------
+
 const _thumbnailPending = new Set()
 
-// Downloads thumbnailUrl and saves it as <videoPath>.thumb.jpg.
-// Fire-and-forget safe — all errors are silently swallowed.
+/**
+ * Download thumbnailUrl and save it as <videoPath>.thumb.jpg.
+ * Fire-and-forget safe — all errors are silently swallowed.
+ */
 export async function downloadAndStoreThumbnail(thumbnailUrl, videoPath) {
   if (_thumbnailPending.has(videoPath)) return
   _thumbnailPending.add(videoPath)
@@ -146,5 +235,83 @@ export async function downloadAndStoreThumbnail(thumbnailUrl, videoPath) {
     // best-effort
   } finally {
     _thumbnailPending.delete(videoPath)
+  }
+}
+
+/**
+ * Move the .thumb.jpg sidecar alongside a relocated video.
+ * Also moves the companion .md note.
+ */
+export function moveThumbnailSidecar(oldVideoPath, newVideoPath) {
+  const oldThumb = oldVideoPath.replace(/\.[^.]+$/, '.thumb.jpg')
+  const newThumb = newVideoPath.replace(/\.[^.]+$/, '.thumb.jpg')
+  if (oldThumb !== newThumb && fs.existsSync(oldThumb)) {
+    try {
+      fs.renameSync(oldThumb, newThumb)
+    } catch {
+      // best-effort
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// pully:// URL helper  (unchanged)
+// ---------------------------------------------------------------------------
+
+/**
+ * Convert an absolute local file path to a pully:// URL for use in the renderer.
+ */
+export function toPullyUrl(localPath) {
+  return 'pully:' + pathToFileURL(localPath).href.slice('file:'.length)
+}
+
+// ---------------------------------------------------------------------------
+// Internal converters
+// ---------------------------------------------------------------------------
+
+/**
+ * Convert Pully metadata object → Obsidian frontmatter fields.
+ */
+function metaToFrontmatter(filePath, meta) {
+  const fm = {}
+  if (meta.title !== undefined) fm.title = meta.title
+  if (meta.url !== undefined) fm.url = meta.url
+  if (meta.uploader !== undefined) fm.uploader = meta.uploader
+  if (meta.description !== undefined)
+    fm.description = meta.description ? meta.description.slice(0, 500) : null
+  if (meta.downloadedAt !== undefined) fm.downloaded_at = meta.downloadedAt
+  if (meta.contentType !== undefined) fm.content_type = meta.contentType
+  if (meta.thumbnailUrl !== undefined) fm.thumbnail_url = meta.thumbnailUrl
+  if (meta.isReference) fm.type = 'reference'
+  if (meta.type) fm.type = meta.type
+  if (!fm.tags) fm.tags = []
+
+  // For non-note files, store the relative filename so the index key can be derived
+  const ext = path.extname(filePath)
+  if (ext && ext.toLowerCase() !== '.md') {
+    fm.file = path.basename(filePath)
+    const thumbPath = filePath.replace(/\.[^.]+$/, '.thumb.jpg')
+    if (fs.existsSync(thumbPath)) {
+      fm.thumbnail = path.basename(thumbPath)
+    }
+  }
+
+  return fm
+}
+
+/**
+ * Convert Obsidian frontmatter fields → Pully metadata object.
+ */
+function frontmatterToMeta(fm) {
+  return {
+    title: fm.title || null,
+    uploader: fm.uploader || null,
+    description: fm.description || null,
+    url: fm.url || null,
+    thumbnailUrl: fm.thumbnail_url || null,
+    downloadedAt: fm.downloaded_at || fm.saved_at || null,
+    contentType: fm.content_type || 'video',
+    isReference: fm.type === 'reference',
+    type: fm.type || null
   }
 }

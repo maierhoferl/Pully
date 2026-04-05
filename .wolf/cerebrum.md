@@ -30,4 +30,5 @@
 
 ## Decision Log
 
-<!-- Significant technical decisions with rationale. Why X was chosen over Y. -->
+- **Obsidian Vault Storage Backend (2026-04-05):** Replaced metadata-index.json + per-folder notes.md with individual Obsidian .md notes per content item. Each note uses YAML frontmatter (snake_case keys: title, url, uploader, description, downloaded_at, content_type, file, thumbnail, type, tags) + ## AI Summary + ## My Notes sections. Reference items are pure .md notes (type: reference, no media file). The outputFolder IS the Obsidian vault; .obsidian/app.json is created on startup. Old .ref files are gone — replaced by standalone .md notes. The isReference flag is now set in library entries instead of checking .ref extension.
+- **Note Naming Convention:** `video.mp4` → companion note `video.md` (same stem). getNotePath() handles the mapping; is identity for .md files. Sidecar notes are identified by having `file:` in frontmatter pointing to an existing media file.

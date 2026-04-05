@@ -6,7 +6,7 @@ import { LivePageView } from './LivePageView.jsx'
 
 /**
  * ContentViewer dispatches the right renderer based on:
- * - isRef: whether this is a referenced (.ref) item or downloaded
+ * - isRef: whether this is a referenced (Obsidian note / old .ref) item
  * - contentType: 'video' or 'page'
  *
  * Matrix:
@@ -20,11 +20,13 @@ export function ContentViewer({ file, onClose }) {
     return null
   }
 
-  const isRef = file.name?.endsWith('.ref')
+  // isReference flag (set by library:list for Obsidian reference notes)
+  // Also support the legacy .ref extension for backward compatibility
+  const isRef = file.isReference || file.name?.endsWith('.ref')
   const isMarkdown = file.name?.endsWith('.md')
   const contentType = file.contentType || 'video'
 
-  // Referenced item (.ref file)
+  // Referenced item — no local media, embed or live-fetch the remote URL
   if (isRef) {
     if (contentType === 'page') {
       // Referenced page: fetch and render live
