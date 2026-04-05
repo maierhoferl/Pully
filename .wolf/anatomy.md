@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-03-30T21:53:39.438Z
-> Files: 171 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-05T06:31:00.681Z
+> Files: 172 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
@@ -174,13 +174,14 @@
 - `config-store.js` — Exports readConfig, writeConfig (~461 tok)
 - `download-manager.js` — Exports DownloadManager (~2451 tok)
 - `file-processor.js` — Determine content type from file extension (~904 tok)
-- `folder-curator.js` — Main orchestrator: runs all 5 curation tasks sequentially. (~3792 tok)
+- `folder-curator.js` — Main orchestrator: runs all curation tasks sequentially. (~2892 tok)
 - `history-store.js` — Exports listHistory, upsertHistory (~520 tok)
 - `index.js` — API routes: GET (1 endpoints) (~1904 tok)
-- `ipc-handlers.js` — Exports registerIpcHandlers (~7615 tok)
+- `ipc-handlers.js` — Return true if a .md file is a companion note for a media file in the same folder. (~8907 tok)
 - `logger.js` — Creates a logger instance that writes to daily JSON Lines files. (~1020 tok)
-- `metadata-store.js` — Exports readMetadataIndex, writeMetadataEntry, deleteMetadataEntry, moveMetadataEntry + 6 more (~1350 tok)
-- `notes-store.js` — Set the event emitter for notes events. (~3806 tok)
+- `metadata-store.js` — metadata-store.js — Metadata persistence backed by Obsidian notes. (~2978 tok)
+- `notes-store.js` — notes-store.js — Per-item note operations backed by individual Obsidian notes. (~2451 tok)
+- `obsidian-store.js` — obsidian-store.js — Core Obsidian vault operations for Pully. (~2838 tok)
 - `ytdlp-runner.js` — Exports getDefaultBinaryPath, getDefaultFfmpegPath, ensureBinary, extractInfo, startDownload (~1718 tok)
 
 ## src/preload/
@@ -207,7 +208,7 @@
 - `BrowserTab.jsx` — HOME (~7146 tok)
 - `BrowserTabBar.jsx` — BrowserTabBar — uses useRef (~1025 tok)
 - `ChapterCard.jsx` — safeHostname (~2540 tok)
-- `ContentViewer.jsx` — ContentViewer dispatches the right renderer based on: (~483 tok)
+- `ContentViewer.jsx` — ContentViewer dispatches the right renderer based on: (~544 tok)
 - `DebugTab.jsx` — src/renderer/src/components/DebugTab.jsx (~2573 tok)
 - `DownloadRow.jsx` — STATUS_COLOR — uses useState (~817 tok)
 - `FileList.jsx` — FileIcon (~1868 tok)
@@ -220,7 +221,7 @@
 - `LibraryTab.jsx` — Stable color per folder name (derived from name hash so colors don't shift when folders are added) (~7821 tok)
 - `LibraryToolbar.jsx` — SORT_CYCLE (~1029 tok)
 - `LivePageView.jsx` — LivePageView fetches and renders a live page from a URL (~1218 tok)
-- `MarkdownPageView.jsx` — MarkdownPageView renders a markdown file (.md) with base64-embedded images (~1325 tok)
+- `MarkdownPageView.jsx` — Strip YAML frontmatter block (--- ... ---) from an Obsidian note before rendering. (~1437 tok)
 - `MediaPanel.jsx` — formatSize — renders chart — uses useRef, useEffect, useState (~4330 tok)
 - `NotesChapterView.jsx` — src/renderer/src/components/NotesChapterView.jsx (~818 tok)
 - `NotesFolderList.jsx` — src/renderer/src/components/NotesFolderList.jsx (~191 tok)
@@ -268,8 +269,8 @@
 - `download-manager.test.js` — Declares actual (~2754 tok)
 - `file-processor.test.js` — Declares __dirname (~664 tok)
 - `logger.test.js` — Declares today (~1144 tok)
-- `metadata-store.test.js` — Declares p (~1396 tok)
-- `notes-store.test.js` — Declares filePath (~2013 tok)
+- `metadata-store.test.js` — metadata-store tests — Obsidian note-backed storage. (~1534 tok)
+- `notes-store.test.js` — notes-store tests — individual Obsidian note per content item. (~2017 tok)
 - `ytdlp-runner.test.js` — Declares mockProc (~1550 tok)
 
 ## tests/renderer/

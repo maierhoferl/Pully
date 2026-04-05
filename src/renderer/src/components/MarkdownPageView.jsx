@@ -2,9 +2,18 @@ import React, { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
+/** Strip YAML frontmatter block (--- ... ---) from an Obsidian note before rendering. */
+function stripFrontmatter(content) {
+  if (!content || !content.startsWith('---\n')) return content
+  const end = content.indexOf('\n---\n', 4)
+  if (end === -1) return content
+  return content.slice(end + 5)
+}
+
 /**
- * MarkdownPageView renders a markdown file (.md) with base64-embedded images
- * Fetches the content via pully:// protocol from the library folder
+ * MarkdownPageView renders a markdown file (.md) with base64-embedded images.
+ * Fetches the content via pully:// protocol from the library folder.
+ * Strips Obsidian YAML frontmatter automatically before rendering.
  */
 export function MarkdownPageView({ videoUrl, onClose }) {
   const [content, setContent] = useState(null)
@@ -35,7 +44,7 @@ export function MarkdownPageView({ videoUrl, onClose }) {
           throw new Error(result.error)
         }
 
-        setContent(result.content)
+        setContent(stripFrontmatter(result.content))
       } catch (err) {
         console.error('Failed to fetch markdown:', err)
         setError(`Failed to load page content: ${err.message}`)
